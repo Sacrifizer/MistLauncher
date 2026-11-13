@@ -1,0 +1,1827 @@
+/* Mist Launcher reference redesign — charcoal surfaces, purple-blue accent, preserved artwork. */
+:root {
+  --mist-bg: #171717;
+  --mist-panel: #1d1d1f;
+  --mist-panel-raised: #232326;
+  --mist-panel-hover: #29292d;
+  --mist-stroke: #2d2d32;
+  --mist-stroke-strong: #3a3a42;
+  --mist-copy: #f1f1f4;
+  --mist-muted: #9b9ba5;
+  --mist-accent: #8b5cf6;
+  --mist-accent-blue: #528de8;
+  --mist-accent-soft: color-mix(in srgb, var(--mist-accent) 16%, transparent);
+  color-scheme: dark;
+}
+
+* { scrollbar-width: thin; scrollbar-color: #4a4a52 #171719; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: #171719; }
+*::-webkit-scrollbar-thumb { border: 2px solid #171719; border-radius: 99px; background: #45454d; }
+*::-webkit-scrollbar-thumb:hover { background: #666671; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--mist-accent-blue) !important; outline-offset: 2px; }
+
+.app-shell { color: var(--mist-copy) !important; background-color: var(--mist-bg) !important; }
+.app-shell :is(.main, .screen) { color: var(--mist-copy); }
+.main { padding-left: 82px !important; }
+.screen { padding: 24px 28px 30px 24px; }
+.titlebar { background: #171719 !important; border-bottom: 1px solid #252529 !important; box-shadow: none !important; }
+/* The existing category dock keeps its exact position, size, and navigation behavior. */
+.titlebar .top-route-nav { z-index: 4; }
+.titlebar .top-route-nav .top-route-item { border-radius: 8px; transition: color 150ms ease, background-color 150ms ease; }
+.titlebar .top-route-nav .top-route-item:hover { background-color: rgba(255,255,255,.055); }
+.titlebar .top-route-nav .top-route-item.is-active,
+.titlebar .top-route-nav .top-route-item[aria-current="page"] { color: #fff; background: var(--mist-accent-soft); }
+
+/* Reusable solid panels with the reference stroke and quiet elevated top edge. */
+.app-shell :is(.panel, .modal, .project-card, .installation-card, .account-card, .world-card, .skin-card,
+  .home-changelog-card, .home-playtime-card, .home-news-sidebar, .home-featured-sidebar,
+  .home-server-dock, .home-server-item, .home-news-sidebar-item, .home-featured-pack,
+  .home-selected-installation, .hero-download-progress, .settings-nav, .content-shelf,
+  .world-chat-channels, .world-chat-room, .catalog-toolbar, .catalog-filters) {
+  color: var(--mist-copy); border: 1px solid var(--mist-stroke); border-top-color: #3a3a40;
+  border-radius: 12px; background: var(--mist-panel) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.20), inset 0 1px rgba(255,255,255,.025);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.app-shell :is(.home-news-sidebar, .home-featured-sidebar, .home-server-dock,
+  .home-changelog-card, .home-playtime-card, .settings-nav, .world-chat-channels, .world-chat-room) {
+  background: #1a1a1c !important;
+}
+.app-shell :is(.home-news-sidebar-item, .home-featured-pack, .home-server-item, .project-card,
+  .installation-card, .account-card, .world-card, .skin-card, button.btn, button.icon-btn) {
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .app-shell :is(.home-news-sidebar-item, .home-featured-pack, .home-server-item, .project-card,
+    .installation-card, .account-card, .world-card, .skin-card):hover {
+    border-color: #51416f; background: var(--mist-panel-hover) !important; transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(0,0,0,.28);
+  }
+  .screen { animation: mist-page-in 170ms ease both; }
+  @keyframes mist-page-in { from { opacity: .84; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+}
+.app-shell :is(.btn, .icon-btn, .play-button, .create-install-button, .home-server-quickplay):active:not(:disabled) { transform: scale(.97); }
+.app-shell :is(.input, .textarea, .select, .search-input input, .home-server-search input) {
+  border: 1px solid var(--mist-stroke); border-radius: 8px; color: var(--mist-copy); background: #151517;
+}
+.app-shell :is(.input, .textarea, .select):focus, .home-server-search:focus-within { border-color: #695293; box-shadow: 0 0 0 3px rgba(139,92,246,.12); }
+.screen-toolbar { margin-bottom: 20px; }
+.screen-toolbar h1, .section-header h1 { color: #f5f5f7; letter-spacing: -.02em; }
+.screen-toolbar p, .project-description { color: var(--mist-muted); }
+.badge { border-radius: 99px; }
+
+/* New navigation rail is added by mist-navigation-dock.js. */
+#mist-left-dock {
+  position: fixed; z-index: 120; top: 76px; bottom: 74px; left: 8px;
+  display: flex; width: 60px; flex-direction: column; align-items: center; gap: 8px;
+  box-sizing: border-box; padding: 10px 6px;
+  border: 1px solid #29292e; border-radius: 16px; background: #19191b;
+  box-shadow: 0 12px 32px rgba(0,0,0,.32);
+}
+.installation-shelf, .home-utility-dock { display: none !important; }
+.mist-dock-account, .mist-dock-item, .mist-dock-create, .mist-dock-instance, .mist-dock-settings, .mist-dock-changelog {
+  position: relative; display: grid; width: 44px; min-width: 44px; height: 44px; min-height: 44px;
+  place-items: center; padding: 0; border: 1px solid transparent; border-radius: 11px;
+  color: #aaaab4; background: transparent; cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.mist-dock-account { margin-bottom: 4px; border-radius: 12px; color: #eee; background: #252528; }
+.mist-dock-account img { width: 34px; height: 34px; border-radius: 9px; image-rendering: pixelated; }
+.mist-dock-item:hover, .mist-dock-settings:hover, .mist-dock-instance:hover, .mist-dock-changelog:hover { color: white; border-color: #35353b; background: #27272b; }
+.mist-dock-item.is-active { color: white; border-color: rgba(139,92,246,.50); background: linear-gradient(135deg,#7652d1,#5740a2); box-shadow: 0 5px 16px rgba(92,62,162,.30); }
+.mist-dock-create { border-color: rgba(139,92,246,.38); color: #c5adff; background: rgba(139,92,246,.11); font-size: 24px; }
+.mist-dock-create:hover { color: white; border-color: #8b5cf6; background: #6d49c4; }
+.mist-dock-divider { width: 32px; height: 1px; flex: 0 0 1px; background: #333338; }
+.mist-dock-instance-list { display: flex; min-height: 0; flex: 1 1 auto; flex-direction: column; align-items: center; gap: 5px; overflow-y: auto; scrollbar-width: thin; }
+.mist-dock-instance { width: 40px; min-width: 40px; height: 40px; min-height: 40px; border-radius: 10px; }
+.mist-dock-instance img { width: 28px; height: 28px; border-radius: 7px; object-fit: cover; image-rendering: pixelated; }
+.mist-dock-instance.is-selected { border-color: #8260d4; background: #302740; box-shadow: inset 0 0 0 1px rgba(139,92,246,.22); }
+.mist-dock-instance span { max-width: 36px; overflow: hidden; color: #c9c9d0; font-size: 8px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.mist-dock-settings { margin-top: auto; }
+.mist-dock-changelog { width: 44px; min-width: 44px; height: 36px; min-height: 36px; font-size: 10px; }
+.mist-dock-tooltip { position: absolute; left: 52px; top: 50%; z-index: 2; width: max-content; max-width: 240px; padding: 7px 9px; transform: translateY(-50%); border: 1px solid #393940; border-radius: 7px; color: #f4f4f6; background: #262629; font-size: 11px; opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
+#mist-left-dock :is(button:hover,button:focus-visible) .mist-dock-tooltip { opacity: 1; }
+
+/* Home canvas. The top tabs and lower-center play controls retain their original anchors. */
+.main:has(.home-screen) { padding: 12px 14px 88px 78px !important; overflow: hidden !important; }
+.home-screen { width: 100%; max-width: none; height: 100%; min-height: 0; padding: 0 !important; overflow: hidden; }
+.home-grid, .home-screen .home-main { width: 100%; height: 100%; min-height: 0; }
+.home-grid { display: block !important; }
+.home-main { position: relative; display: block !important; }
+.home-screen .hero { position: relative; display: block; width: 100%; height: 100%; min-height: 0; padding: 0; overflow: visible; }
+.home-screen .hero-main-centered { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; pointer-events: none; }
+.home-screen .hero-main-centered > :is(.hero-auth-note,.play-reason,.hero-warning) { pointer-events: auto; }
+/* Legacy account/installations are represented by the new dock. */
+.home-screen .home-account-card, .home-screen .home-recent-card { display: none !important; }
+.home-screen .home-hero-left-stack { position: static !important; display: contents !important; }
+.home-screen .home-hero-left-stack > .home-changelog-card { display: none; }
+.home-screen .home-changelog-card.is-dock-open {
+  position: fixed !important; z-index: 125; top: 50%; left: 50%; display: block !important;
+  width: min(390px,calc(100vw - 40px)); height: auto; min-height: 0; max-height: 70vh; overflow: auto;
+  padding: 20px; transform: translate(-50%,-50%) !important; border: 1px solid #45404f;
+  border-radius: 14px; background: #202023 !important; box-shadow: 0 22px 70px rgba(0,0,0,.62);
+}
+.home-screen .home-changelog-card.is-dock-open::before { position: fixed; z-index: -1; inset: -100vh -100vw; content: ""; background: rgba(0,0,0,.48); }
+.home-screen .home-hero-left-stack > .home-hero-playtime-card {
+  position: fixed !important; z-index: 5; bottom: 100px !important; left: 88px !important;
+  width: clamp(340px,calc((100vw - 450px) * .43),520px) !important; height: 210px !important; min-height: 210px !important;
+  margin: 0; padding: 16px 18px 12px; transform: none !important;
+}
+.home-screen .home-hero-playtime-card .playtime-chart { height: 78px; }
+.home-screen .home-server-dock {
+  position: fixed !important; z-index: 5; right: 318px !important; bottom: 100px !important; left: auto !important; top: auto !important;
+  display: flex; width: clamp(420px,calc((100vw - 450px) * .57),680px) !important; height: 210px !important; max-height: 34vh !important;
+  flex-direction: column; gap: 8px; padding: 14px 16px; overflow: hidden;
+  border-radius: 12px; background: #1b1b1e !important; box-shadow: 0 12px 30px rgba(0,0,0,.28) !important;
+}
+.home-server-heading { flex: 0 0 auto; }
+.home-server-search { min-height: 34px; flex: 0 0 auto; }
+.home-server-filters { flex: 0 0 auto; flex-wrap: wrap; gap: 5px; }
+.home-server-filters > button { min-height: 25px; padding: 4px 9px; border-radius: 7px; }
+.home-server-list { min-height: 0; flex: 1 1 auto; align-content: start; gap: 6px; overflow-y: auto; }
+.home-server-item { grid-template-columns: 34px minmax(0,1fr) auto; min-height: 58px; gap: 9px; padding: 7px 9px; border-radius: 9px; background: #222225 !important; }
+.home-server-item > img, .home-server-avatar { width: 34px; height: 34px; border-radius: 7px; }
+.home-server-copy { gap: 3px; }
+.home-server-copy strong { font-size: 12px; }
+.home-server-copy code, .home-server-copy small, .home-server-meta { font-size: 10px; }
+.home-server-quickplay { min-height: 28px; padding: 4px 8px; border: 1px solid rgba(139,92,246,.36); border-radius: 7px; color: #e5d9ff; background: rgba(139,92,246,.15); font-size: 10px; }
+.home-server-footer { display: none; }
+.home-server-load-more { min-height: 24px; }
+.home-server-empty { min-height: 58px; }
+
+/* Featured packs use the full center stage above Playtime and Servers. */
+.home-screen .home-discover-layout { position: static !important; width: auto !important; max-height: none !important; margin: 0; }
+.home-right-rail { display: contents !important; }
+.home-right-rail .home-news-sidebar {
+  position: fixed !important; z-index: 8; top: 76px !important; right: 10px !important; bottom: auto !important; left: auto !important;
+  display: block; width: 286px !important; height: min(54vh,410px) !important; min-height: 250px !important; max-height: 410px !important;
+  overflow: hidden; padding: 12px; border-radius: 13px; background: #1b1b1e !important;
+}
+.home-news-sidebar-heading { min-height: 32px; }
+.home-news-sidebar-list { max-height: calc(100% - 36px); overflow-y: auto; gap: 7px; }
+.home-news-sidebar-item { grid-template-columns: 66px minmax(0,1fr); min-height: 60px; gap: 8px; padding: 6px; border-radius: 9px; background: #242427 !important; }
+.home-news-sidebar-image { width: 66px; min-width: 66px; height: 48px; border-radius: 7px; }
+.home-news-sidebar-copy strong { font-size: 12px; }
+.home-news-sidebar-copy small { font-size: 10px; }
+.home-news-sidebar-empty { min-height: 0 !important; justify-content: flex-start !important; margin-top: 9px; padding: 11px; border: 1px solid var(--mist-stroke); border-radius: 8px; color: var(--mist-muted); background: #222225; font-size: 11px; }
+.home-screen .home-featured-sidebar {
+  position: fixed !important; z-index: 6; top: 76px !important; right: 310px !important; left: 88px !important; bottom: auto !important;
+  display: grid; height: 218px !important; min-height: 218px !important; max-height: 218px !important; grid-template-rows: 34px 1fr;
+  gap: 8px; padding: 12px 14px; border-radius: 13px; background: #1b1b1e !important;
+}
+.home-featured-sidebar .home-news-sidebar-heading { min-height: 30px; }
+.home-featured-pack-list { display: grid; min-height: 0; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; overflow: auto; }
+.home-featured-pack { display: grid; min-width: 0; min-height: 0; grid-template-columns: 44px minmax(0,1fr); align-content: center; gap: 10px; padding: 10px; border-radius: 10px; background: #242427 !important; }
+.home-featured-pack > :first-child { width: 44px; height: 44px; border-radius: 9px; }
+.home-featured-pack-copy { min-width: 0; align-self: center; }
+.home-featured-pack-copy strong { display: -webkit-box; overflow: hidden; font-size: 12px; line-height: 1.35; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.home-featured-pack-copy small { font-size: 10px; }
+.home-featured-pack-loading, .home-news-skeleton { min-height: 0; }
+
+/* Social/account utilities live below News on Home; actions proxy the existing launcher controls. */
+.titlebar .discord-button, .titlebar .notification-button { display: none !important; }
+#mist-home-social {
+  position: fixed; z-index: 9; top: calc(min(54vh,410px) + 86px); right: 10px;
+  display: flex; width: 286px; min-height: 52px; align-items: center; justify-content: space-evenly; gap: 7px;
+  padding: 7px 10px; box-sizing: border-box; border: 1px solid var(--mist-stroke); border-radius: 12px;
+  background: #1b1b1e; box-shadow: 0 8px 22px rgba(0,0,0,.24);
+}
+#mist-home-social button { display: grid; width: 38px; height: 36px; place-items: center; border: 1px solid transparent; border-radius: 9px; color: #aaaab4; background: transparent; cursor: pointer; }
+#mist-home-social button:hover { color: #fff; border-color: #38383f; background: #29292d; }
+
+/* Keep the existing middle-bottom play dock centered and restore the selected-instance width. */
+.home-play-controls { z-index: 80 !important; width: min(410px,calc(100vw - 120px)) !important; }
+.home-play-controls .hero-actions { width: auto !important; min-width: 0; }
+.home-selected-installation { width: 100% !important; min-width: 0; min-height: 48px !important; padding: 7px 11px !important; border-radius: 10px !important; background: #222225 !important; }
+.home-selected-installation > .install-art { width: 34px !important; height: 34px !important; flex: 0 0 34px; border-radius: 8px !important; }
+.home-selected-installation-copy { display: flex !important; min-width: 0; flex-direction: column; gap: 2px; }
+.home-selected-installation .home-selected-installation-label { color: var(--mist-muted); font-size: 9px; }
+.home-selected-installation-copy strong { color: var(--mist-copy); font-size: 12px; }
+.home-selected-installation-copy > small:last-child { color: var(--mist-muted); font-size: 10px; }
+.home-play-controls .play-button { width: min(250px,100%); height: 46px; border: 1px solid rgba(169,140,255,.7); border-radius: 11px; color: white; background: linear-gradient(135deg,#7851d1,#563a9e); box-shadow: 0 7px 22px rgba(91,60,163,.28),inset 0 1px rgba(255,255,255,.22); }
+.home-play-controls .play-button:hover:not(:disabled) { background: linear-gradient(135deg,#9069e8,#6747b5); }
+.home-play-controls .play-button:disabled { border-color: #3d3d43; color: #9b9ba5; background: #303035; box-shadow: none; }
+.bottom-navigation { background: #19191b !important; border-top-color: #29292e !important; }
+
+/* Content browsing: a distinct right-side filter panel, while search/results keep their width. */
+.screen:has(.catalog-toolbar) { padding-right: 310px !important; }
+.catalog-toolbar { display: flex; flex-wrap: wrap; gap: 9px; padding: 10px; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+.catalog-search { flex: 1 1 100%; }
+.catalog-filters {
+  position: fixed !important; z-index: 20; top: 76px; right: 10px; bottom: 86px;
+  display: flex; width: 276px; flex-direction: column; align-items: stretch; gap: 10px; overflow: auto;
+  padding: 16px; box-sizing: border-box; border-radius: 13px; background: #1b1b1e !important;
+}
+.catalog-filters::before { display: block; content: "Filters"; padding-bottom: 9px; border-bottom: 1px solid var(--mist-stroke); color: #f2f2f5; font-size: 14px; font-weight: 700; }
+.catalog-filters > * { width: 100%; min-height: 38px; }
+.project-grid { grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 12px; }
+.project-card { min-height: 178px; padding: 14px; border-radius: 12px; background: var(--mist-panel) !important; }
+.installation-card { min-height: 178px; border-radius: 12px; background: var(--mist-panel) !important; }
+.installation-card.add-card { border: 1px dashed #716190 !important; background: #1b1b1e !important; }
+.version-row:hover, .version-item:hover { background: #242427; }
+.world-card, .account-card { border-radius: 12px; }
+.world-chat-channels, .world-chat-room { background: #1a1a1c !important; border-radius: 12px; }
+.world-chat-composer { border-radius: 10px; background: #222225; }
+.settings-nav { position: sticky; top: 14px; border-radius: 12px; }
+.settings-nav-item { min-height: 40px; border-radius: 8px; }
+.settings-nav-item.is-active, .tab.is-active { color: white; background: var(--mist-accent-soft); }
+.modal { border-radius: 14px; background: #202023 !important; }
+
+@media (max-width: 1220px) and (min-width: 761px) {
+  .home-screen .home-featured-sidebar { right: 278px !important; height: 196px !important; min-height: 196px !important; max-height: 196px !important; }
+  .home-right-rail .home-news-sidebar { width: 258px !important; right: 10px !important; }
+  .home-screen .home-server-dock { right: 278px !important; width: clamp(280px,calc((100vw - 420px) * .56),600px) !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { width: clamp(250px,calc((100vw - 420px) * .43),440px) !important; }
+  #mist-home-social { width: 258px; }
+  .screen:has(.catalog-toolbar) { padding-right: 282px !important; }
+  .catalog-filters { width: 248px; }
+}
+@media (max-width: 920px) and (min-width: 761px) {
+  .home-screen .home-featured-sidebar { right: 278px !important; height: 180px !important; min-height: 180px !important; max-height: 180px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { bottom: 326px !important; left: 88px !important; width: calc(100vw - 88px - 302px) !important; height: 190px !important; min-height: 190px !important; }
+  .home-screen .home-server-dock { right: 278px !important; left: 88px !important; width: auto !important; height: 190px !important; max-height: 190px !important; }
+}
+@media (max-width: 760px) {
+  #mist-left-dock { top: 54px; bottom: 74px; left: 4px; width: 50px; padding: 7px 3px; gap: 5px; }
+  .mist-dock-account, .mist-dock-item, .mist-dock-create, .mist-dock-instance, .mist-dock-settings, .mist-dock-changelog { width: 40px; min-width: 40px; height: 40px; min-height: 40px; }
+  .main { padding-left: 56px !important; }
+  .main:has(.home-screen) { padding: 8px 8px 160px 58px !important; overflow: auto !important; }
+  .home-screen { height: auto; min-height: 100%; overflow: visible; }
+  .home-grid, .home-screen .home-main { height: auto; min-height: 0; }
+  .home-main { display: grid !important; grid-template-columns: minmax(0,1fr); gap: 10px; }
+  .home-screen .hero { height: auto; min-height: 300px; }
+  .home-screen .home-featured-sidebar { position: relative !important; top: auto !important; left: auto !important; right: auto !important; width: auto !important; height: auto !important; min-height: 190px !important; max-height: none !important; margin: 10px 0; }
+  .home-featured-pack-list { grid-template-columns: minmax(0,1fr); }
+  .home-right-rail .home-news-sidebar { position: relative !important; top: auto !important; left: auto !important; right: auto !important; width: auto !important; height: auto !important; min-height: 250px !important; max-height: 350px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card,
+  .home-screen .home-server-dock { position: relative !important; inset: auto !important; width: auto !important; height: auto !important; min-height: 200px !important; max-height: none !important; margin: 10px 0; }
+  #mist-home-social { position: relative; top: auto; right: auto; width: auto; margin: 8px 0; }
+  .home-play-controls { bottom: calc(74px + env(safe-area-inset-bottom)) !important; width: min(360px,calc(100vw - 66px)) !important; }
+  .screen { padding: 16px 12px 24px !important; }
+  .screen:has(.catalog-toolbar) { padding-right: 12px !important; }
+  .catalog-filters { position: static !important; width: auto; max-height: 220px; }
+  .settings-layout { grid-template-columns: minmax(0,1fr); }
+}
+
+/* Match the supplied charcoal swatch while preserving Mist's purple action color. */
+:root {
+  --mist-bg: #1a1a1a;
+  --mist-panel: #202020;
+  --mist-panel-raised: #252525;
+  --mist-stroke: #303030;
+}
+html, body, #root, .app-shell { background-color: #1a1a1a !important; }
+.app-shell :is(.panel,.modal,.project-card,.installation-card,.account-card,.world-card,.skin-card,
+  .home-changelog-card,.home-playtime-card,.home-news-sidebar,.home-server-dock) {
+  background-color: #202020 !important;
+  border-color: #303030 !important;
+}
+.app-shell :is(input,textarea,select,.toolbar-search) { background-color: #181818 !important; }
+.app-shell :is(.btn-secondary,.icon-btn) { background-color: #252525 !important; border-color: #373737 !important; }
+.app-shell .btn-primary { background: linear-gradient(135deg,#7650d2,#56339e) !important; }
+
+/* Saved instance opens as a clean overview. Existing controls stay mounted for Settings. */
+.detail-screen:not(.is-settings-view) > .detail-grid { display: none !important; }
+.detail-screen:not(.is-settings-view) > .detail-header { min-height: 156px; grid-template-columns: 88px minmax(0,1fr) auto; }
+.detail-screen:not(.is-settings-view) > .detail-header .detail-actions { grid-column: 3; grid-row: 1; align-self: center; padding: 0; border: 0; }
+.detail-screen:not(.is-settings-view) .detail-actions > :not(.instance-settings-trigger) { display: none !important; }
+.instance-settings-trigger { display: inline-flex !important; min-height: 38px; align-items: center; gap: 8px; padding: 0 13px !important; }
+.instance-settings-trigger svg { width: 16px; height: 16px; }
+#mist-instance-overview {
+  display: flex; min-height: 210px; flex-direction: column; gap: 18px; margin-top: 14px; padding: 20px;
+  border: 1px solid #303030; border-radius: 14px; background: #202020;
+}
+#mist-instance-overview[hidden] { display: none !important; }
+.mist-instance-overview-title h2 { margin: 5px 0 3px; color: #f4f4f5; font-size: 20px; }
+.mist-instance-overview-title p { margin: 0; color: #a2a2aa; font-size: 12px; }
+.mist-instance-kicker { color: #a98cff; font-size: 9px; font-weight: 800; letter-spacing: .13em; }
+.mist-instance-quick-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.mist-instance-quick {
+  display: grid; min-height: 88px; grid-template-columns: 30px 1fr; grid-template-rows: 1fr 1fr; align-items: center;
+  padding: 13px; border: 1px solid #343434; border-radius: 11px; color: #eee; text-align: left; background: #252525; cursor: pointer;
+}
+.mist-instance-quick:hover { border-color: #7650d2; background: #2a2634; }
+.mist-instance-quick svg { grid-row: 1/3; color: #bba3ff; }
+.mist-instance-quick span { align-self: end; font-size: 12px; font-weight: 700; }
+.mist-instance-quick small { align-self: start; color: #9999a2; font-size: 10px; }
+
+/* Instance Settings uses a dedicated left navigation and the launcher's live form controls. */
+#mist-instance-settings-nav {
+  position: fixed; z-index: 40; top: 70px; bottom: 16px; left: 92px; display: flex; width: 244px; flex-direction: column;
+  padding: 18px 12px; border: 1px solid #303030; border-radius: 14px; background: #202020; box-shadow: 0 12px 35px rgba(0,0,0,.32);
+}
+#mist-instance-settings-nav[hidden] { display: none !important; }
+#mist-instance-settings-nav header { display: flex; flex-direction: column; gap: 13px; padding: 2px 5px 16px; border-bottom: 1px solid #323232; }
+#mist-instance-settings-nav header strong { color: #f5f5f5; font-size: 17px; }
+#mist-instance-settings-nav .mist-settings-back { padding: 0; border: 0; color: #a8a8b0; text-align: left; background: transparent; cursor: pointer; }
+#mist-instance-settings-nav nav { display: flex; flex-direction: column; gap: 6px; padding-top: 13px; }
+#mist-instance-settings-nav nav button { display: flex; min-height: 42px; align-items: center; gap: 11px; padding: 0 10px; border: 1px solid transparent; border-radius: 9px; color: #b7b7bf; text-align: left; background: transparent; cursor: pointer; }
+#mist-instance-settings-nav nav button svg { width: 17px; height: 17px; }
+#mist-instance-settings-nav nav button:hover, #mist-instance-settings-nav nav button.is-active { border-color: #59418b; color: #c4aaff; background: #2b2438; }
+.detail-screen.is-settings-view > .detail-header { display: none !important; }
+.detail-screen.is-settings-view > .detail-grid { display: grid !important; grid-template-columns: minmax(0,1fr) !important; margin-left: 254px; }
+.detail-screen.is-settings-view .detail-main > section[hidden] { display: none !important; }
+.detail-screen.is-settings-view .detail-main > section { padding: 20px !important; border: 1px solid #303030; border-radius: 13px; background: #202020; }
+.detail-screen.is-settings-view .detail-main .section-header h2 { color: #f4f4f5; }
+@media (max-width: 760px) {
+  #mist-instance-settings-nav { left: 64px; top: 60px; bottom: 10px; width: 190px; }
+  .detail-screen.is-settings-view > .detail-grid { margin-left: 196px; }
+  .mist-instance-quick-actions { grid-template-columns: 1fr; }
+  .detail-screen:not(.is-settings-view) > .detail-header { grid-template-columns: 64px minmax(0,1fr); }
+  .detail-screen:not(.is-settings-view) > .detail-header .detail-actions { grid-column: 1/-1; grid-row: auto; justify-content: flex-end; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* Home layout aligned to the latest reference: one framed workspace and one full-width control dock. */
+#mist-home-shell, #mist-home-shell[hidden] { display: none !important; }
+#mist-home-bottom-dock[hidden] { display: none !important; }
+.main:has(.home-screen) { position: relative; isolation: isolate; padding: 0 !important; overflow: hidden !important; }
+.main:has(.home-screen)::before {
+  position: absolute; z-index: 0; inset: 18px 306px 96px 78px; box-sizing: border-box;
+  border: 1px solid #333338; border-radius: 15px; background: #1b1b1d;
+  box-shadow: 0 12px 34px rgba(0,0,0,.30), inset 0 1px rgba(255,255,255,.025);
+  content: ""; pointer-events: none;
+}
+.main:has(.home-screen) > * { position: relative; z-index: 1; }
+.home-screen, .home-grid, .home-screen .home-main, .home-screen .hero { pointer-events: none; }
+.home-screen :is(.home-featured-sidebar,.home-hero-playtime-card,.home-server-dock,.home-changelog-card) { pointer-events: auto; }
+.home-screen .home-hero-left-stack > .home-changelog-card {
+  position: fixed !important; z-index: 6; display: flex !important; inset: auto 320px 108px 92px !important;
+  width: auto !important; height: 124px !important; min-height: 124px !important; max-height: 124px !important;
+  margin: 0 !important; padding: 12px 16px !important; overflow: hidden !important;
+  transform: none !important; border: 1px solid #3a3a40 !important; border-top-color: #47474e !important;
+  border-radius: 12px !important; background: #202023 !important;
+}
+.home-screen .home-changelog-card.is-dock-open { inset: auto 320px 108px 92px !important; width: auto !important; max-height: 124px !important; }
+.home-screen .home-featured-sidebar {
+  z-index: 5 !important; top: 84px !important; right: 320px !important; left: 92px !important;
+  height: 190px !important; min-height: 190px !important; max-height: 190px !important;
+  padding: 11px 14px !important; border-color: #39393f !important; background: #202023 !important;
+}
+.home-screen .home-hero-left-stack > .home-hero-playtime-card {
+  z-index: 5 !important; top: 286px !important; bottom: 252px !important; left: 92px !important;
+  width: clamp(260px,calc((100vw - 500px)*.35),410px) !important; height: auto !important; min-height: 0 !important;
+  margin: 0 !important; padding: 15px 17px !important; overflow: hidden !important;
+  border-color: #39393f !important; background: #202023 !important;
+}
+.home-screen .home-hero-playtime-card .playtime-chart { height: min(170px,calc(100% - 66px)) !important; }
+.home-screen .home-server-dock {
+  z-index: 5 !important; top: 286px !important; right: 320px !important; bottom: 252px !important;
+  left: calc(104px + clamp(260px,calc((100vw - 500px)*.35),410px)) !important; width: auto !important;
+  height: auto !important; min-height: 0 !important; max-height: none !important; padding: 13px 15px !important;
+  border-color: #39393f !important; background: #202023 !important;
+}
+.home-screen .home-featured-sidebar, .home-screen .home-hero-playtime-card,
+.home-screen .home-server-dock, .home-screen .home-changelog-card { box-sizing: border-box; }
+.home-screen .home-changelog-heading { display: flex !important; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 10px; }
+.home-screen .home-changelog-card > strong { display: block; width: 100%; margin: 12px 0 8px; font-size: 14px; line-height: 1.35; }
+.home-screen .home-changelog-card > ul { display: grid !important; width: 100%; grid-template-columns: minmax(0,1fr); gap: 7px; margin: 0; padding-left: 19px; }
+.home-screen .home-changelog-card > ul > li { display: list-item; width: auto; white-space: normal; overflow-wrap: anywhere; line-height: 1.4; }
+.home-screen .home-play-controls { display: none !important; }
+.bottom-navigation, .home-utility-dock { display: none !important; }
+#mist-home-bottom-dock {
+  position: fixed; z-index: 100; inset: auto 306px 8px 78px; height: 74px; box-sizing: border-box;
+  display: grid; grid-template-columns: minmax(0,1fr) 54px minmax(0,1fr); align-items: center; gap: 12px;
+  padding: 8px 14px; border: 1px solid #39393f; border-radius: 14px; color: #f1f1f4;
+  background: #19191b; box-shadow: 0 10px 30px rgba(0,0,0,.38), inset 0 1px rgba(255,255,255,.04);
+}
+#mist-home-bottom-dock button { position: relative; display: inline-flex; height: 46px; align-items: center; justify-content: center; gap: 9px; border: 1px solid #3a3a40; border-radius: 10px; color: #ececf0; background: #242427; cursor: pointer; }
+#mist-home-bottom-dock .mist-bottom-manage { justify-self: start; min-width: 152px; padding: 0 14px; }
+#mist-home-bottom-dock .mist-bottom-play { width: 50px; height: 46px; justify-self: center; border-color: #7250bd; color: #fff; background: #6846b4; box-shadow: 0 5px 16px rgba(104,70,180,.28); }
+#mist-home-bottom-dock .mist-bottom-selected { display: flex; min-width: 0; justify-self: end; align-items: center; gap: 10px; }
+#mist-home-bottom-dock .mist-bottom-selected > .install-art,
+#mist-home-bottom-dock .mist-bottom-selected > img { order: 2; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 9px; object-fit: cover; image-rendering: pixelated; }
+#mist-home-bottom-dock .mist-bottom-selected-copy { order: 1; display: flex; min-width: 0; flex-direction: column; gap: 2px; text-align: right; }
+#mist-home-bottom-dock .mist-bottom-selected-copy strong { overflow: hidden; max-width: 300px; color: #f1f1f4; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+#mist-home-bottom-dock .mist-bottom-selected-copy small { color: #a1a1aa; font-size: 10px; }
+#mist-home-bottom-dock .mist-bottom-selected-copy .home-selected-installation-label { display: none; }
+#mist-home-bottom-dock .mist-dock-tooltip { left: 50%; top: auto; bottom: calc(100% + 7px); transform: translateX(-50%); }
+#mist-home-bottom-dock button:hover .mist-dock-tooltip { opacity: 1; }
+#mist-home-social { display: none !important; }
+
+@media (max-height: 760px) and (min-width: 761px) {
+  #mist-home-shell { inset: 66px 306px 92px 78px; }
+  .home-screen .home-featured-sidebar { top: 78px !important; height: 160px !important; min-height: 160px !important; max-height: 160px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card,
+  .home-screen .home-server-dock { top: 250px !important; bottom: 230px !important; }
+  .home-screen .home-hero-left-stack > .home-changelog-card,
+  .home-screen .home-changelog-card.is-dock-open { bottom: 98px !important; height: 118px !important; min-height: 118px !important; max-height: 118px !important; }
+  #mist-home-bottom-dock { height: 68px; }
+}
+@media (max-width: 1180px) and (min-width: 761px) {
+  #mist-home-shell { right: 278px; }
+  .home-screen .home-featured-sidebar { right: 290px !important; }
+  .home-screen .home-hero-left-stack > .home-changelog-card,
+  .home-screen .home-changelog-card.is-dock-open { right: 290px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { width: clamp(230px,30vw,330px) !important; }
+  .home-screen .home-server-dock { left: calc(104px + clamp(230px,30vw,330px)) !important; right: 290px !important; }
+  #mist-home-bottom-dock { right: 278px; }
+}
+@media (max-width: 760px) {
+  #mist-home-shell { inset: 58px 8px 146px 58px; }
+  .bottom-navigation { display: none !important; }
+  .home-screen .home-hero-left-stack > .home-changelog-card { position: relative !important; inset: auto !important; width: auto !important; height: auto !important; min-height: 118px !important; max-height: 180px !important; margin: 8px 0 !important; }
+  .home-screen .home-featured-sidebar, .home-screen .home-hero-left-stack > .home-hero-playtime-card,
+  .home-screen .home-server-dock { position: relative !important; inset: auto !important; width: auto !important; height: auto !important; min-height: 180px !important; max-height: 300px !important; margin: 8px 0 !important; }
+  #mist-home-bottom-dock { inset: auto 8px 8px 58px; height: 70px; grid-template-columns: 1fr 48px 1fr; gap: 5px; padding: 6px; }
+  #mist-home-bottom-dock .mist-bottom-manage { min-width: 42px; width: 42px; padding: 0; font-size: 0; }
+  #mist-home-bottom-dock .mist-bottom-selected-copy strong { max-width: 125px; }
+}
+
+/* Keep the backing surface below the renderer content; the frame used to cover these cards. */
+#mist-home-shell { display: none !important; }
+.home-screen .home-featured-sidebar,
+.home-screen .home-hero-left-stack > .home-hero-playtime-card,
+.home-screen .home-server-dock { z-index: 6 !important; }
+.home-screen .home-screen, .home-screen .home-grid, .home-screen .home-main, .home-screen .hero { pointer-events: auto; }
+
+/* News and Changelog form a right column whose bottom aligns with the main home frame. */
+.home-right-rail .home-news-sidebar {
+  top: 18px !important; right: 10px !important; width: 286px !important;
+  height: min(54vh,410px) !important; min-height: 250px !important; max-height: 410px !important;
+}
+.home-screen .home-hero-left-stack > .home-changelog-card,
+.home-screen .home-changelog-card.is-dock-open {
+  position: fixed !important; z-index: 8 !important; top: calc(18px + min(54vh,410px) + 12px) !important;
+  right: 10px !important; bottom: 96px !important; left: auto !important; inset-inline-start: auto !important;
+  display: flex !important; width: 286px !important; height: auto !important; min-height: 0 !important;
+  max-height: none !important; margin: 0 !important; padding: 14px 15px !important; overflow: auto !important;
+  border: 1px solid #3a3a40 !important; border-top-color: #47474e !important; border-radius: 12px !important;
+  background: #202023 !important; transform: none !important; flex-direction: column !important; align-items: stretch !important;
+  overflow-x: hidden !important; overflow-y: auto !important;
+}
+body:has(.home-screen) .home-play-controls,
+body:has(.home-screen) .content-shelf { display: none !important; }
+#mist-left-dock { bottom: 8px !important; }
+#mist-home-bottom-dock { bottom: 8px !important; }
+
+@media (max-width: 1180px) and (min-width: 761px) {
+  .home-right-rail .home-news-sidebar,
+  .home-screen .home-hero-left-stack > .home-changelog-card,
+  .home-screen .home-changelog-card.is-dock-open { width: 258px !important; right: 10px !important; }
+  #mist-home-shell { right: 278px !important; }
+  #mist-home-bottom-dock { right: 278px !important; }
+}
+@media (max-width: 760px) {
+  #mist-left-dock { bottom: 8px !important; }
+  .home-screen .home-hero-left-stack > .home-changelog-card,
+  .home-screen .home-changelog-card.is-dock-open { position: relative !important; inset: auto !important; width: auto !important; max-height: 220px !important; }
+  .home-right-rail .home-news-sidebar { top: auto !important; right: auto !important; }
+  body:has(.home-screen) .home-play-controls { display: none !important; }
+  .main:has(.home-screen)::before { inset: 8px 8px 146px 58px; }
+}
+
+/* Home dock: cover-art cards, Servers/Playtime row, and a compact wide news strip below. */
+.mist-dock-item[aria-label="Home"] { margin-top: 0; }
+.home-screen .home-featured-sidebar {
+  box-sizing: border-box !important; left: 92px !important; right: 320px !important;
+  width: auto !important; max-width: calc(100vw - 412px) !important; height: 218px !important;
+  min-height: 218px !important; max-height: 218px !important; overflow: hidden !important;
+}
+.home-screen .home-featured-pack-list { width: 100%; grid-template-columns: repeat(3,minmax(0,1fr)) !important; gap: 10px; overflow: hidden !important; }
+.home-screen .home-featured-pack {
+  position: relative; display: flex !important; min-width: 0; min-height: 0; flex-direction: column; align-items: stretch;
+  justify-content: flex-start; gap: 0; padding: 0 !important; overflow: hidden; border-radius: 11px !important;
+  background: #242427 !important;
+}
+.home-screen .home-featured-pack > .project-icon { position: relative; display: block; width: 100% !important; height: 132px !important; flex: 0 0 132px; border-radius: 0 !important; background: #28282c; }
+.home-screen .home-featured-pack > .project-icon img { width: 100% !important; height: 100% !important; object-fit: cover; filter: brightness(.72); }
+.home-screen .home-featured-pack > .project-icon::after { position: absolute; inset: 45% 0 0; content: ""; background: linear-gradient(transparent,rgba(0,0,0,.54)); pointer-events: none; }
+.home-screen .home-featured-pack-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; padding: 10px 12px; }
+.home-screen .home-featured-pack-copy strong { display: -webkit-box; overflow: hidden; font-size: 12px; line-height: 1.3; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.home-screen .home-featured-pack-copy small { overflow: hidden; color: #aaaab4; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.home-screen .home-featured-pack > svg { position: absolute; top: 9px; right: 9px; z-index: 2; width: 25px; height: 25px; padding: 5px; border: 1px solid #3e3e45; border-radius: 7px; background: #171719; }
+.home-screen .home-hero-left-stack > .home-hero-playtime-card {
+  top: 316px !important; right: 320px !important; bottom: 252px !important; left: auto !important;
+  width: clamp(380px,calc((100vw - 412px)*.61),620px) !important; height: auto !important; min-height: 0 !important;
+}
+.home-screen .home-server-dock {
+  top: 316px !important; bottom: 252px !important; left: 92px !important;
+  right: calc(320px + clamp(380px,calc((100vw - 412px)*.61),620px) + 12px) !important; width: auto !important; height: auto !important;
+}
+.home-screen .home-hero-left-stack > .home-hero-playtime-card,
+.home-screen .home-server-dock { overflow: hidden !important; }
+.home-screen .home-hero-left-stack > .home-changelog-card,
+.home-screen .home-changelog-card.is-dock-open { bottom: 16px !important; padding: 16px 17px !important; }
+#mist-home-main-news {
+  position: fixed; z-index: 7; right: 306px; bottom: 100px; left: 92px; height: 132px; box-sizing: border-box;
+  padding: 10px 12px; overflow: hidden; border: 1px solid #39393f; border-radius: 12px;
+  color: var(--mist-copy); background: #202023; box-shadow: 0 8px 22px rgba(0,0,0,.22);
+}
+#mist-home-main-news[hidden] { display: none !important; }
+#mist-home-main-news > .home-news-sidebar { position: static !important; display: grid; width: 100% !important; height: 100% !important; min-height: 0 !important; max-height: none !important; grid-template-rows: 27px minmax(0,1fr); gap: 7px; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+#mist-home-main-news .home-news-sidebar-heading { min-height: 24px; padding: 0 3px; }
+#mist-home-main-news .home-news-sidebar-heading > button { display: none; }
+#mist-home-main-news .home-news-sidebar-list { display: grid; min-height: 0; max-height: none; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; overflow: hidden; }
+#mist-home-main-news .home-news-sidebar-item { min-width: 0; min-height: 0; grid-template-columns: 86px minmax(0,1fr); gap: 8px; padding: 6px; }
+#mist-home-main-news .home-news-sidebar-image { width: 86px; min-width: 86px; height: 74px; }
+#mist-home-main-news .home-news-sidebar-copy strong { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+#mist-home-main-news .home-news-sidebar-copy small { font-size: 9px; }
+
+/* The persistent News rail is mirrored on Library and instance detail screens. */
+#mist-shared-news-rail {
+  position: fixed; z-index: 18; top: 70px; right: 10px; display: block; width: 286px;
+  height: min(54vh,410px); min-height: 250px; max-height: 410px; box-sizing: border-box;
+}
+#mist-shared-news-rail[hidden] { display: none !important; }
+#mist-shared-news-rail > .home-news-sidebar { display: grid; width: 100%; height: 100%; min-height: 0; max-height: none; grid-template-rows: 32px minmax(0,1fr); gap: 7px; padding: 12px; overflow: hidden; border: 1px solid #39393f; border-radius: 13px; background: #1b1b1e; box-shadow: 0 8px 22px rgba(0,0,0,.24); }
+#mist-shared-news-rail .home-news-sidebar-list { max-height: none; min-height: 0; overflow: auto; }
+#mist-shared-news-rail button { pointer-events: none; }
+.main:has(.installation-grid), .main:has(.detail-screen) { padding-right: 310px !important; }
+.main:has(.installation-grid) .screen, .main:has(.detail-screen) .screen { width: 100%; max-width: none; }
+
+/* Installation Library cards use the roomy icon, date, and version rhythm from the reference. */
+.installation-grid { grid-template-columns: repeat(auto-fill,minmax(230px,1fr)) !important; gap: 15px !important; }
+.installation-card {
+  position: relative; display: flex !important; min-height: 238px !important; flex-direction: column; gap: 0;
+  padding: 14px !important; overflow: hidden; border-color: #303036 !important; border-radius: 13px !important;
+  background: #1c1c1f !important;
+}
+.installation-card-hit { position: absolute !important; z-index: 3 !important; inset: 0 !important; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.installation-card-art { position: relative; z-index: 1; display: flex !important; min-height: 56px; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.installation-card-art > :first-child { width: 50px !important; height: 50px !important; border-radius: 10px !important; }
+.installation-card-badges { display: flex; justify-content: flex-end; gap: 4px; }
+.installation-card-body { position: relative; z-index: 1; display: flex !important; min-width: 0; flex: 1 1 auto; flex-direction: column; gap: 4px; padding: 9px 0 7px !important; }
+.installation-card-title { display: flex; min-width: 0; align-items: center; gap: 7px; }
+.installation-card-title h3 { overflow: hidden; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.installation-card-sub { color: var(--mist-muted); font-size: 11px; }
+.installation-card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.installation-card-meta span { min-height: 23px; padding: 4px 7px; border-radius: 7px; color: #b4b4bd; background: #28282c; font-size: 10px; }
+.installation-card-actions { position: relative; z-index: 4; display: flex !important; justify-content: flex-end; gap: 7px; margin-top: 8px; }
+.installation-card-actions button { position: relative; z-index: 4; min-height: 31px; }
+.installation-card.add-card { min-height: 238px !important; border: 1px dashed #51436c !important; background: #19191c !important; }
+
+/* Instance detail gets a clear profile header while preserving its existing management controls. */
+.detail-screen { position: relative; padding: 16px 20px 28px !important; }
+.detail-topbar { position: static !important; display: flex; min-height: 42px; align-items: center; gap: 8px; margin-bottom: 10px; }
+.detail-topbar .spacer { flex: 1 1 auto; }
+.detail-topbar > button:last-child { min-width: 130px; height: 44px; border-radius: 11px; }
+.detail-header { position: relative; display: grid !important; grid-template-columns: 82px minmax(0,1fr); align-items: center; gap: 14px; min-height: 144px; padding: 17px !important; border: 1px solid #35353b; border-radius: 15px; background: #202023; }
+.detail-art { width: 78px !important; height: 78px !important; grid-row: 1; }
+.detail-art > * { width: 100% !important; height: 100% !important; border-radius: 12px !important; }
+.detail-heading { min-width: 0; }
+.detail-heading h1 { margin: 7px 0 10px; font-size: clamp(22px,2.2vw,30px); }
+.detail-kicker { display: inline-flex; padding: 5px 9px; border: 1px solid #393940; border-radius: 99px; color: #c7c7d0; background: #27272b; font-size: 11px; }
+.detail-meta { display: flex !important; flex-wrap: wrap; gap: 8px 15px; color: #a7a7b0; font-size: 11px; }
+.detail-actions { grid-column: 1/-1; display: flex; justify-content: flex-end; gap: 8px; padding-top: 10px; border-top: 1px solid #34343a; }
+.detail-grid { grid-template-columns: minmax(0,1fr) !important; gap: 14px; margin-top: 14px; }
+.detail-main { min-width: 0; }
+
+@media (max-width: 1180px) and (min-width: 761px) {
+  .home-screen .home-featured-sidebar { right: 290px !important; max-width: calc(100vw - 382px) !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { width: clamp(300px,42vw,470px) !important; right: 290px !important; }
+  .home-screen .home-server-dock { right: calc(302px + clamp(300px,42vw,470px)) !important; }
+  #mist-home-main-news { right: 278px; }
+  #mist-shared-news-rail { width: 258px; }
+  .main:has(.installation-grid), .main:has(.detail-screen) { padding-right: 282px !important; }
+}
+@media (max-width: 760px) {
+  #mist-home-main-news { position: relative; inset: auto; width: auto; height: 150px; margin: 8px; }
+  #mist-home-main-news .home-news-sidebar-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #mist-shared-news-rail { display: none !important; }
+  .main:has(.installation-grid), .main:has(.detail-screen) { padding-right: 12px !important; }
+  .installation-grid { grid-template-columns: repeat(auto-fill,minmax(205px,1fr)) !important; }
+  .detail-header { grid-template-columns: 64px minmax(0,1fr); padding: 12px !important; }
+  .detail-art { width: 60px !important; height: 60px !important; }
+}
+
+/* Image-led project cards shared by Mods, Modpacks, Resource Packs, and Shaders. */
+.project-grid { grid-template-columns: repeat(auto-fill,minmax(235px,1fr)) !important; align-items: stretch; gap: 14px !important; }
+.project-grid .project-card {
+  display: flex !important; min-width: 0; min-height: 318px !important; flex-direction: column;
+  padding: 0 !important; overflow: hidden; border: 1px solid #323238 !important; border-radius: 13px !important;
+  background: #1e1e21 !important;
+}
+.project-grid .project-card-main {
+  position: relative; display: flex !important; min-width: 0; flex: 1 1 auto; flex-direction: column;
+  align-items: stretch; gap: 0; padding: 0 !important; overflow: hidden; border: 0 !important;
+  color: var(--mist-copy); text-align: left; background: transparent !important;
+}
+.project-grid .project-card-top {
+  position: relative; display: block !important; min-height: 142px; height: 142px; flex: 0 0 142px;
+  padding: 0 !important; overflow: hidden; background: linear-gradient(135deg,#342d48,#20242c);
+}
+.project-grid .project-card-top > .project-icon {
+  position: absolute !important; inset: 0; display: block; width: 100% !important; height: 100% !important;
+  border: 0 !important; border-radius: 0 !important; background: linear-gradient(135deg,#363047,#20242a) !important;
+}
+.project-grid .project-card-top > .project-icon img { width: 100% !important; height: 100% !important; object-fit: cover; filter: brightness(.72) saturate(.9); }
+.project-grid .project-card-top > .project-icon.is-fallback > span { display: grid; width: 100%; height: 100%; place-items: center; color: #ddd; font-size: 42px; }
+.project-grid .project-card-top::after { position: absolute; inset: 45% 0 0; z-index: 1; content: ""; background: linear-gradient(transparent,rgba(0,0,0,.58)); pointer-events: none; }
+.project-grid .project-card-heading { position: absolute; z-index: 2; right: 12px; bottom: 11px; left: 13px; display: flex; flex-direction: column; gap: 3px; }
+.project-grid .project-title { overflow: hidden; color: #fff; font-size: 14px; font-weight: 750; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.project-grid .project-author { overflow: hidden; color: rgba(255,255,255,.78); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.project-grid .project-card-top > .badge { position: absolute; z-index: 3; top: 9px; right: 9px; }
+.project-grid .project-description { display: -webkit-box; min-height: 38px; margin: 11px 13px 0 !important; overflow: hidden; color: #a9a9b2; font-size: 11px; line-height: 1.45; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.project-grid .project-tags { display: flex; min-height: 19px; gap: 5px; margin: 6px 13px 0; overflow: hidden; }
+.project-grid .project-tags .mini-tag { max-width: 105px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-grid .project-card-foot { display: flex; align-items: center; gap: 5px; margin: auto 13px 9px; padding-top: 8px; color: #92929c; font-size: 10px; }
+.project-grid .project-card-actions { display: flex; justify-content: flex-end; padding: 0 12px 12px; }
+.project-grid .project-card-actions .btn { min-height: 31px; }
+
+/* Library header and installation tiles. */
+.main:has(.installation-grid) .screen-toolbar {
+  display: grid !important; grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "title actions" "subtitle actions" "search search";
+  align-items: center; gap: 2px 14px; margin: 0 0 22px !important;
+}
+.main:has(.installation-grid) .screen-toolbar::before { grid-area: title; content: "Library"; color: #f5f5f7; font-size: 28px; font-weight: 750; line-height: 1.15; }
+.main:has(.installation-grid) .screen-toolbar::after { grid-area: subtitle; content: "Manage your Minecraft instances"; color: var(--mist-muted); font-size: 14px; }
+.main:has(.installation-grid) .screen-toolbar .toolbar-search { grid-area: search; width: 100%; margin-top: 14px; }
+.main:has(.installation-grid) .screen-toolbar .toolbar-actions { grid-area: actions; align-self: start; }
+.installation-card-hit { z-index: 1 !important; }
+.installation-card-art, .installation-card-body { z-index: 2 !important; pointer-events: none; }
+.installation-card-actions { pointer-events: auto; }
+
+@media (max-width: 760px) {
+  .main:has(.installation-grid) .screen-toolbar { grid-template-columns: 1fr; grid-template-areas: "title" "subtitle" "actions" "search"; }
+  .main:has(.installation-grid) .screen-toolbar .toolbar-actions { justify-self: start; }
+  .project-grid { grid-template-columns: repeat(auto-fill,minmax(210px,1fr)) !important; }
+}
+
+/* Catalog tiles: restrained charcoal cards with a broad image strip and the familiar install row. */
+.project-grid .project-card { min-height: 310px !important; background: #202020 !important; border-color: #303030 !important; }
+.project-grid .project-card-top { height: 142px !important; min-height: 142px !important; flex-basis: 142px !important; background: #262626 !important; }
+.project-grid .project-card-top::before {
+  position: absolute; inset: -5px; z-index: 0; content: ""; background-image: var(--project-art);
+  background-position: center; background-size: cover; filter: blur(2px) brightness(.68); transform: scale(1.035);
+}
+.project-grid .project-card-top > .project-icon {
+  position: absolute !important; z-index: 3; bottom: 10px; left: 12px; inset-inline-end: auto; inset-block-start: auto;
+  width: 48px !important; height: 48px !important; border: 1px solid rgba(255,255,255,.22) !important;
+  border-radius: 9px !important; background: #242424 !important; box-shadow: 0 4px 14px rgba(0,0,0,.38);
+}
+.project-grid .project-card-top > .project-icon img { width: 100% !important; height: 100% !important; object-fit: cover; filter: none; }
+.project-grid .project-card-top > .project-icon.is-fallback > span { font-size: 18px; }
+.project-grid .project-card-heading { left: 70px !important; bottom: 12px !important; }
+.project-grid .project-card-top::after { z-index: 2; background: linear-gradient(transparent 18%,rgba(0,0,0,.55)); }
+.project-grid .project-description { margin-top: 10px !important; font-size: 12px; line-height: 1.4; }
+.project-grid .project-tags { margin-top: 5px; }
+.project-grid .project-card-foot { margin-top: auto; }
+.project-grid .project-card-actions .btn { min-height: 32px; border-radius: 8px; }
+
+/* Featured Modpacks: transparent dock, evenly spaced individual image cards. */
+.home-screen .home-featured-sidebar {
+  border: 0 !important; background: transparent !important; box-shadow: none !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important; padding: 10px 0 0 !important;
+}
+.home-screen .home-featured-sidebar .home-news-sidebar-heading { padding: 0 2px; border-bottom-color: rgba(255,255,255,.12); }
+.home-screen .home-featured-pack-list { gap: 12px !important; overflow: hidden !important; }
+.home-screen .home-featured-pack {
+  min-height: 0 !important; height: 100%; gap: 0 !important; padding: 0 !important; overflow: hidden;
+  border: 0 !important; border-radius: 10px !important; background: transparent !important; box-shadow: none !important;
+}
+.home-screen .home-featured-pack::before {
+  position: absolute; inset: 0 0 auto; z-index: 0; height: 116px; content: "";
+  background-image: linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.34)),var(--project-art);
+  background-position: center; background-size: cover; border: 1px solid #343434; border-radius: 9px;
+}
+.home-screen .home-featured-pack > .project-icon {
+  position: absolute; z-index: 3; top: 66px; left: 10px; width: 43px !important; height: 43px !important;
+  flex: 0 0 43px; overflow: hidden; border: 1px solid rgba(255,255,255,.24); border-radius: 9px !important;
+  background: #242424; box-shadow: 0 3px 12px rgba(0,0,0,.42);
+}
+.home-screen .home-featured-pack > .project-icon img { width: 100% !important; height: 100% !important; object-fit: cover; filter: none; }
+.home-screen .home-featured-pack-copy {
+  position: relative; z-index: 2; display: flex; min-width: 0; flex-direction: column; gap: 4px;
+  margin-top: 119px; padding: 0 10px 6px !important;
+}
+.home-screen .home-featured-pack-copy strong { color: #f2f2f2; font-size: 12px; }
+.home-screen .home-featured-pack-copy small { color: #a5a5ad; }
+.home-screen .home-featured-pack > svg { z-index: 4; top: 8px; right: 8px; }
+
+/* The supplied swatch is the neutral surface color for the launcher cards. */
+:root { --mist-bg: #1a1a1a; --mist-panel: #202020; --mist-panel-raised: #252525; --mist-stroke: #303030; }
+.app-shell { background-color: #1a1a1a !important; }
+.app-shell :is(.panel,.installation-card,.project-card,.home-news-sidebar,.home-featured-sidebar,.home-server-dock) { background-color: #202020 !important; }
+.home-screen .home-featured-sidebar { background: transparent !important; }
+
+/* Keep the news mirror confined to the right rail after route changes. */
+#mist-shared-news-rail {
+  position: fixed !important; z-index: 30 !important; top: 70px !important; right: 10px !important;
+  bottom: auto !important; left: auto !important; display: block; width: 286px !important;
+  min-width: 286px !important; max-width: 286px !important; height: min(54vh,410px) !important;
+  min-height: 250px !important; max-height: 410px !important; box-sizing: border-box !important;
+  overflow: hidden !important; contain: layout paint;
+}
+#mist-shared-news-rail[hidden] { display: none !important; }
+#mist-shared-news-rail > .home-news-sidebar {
+  position: static !important; inset: auto !important; display: grid !important; width: 100% !important;
+  min-width: 0 !important; max-width: 100% !important; height: 100% !important; min-height: 0 !important;
+  max-height: none !important; grid-template-rows: 32px minmax(0,1fr) !important; padding: 12px !important;
+  box-sizing: border-box !important; overflow: hidden !important;
+}
+#mist-shared-news-rail .home-news-sidebar-list { display: flex !important; width: 100% !important; min-width: 0 !important; flex-direction: column; gap: 7px; overflow-y: auto !important; }
+#mist-shared-news-rail .home-news-sidebar-item { display: grid !important; width: 100% !important; min-width: 0 !important; min-height: 60px !important; flex: 0 0 60px; grid-template-columns: 66px minmax(0,1fr) !important; }
+
+/* Changelog fills the rail under News instead of staying at its old compact height. */
+.home-screen .home-hero-left-stack > .home-changelog-card,
+.home-screen .home-changelog-card.is-dock-open {
+  top: calc(18px + min(54vh,410px) + 12px) !important; right: 10px !important; bottom: 16px !important;
+  left: auto !important; width: 286px !important; height: auto !important; min-height: 0 !important;
+  max-height: none !important; display: flex !important; flex-direction: column !important; align-items: stretch !important;
+  gap: 8px !important; overflow-x: hidden !important; overflow-y: auto !important;
+}
+
+/* Increase the left rail and its tap targets while keeping its current route order. */
+#mist-left-dock {
+  left: 8px !important; width: 72px !important; min-width: 72px !important; padding: 11px 8px !important; gap: 9px !important;
+}
+#mist-left-dock :is(.mist-dock-account,.mist-dock-item,.mist-dock-create,.mist-dock-settings) {
+  width: 52px !important; min-width: 52px !important; height: 52px !important; min-height: 52px !important; border-radius: 13px !important;
+}
+#mist-left-dock :is(.mist-dock-item,.mist-dock-create,.mist-dock-settings) svg { width: 24px; height: 24px; }
+#mist-left-dock .mist-dock-account img { width: 40px; height: 40px; }
+#mist-left-dock .mist-dock-instance { width: 46px !important; min-width: 46px !important; height: 46px !important; min-height: 46px !important; }
+#mist-left-dock .mist-dock-instance img { width: 34px; height: 34px; }
+#mist-left-dock .mist-dock-divider { width: 40px; }
+.main { padding-left: 92px !important; }
+.main:has(.home-screen) { padding-left: 0 !important; }
+
+@media (max-width: 760px) {
+  #mist-left-dock { left: 4px !important; width: 58px !important; min-width: 58px !important; padding: 7px 4px !important; gap: 5px !important; }
+  #mist-left-dock :is(.mist-dock-account,.mist-dock-item,.mist-dock-create,.mist-dock-settings) { width: 46px !important; min-width: 46px !important; height: 46px !important; min-height: 46px !important; }
+  #mist-left-dock .mist-dock-instance { width: 42px !important; min-width: 42px !important; height: 42px !important; min-height: 42px !important; }
+  .main { padding-left: 64px !important; }
+}
+/* Final surface override keeps every card on the user's #1a1a1a charcoal palette. */
+:root { --mist-bg: #1a1a1a; --mist-panel: #1a1a1a; --mist-panel-raised: #202020; --mist-stroke: #303030; }
+html, body, #root, .app-shell { background-color: #1a1a1a !important; }
+.app-shell :is(.panel,.modal,.project-card,.installation-card,.account-card,.world-card,.skin-card,.home-changelog-card,.home-playtime-card,.home-news-sidebar,.home-server-dock) { background-color: #1a1a1a !important; border-color: #303030 !important; }
+.home-screen .home-featured-sidebar, .home-screen .home-featured-pack { background: transparent !important; }
+.home-screen .home-featured-pack::before { border-color: #303030; }
+#mist-instance-overview, #mist-instance-settings-nav, .detail-screen.is-settings-view .detail-main > section { background-color: #1a1a1a !important; border-color: #303030 !important; }
+
+/* Latest refinement: give the left rail breathing room and keep labels clean. */
+#mist-left-dock { width: 80px !important; min-width: 80px !important; }
+#mist-left-dock :is(.mist-dock-account,.mist-dock-item,.mist-dock-create,.mist-dock-settings) { width: 58px !important; min-width: 58px !important; height: 58px !important; min-height: 58px !important; }
+#mist-left-dock :is(.mist-dock-item,.mist-dock-create,.mist-dock-settings) svg { width: 27px !important; height: 27px !important; }
+#mist-left-dock .mist-dock-instance { width: 50px !important; min-width: 50px !important; height: 50px !important; min-height: 50px !important; }
+#mist-left-dock .mist-dock-instance img { width: 38px !important; height: 38px !important; }
+.main { padding-left: 100px !important; }
+.main:has(.home-screen) { padding-left: 0 !important; }
+.main:has(.home-screen)::before { left: 102px !important; background: #1a1a1a !important; }
+.home-screen .home-featured-sidebar { left: 104px !important; height: 230px !important; min-height: 230px !important; max-height: 230px !important; background: transparent !important; }
+.home-screen .home-screen .home-featured-sidebar { background: transparent !important; }
+.home-screen .home-hero-left-stack > .home-changelog-card { left: 104px !important; }
+.home-screen .home-hero-left-stack > .home-hero-playtime-card,
+.home-screen .home-server-dock { left: 104px !important; }
+.home-screen .home-featured-pack-list { height: calc(100% - 34px) !important; grid-template-columns: repeat(3,minmax(0,1fr)) !important; gap: 12px !important; }
+.home-screen .home-featured-pack { position: relative !important; min-height: 0 !important; height: 100% !important; border-radius: 10px !important; background: transparent !important; }
+.home-screen .home-featured-pack::before { height: 122px !important; background-size: cover !important; }
+.home-screen .home-featured-pack-copy { margin-top: 125px !important; padding: 0 11px 7px !important; background: transparent !important; }
+.home-screen .home-featured-pack-copy :is(strong,small),
+.project-grid .project-card-heading,
+.project-grid .project-card-heading :is(.project-title,.project-author) { background: transparent !important; box-shadow: none !important; }
+.project-grid .project-card { min-height: 284px !important; background: #1a1a1a !important; }
+.project-grid .project-card-top { height: 132px !important; min-height: 132px !important; flex-basis: 132px !important; }
+.project-grid .project-description, .project-grid .project-tags, .project-grid .project-card-foot { background: transparent !important; }
+
+/* The instance page is a live content manager with per-file controls and a local file list. */
+#mist-instance-overview { min-height: 320px; gap: 12px; padding: 17px; background: #1a1a1a !important; }
+.mist-instance-overview-title { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.mist-instance-overview-title h2, .mist-instance-overview-title p { background:transparent !important; }
+.mist-content-refresh, .mist-content-open { min-height:32px; padding:0 11px; border:1px solid #343434; border-radius:8px; color:#ededf0; background:#222 !important; cursor:pointer; }
+.mist-content-tabs, .mist-content-types { display:flex; flex-wrap:wrap; gap:7px; padding-bottom:9px; border-bottom:1px solid #2e2e2e; }
+.mist-content-types[hidden] { display:none !important; }
+.mist-content-tabs button, .mist-content-types button { min-height:34px; padding:0 12px; border:1px solid transparent; border-radius:8px; color:#aaaab2; background:transparent !important; cursor:pointer; }
+.mist-content-tabs button.is-active, .mist-content-types button.is-active { border-color:#6245a0; color:#c6adff; background:#2a2337 !important; }
+.mist-instance-content { display:flex; min-height:170px; flex-direction:column; gap:7px; overflow:auto; }
+.mist-content-row { display:flex; min-height:58px; align-items:center; gap:11px; padding:8px 10px; border:1px solid #2c2c2c; border-radius:9px; background:#1a1a1a; }
+.mist-content-row.is-disabled { opacity:.58; }
+.mist-content-file-icon { display:grid; width:34px; height:34px; flex:0 0 34px; place-items:center; border-radius:8px; color:#c2a7ff; background:#24212a; }
+.mist-content-file-icon svg { width:18px; height:18px; }
+.mist-content-file-copy { display:flex; min-width:0; flex:1; flex-direction:column; gap:3px; background:transparent !important; }
+.mist-content-file-copy strong { overflow:hidden; color:#eee; font-size:12px; text-overflow:ellipsis; white-space:nowrap; background:transparent !important; }
+.mist-content-file-copy small { overflow:hidden; color:#9999a2; font-size:10px; text-overflow:ellipsis; white-space:nowrap; background:transparent !important; }
+.mist-content-toggle { position:relative; width:38px; height:22px; flex:0 0 38px; border:1px solid #494949; border-radius:99px; background:#353535; cursor:pointer; }
+.mist-content-toggle::after { position:absolute; top:3px; left:3px; width:14px; height:14px; border-radius:50%; background:#bbb; content:""; transition:transform .16s ease; }
+.mist-content-toggle.is-on { border-color:#8057d6; background:#6945ad; }
+.mist-content-toggle.is-on::after { transform:translateX(16px); background:white; }
+.mist-content-toggle:disabled { opacity:.5; cursor:wait; }
+.mist-content-state-label { color:#aaaab2; font-size:10px; }
+.mist-content-state, .mist-content-gallery { padding:18px; color:#a5a5ae; font-size:12px; }
+.mist-content-gallery { display:flex; align-items:center; justify-content:space-between; gap:12px; border:1px solid #2c2c2c; border-radius:9px; }
+.mist-content-gallery p { margin:0; background:transparent !important; }
+
+/* Instance settings match the split-pane reference and stay inside the launcher workspace. */
+#mist-instance-settings-nav { z-index:61; top:56px; bottom:12px; left:80px; width:276px; padding:22px 15px; border-radius:14px 0 0 14px; background:#1a1a1a !important; box-shadow:none; }
+#mist-instance-settings-nav header { gap:16px; padding:0 8px 17px; }
+#mist-instance-settings-nav header strong { font-size:19px; }
+#mist-instance-settings-nav nav { gap:5px; }
+#mist-instance-settings-nav nav button { min-height:45px; padding:0 12px; font-size:13px; }
+.detail-screen.is-settings-view > .detail-topbar { display:none !important; }
+.detail-screen.is-settings-view > .detail-grid {
+  position:fixed !important; z-index:60; inset:56px 300px 12px 80px; display:block !important; margin:0 !important; padding:22px 24px 22px 300px;
+  overflow:auto; border:1px solid #303030; border-radius:14px; background:#1a1a1a; box-shadow:0 18px 50px rgba(0,0,0,.55);
+}
+.detail-screen.is-settings-view .detail-main > section { width:100%; max-width:980px; margin:0 auto; padding:0 !important; border:0 !important; background:transparent !important; }
+.detail-screen.is-settings-view .detail-main > section .section-header h2 { font-size:20px; }
+.detail-screen.is-settings-view .detail-main > section .form-grid { margin-top:18px; }
+.detail-screen.is-settings-view .detail-main > section .panel-actions { position:sticky; bottom:-22px; margin-top:24px; padding:14px 0; background:#1a1a1a; }
+
+/* Featured project details open as a roomy information page instead of a small centered dialog. */
+.overlay:has(.project-detail) { z-index:70 !important; inset:54px 300px 0 80px !important; display:flex !important; align-items:stretch !important; justify-content:stretch !important; padding:12px !important; background:rgba(10,10,10,.72) !important; backdrop-filter:blur(5px); }
+.overlay:has(.project-detail) .modal { width:100% !important; max-width:none !important; height:100% !important; max-height:none !important; border-color:#303030 !important; border-radius:13px !important; background:#1a1a1a !important; }
+.overlay:has(.project-detail) .modal-body { padding:18px 20px !important; }
+.overlay:has(.project-detail) .project-detail { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(270px,32%); align-items:start; gap:15px 20px; }
+.overlay:has(.project-detail) .project-detail-head { grid-column:1/-1; align-items:center; }
+.overlay:has(.project-detail) .project-body { grid-column:1; max-height:none; margin:0; padding:16px; border:1px solid #303030; border-radius:10px; background:#1a1a1a; }
+.overlay:has(.project-detail) .project-detail-tags { grid-column:1; }
+.overlay:has(.project-detail) .project-detail .gallery { grid-column:1; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.overlay:has(.project-detail) .project-detail .gallery img { height:clamp(140px,24vh,250px); }
+.overlay:has(.project-detail) .install-box { position:sticky; top:0; grid-column:2; grid-row:2/6; background:#1a1a1a; }
+@media (max-width:900px) {
+  .overlay:has(.project-detail) { inset:54px 8px 0 68px !important; }
+  .overlay:has(.project-detail) .project-detail { grid-template-columns:minmax(0,1fr); }
+  .overlay:has(.project-detail) .project-detail :is(.project-body,.project-detail-tags,.project-detail-head,.gallery,.install-box) { grid-column:1; grid-row:auto; }
+  .overlay:has(.project-detail) .install-box { position:static; }
+}
+
+/* Final geometry and content fixes for the v0.1.26 redesign. */
+.home-screen .home-featured-sidebar { z-index:12 !important; top:78px !important; left:104px !important; right:320px !important; width:auto !important; max-width:none !important; height:218px !important; min-height:218px !important; max-height:218px !important; display:grid !important; grid-template-rows:28px minmax(0,1fr) !important; gap:8px !important; padding:8px 0 0 !important; overflow:hidden !important; }
+.home-screen .home-featured-sidebar .home-news-sidebar-heading { min-height:26px !important; }
+.home-screen .home-featured-pack-list { display:grid !important; width:100% !important; height:auto !important; min-height:0 !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:12px !important; overflow:hidden !important; }
+.home-screen .home-featured-pack { position:relative !important; display:block !important; width:auto !important; min-width:0 !important; height:100% !important; min-height:0 !important; padding:0 !important; overflow:hidden !important; border:0 !important; border-radius:10px !important; background:transparent !important; box-shadow:none !important; transform:none !important; }
+.home-screen .home-featured-pack::before { height:96px !important; border:1px solid #343434 !important; background-position:center !important; background-size:cover !important; }
+.home-screen .home-featured-pack > .project-icon { top:49px !important; left:10px !important; width:40px !important; height:40px !important; }
+.home-screen .home-featured-pack-copy { position:relative !important; display:flex !important; margin-top:100px !important; padding:0 10px 4px !important; gap:3px !important; }
+.home-screen .home-featured-pack-copy strong { display:-webkit-box !important; overflow:hidden !important; -webkit-line-clamp:1 !important; -webkit-box-orient:vertical !important; line-height:1.3 !important; }
+.home-screen .home-featured-pack-copy small { overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.home-screen .home-hero-left-stack > .home-hero-playtime-card { z-index:12 !important; top:310px !important; bottom:280px !important; left:104px !important; right:auto !important; width:clamp(280px,34vw,410px) !important; height:auto !important; min-height:0 !important; max-height:none !important; overflow:hidden !important; }
+.home-screen .home-server-dock { z-index:12 !important; top:310px !important; bottom:280px !important; left:calc(116px + clamp(280px,34vw,410px)) !important; right:320px !important; width:auto !important; height:auto !important; min-height:0 !important; max-height:none !important; overflow:hidden !important; }
+.home-screen .home-right-rail .home-news-sidebar { top:76px !important; }
+.home-screen .home-screen .home-changelog-card,
+.home-screen .home-hero-left-stack > .home-changelog-card,
+.home-screen .home-changelog-card.is-dock-open { top:calc(76px + min(54vh,410px) + 12px) !important; right:10px !important; bottom:96px !important; left:auto !important; width:286px !important; height:auto !important; min-height:180px !important; max-height:none !important; box-sizing:border-box !important; overflow-x:hidden !important; overflow-y:auto !important; }
+.home-screen .home-changelog-card > strong { display:block !important; width:100% !important; line-height:1.4 !important; white-space:normal !important; }
+.home-screen .home-changelog-card > ul, .home-screen .home-changelog-card > ul > li { width:auto !important; white-space:normal !important; overflow-wrap:anywhere !important; }
+.project-grid :is(.project-card,.project-card-main):hover,
+.project-grid :is(.project-card,.project-card-main):focus-visible { transform:none !important; filter:none !important; box-shadow:none !important; background:#1a1a1a !important; }
+.project-grid .project-card-main:hover :is(.project-card-heading,.project-card-heading *, .project-description,.project-tags,.project-card-foot) { background:transparent !important; }
+
+/* Keep instance settings fully inside the usable area and let their forms wrap. */
+.detail-screen.is-settings-view { position:fixed !important; z-index:79 !important; inset:56px 10px 12px 80px !important; width:auto !important; height:auto !important; margin:0 !important; padding:0 !important; overflow:hidden !important; box-sizing:border-box !important; background:#1a1a1a !important; }
+.detail-screen.is-settings-view > .detail-grid { position:absolute !important; z-index:80 !important; inset:0 0 0 276px !important; display:block !important; width:auto !important; height:100% !important; min-height:0 !important; margin:0 !important; padding:22px 28px !important; border:1px solid #303030 !important; border-radius:0 14px 14px 0 !important; box-sizing:border-box !important; overflow:auto !important; background:#1a1a1a !important; }
+#mist-instance-settings-nav { position:fixed !important; z-index:81 !important; top:56px !important; bottom:12px !important; left:80px !important; width:276px !important; box-sizing:border-box !important; overflow-y:auto !important; }
+.main:has(.detail-screen.is-settings-view) { padding-right:0 !important; }
+body:has(.detail-screen.is-settings-view) #mist-shared-news-rail { display:none !important; }
+.detail-screen.is-settings-view > .detail-grid > .detail-main { display:block !important; width:100% !important; min-width:0 !important; min-height:100% !important; height:auto !important; margin:0 !important; overflow:visible !important; }
+.detail-screen.is-settings-view .detail-main > section { display:block !important; position:relative !important; min-width:0 !important; width:100% !important; max-width:none !important; min-height:0 !important; height:auto !important; max-height:none !important; margin:0 0 14px !important; overflow:visible !important; }
+.detail-screen.is-settings-view .detail-main > section[hidden] { display:none !important; }
+.detail-screen.is-settings-view .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+.detail-screen.is-settings-view :is(input,select,textarea) { max-width:100% !important; min-width:0 !important; }
+
+/* Installation files: searchable directory table, scoped to the chosen instance. */
+.mist-file-manager { display:flex; min-height:250px; flex:1 1 auto; flex-direction:column; gap:10px; overflow:hidden; }
+.mist-file-toolbar { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:12px; }
+.mist-file-toolbar > div:first-child { min-width:0; }
+.mist-file-toolbar strong { display:block; margin:0 0 5px; color:#eee; font-size:14px; }
+.mist-file-breadcrumb { display:flex; min-width:0; align-items:center; gap:3px; overflow:hidden; color:#999; font-size:11px; }
+.mist-file-breadcrumb button { padding:0; border:0; color:#b9a0ff; background:transparent; cursor:pointer; }
+.mist-file-actions { display:flex; flex:0 0 auto; gap:6px; }
+.mist-file-actions input { width:min(260px,28vw); min-width:120px; height:34px; padding:0 10px; border:1px solid #303030; border-radius:8px; color:#eee; background:#151515; }
+.mist-file-actions button { min-height:34px; padding:0 10px; border:1px solid #303030; border-radius:8px; color:#ddd; background:#202020; cursor:pointer; }
+.mist-file-table { min-height:0; flex:1 1 auto; overflow:auto; border:1px solid #303030; border-radius:9px; }
+.mist-file-table-head,.mist-file-row { display:grid; grid-template-columns:minmax(0,1fr) 100px 140px; align-items:center; gap:12px; }
+.mist-file-table-head { position:sticky; z-index:2; top:0; min-height:34px; padding:0 12px; border-bottom:1px solid #303030; color:#aaa; background:#1a1a1a; font-size:10px; }
+.mist-file-row { width:100%; min-height:38px; padding:0 12px; border:0; border-bottom:1px solid #292929; color:#ddd; text-align:left; background:#1a1a1a; cursor:pointer; }
+.mist-file-row:hover { background:#222 !important; }
+.mist-file-row > span:not(:first-child) { color:#9a9aa2; text-align:right; font-size:10px; }
+.mist-file-name { display:flex; min-width:0; align-items:center; gap:9px; overflow:hidden; }
+.mist-file-name svg { width:16px; height:16px; flex:0 0 16px; color:#c8a400; }
+.mist-file-name span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mist-file-count { color:#85858c; font-size:10px; }
+
+/* Project details: real Overview/Gallery/Versions tabs and a stable info column. */
+.overlay:has(.project-detail) .modal { box-sizing:border-box !important; overflow:hidden !important; }
+.overlay:has(.project-detail) .modal-body { min-height:0 !important; overflow:auto !important; }
+.overlay:has(.project-detail) .project-detail { position:relative; grid-template-columns:minmax(0,1fr) minmax(260px,32%) !important; }
+.overlay:has(.project-detail) .project-detail-head,.overlay:has(.project-detail) .mist-project-tabs { grid-column:1/-1 !important; }
+.mist-project-tabs { display:flex; gap:8px; padding:8px 0; border-bottom:1px solid #303030; }
+.mist-project-tabs button { min-height:36px; padding:0 14px; border:0; border-bottom:2px solid transparent; color:#aaa; background:transparent; cursor:pointer; }
+.mist-project-tabs button.is-active { border-bottom-color:#8b5cf6; color:#c4a8ff; }
+.mist-project-info { grid-column:2; grid-row:8; align-self:start; padding:14px; border:1px solid #303030; border-radius:10px; color:#ccc; background:#1a1a1a; }
+.mist-project-info h3 { margin:0 0 14px; color:#eee; font-size:14px; }
+.mist-project-info h4 { margin:18px 0 7px; color:#a4a4ad; font-size:10px; text-transform:uppercase; }
+.mist-project-author,.mist-project-meta,.mist-project-categories { color:#aaa; font-size:11px; line-height:1.6; overflow-wrap:anywhere; }
+.overlay:has(.project-detail) .project-body { grid-column:1 !important; color:#c8c8ce; line-height:1.7; overflow-wrap:anywhere; }
+.overlay:has(.project-detail) .project-body :is(p,ul,ol,blockquote,pre) { margin:0 0 13px; background:transparent !important; }
+.overlay:has(.project-detail) .project-body img { display:block; max-width:100%; max-height:480px; margin:12px 0; object-fit:contain; }
+.overlay:has(.project-detail) .project-body a { color:#b79aff; }
+.overlay:has(.project-detail) .project-detail-tags { grid-column:1 !important; }
+.overlay:has(.project-detail) .project-detail .gallery { grid-column:1 !important; }
+.overlay:has(.project-detail) .install-box { grid-column:2 !important; grid-row:3/8 !important; align-self:start; position:sticky !important; top:12px !important; }
+.mist-gallery-view .project-body,.mist-gallery-view .project-detail-tags,.mist-gallery-view .install-box,.mist-gallery-view .mist-project-info { display:none !important; }
+.mist-gallery-view .gallery { display:grid !important; }
+.mist-versions-view .project-body,.mist-versions-view .project-detail-tags,.mist-versions-view .gallery,.mist-versions-view .mist-project-info { display:none !important; }
+.mist-versions-view .install-box { display:flex !important; }
+.overlay:has(.project-detail) .mist-version-browser { display:none; grid-column:1/-1; min-width:0; }
+.overlay:has(.project-detail) .mist-versions-view .mist-version-browser { display:block; }
+.mist-version-filters { display:flex; align-items:center; gap:10px; margin:10px 0 14px; }
+.mist-version-filters select { min-width:132px; height:36px; padding:0 10px; border:1px solid #303030; border-radius:8px; color:#ddd; background:#202020; }
+.mist-version-count { margin-left:auto; color:#9999a2; font-size:11px; }
+.mist-version-table { overflow:auto; border:1px solid #303030; border-radius:9px; }
+.mist-version-table-head,.mist-version-row { display:grid; grid-template-columns:minmax(150px,1.3fr) 110px 120px minmax(110px,1fr) 90px; align-items:center; gap:12px; }
+.mist-version-table-head { position:sticky; top:0; min-height:38px; padding:0 14px; color:#9999a2; background:#1b1b1b; font-size:10px; text-transform:uppercase; }
+.mist-version-row { min-height:54px; padding:0 14px; border-top:1px solid #2c2c2c; color:#c6c6cc; font-size:11px; }
+.mist-version-row strong { color:#eee; font-size:13px; }
+.mist-version-release { justify-self:start; padding:4px 9px; border:1px solid #205c3d; border-radius:99px; color:#53d58e; background:#163224; }
+.mist-version-row button { min-height:34px; border:1px solid #403450; border-radius:8px; color:#ddd; background:#28232f; cursor:pointer; }
+.mist-versions-view .mist-pack-version-source,.mist-versions-view .mist-version-changelog-source { display:none !important; }
+.mist-versions-view .mist-version-browser { display:block !important; grid-column:1/-1 !important; grid-row:auto !important; }
+.mist-versions-view .install-box { display:none !important; }
+.mist-versions-view .mist-version-browser select { min-width:132px; }
+.overlay:has(.project-detail) .project-body :is(table,thead,tbody,tr,th,td) { border:1px solid #34343a; border-collapse:collapse; }
+.overlay:has(.project-detail) .project-body table { width:100%; margin:14px 0 18px; overflow:hidden; border-radius:8px; }
+.overlay:has(.project-detail) .project-body :is(th,td) { padding:9px 11px; text-align:left; vertical-align:top; }
+.overlay:has(.project-detail) .project-body th { color:#e7e2f0; background:#242129; }
+.overlay:has(.project-detail) .project-body :is(ul,ol) { padding-left:24px; }
+.overlay:has(.project-detail) .project-body blockquote { margin:12px 0; padding:10px 14px; border-left:3px solid #8b5cf6; color:#c4c0cc; background:#211e26; }
+.overlay:has(.project-detail) .project-body code { padding:2px 5px; border-radius:4px; color:#d9caff; background:#26222c; }
+.overlay:has(.project-detail) .project-body pre { padding:12px; overflow:auto; border:1px solid #303036; border-radius:8px; background:#111113; }
+.overlay:has(.project-detail) .project-body h1,.overlay:has(.project-detail) .project-body h2 { margin:22px 0 10px; color:#f2eff7; }
+.overlay:has(.project-detail) .project-body h3,.overlay:has(.project-detail) .project-body h4 { margin:18px 0 8px; color:#e8e2f2; }
+.overlay:has(.project-detail) .mist-project-info { grid-column:2 !important; grid-row:3 !important; }
+.overlay:has(.project-detail) .project-detail .gallery img { width:100%; max-height:none !important; aspect-ratio:16/10; object-fit:cover; border-radius:8px; }
+.project-grid .project-card:hover,.project-grid .project-card-main:hover { background:#1a1a1a !important; transform:none !important; box-shadow:none !important; }
+
+/* Replace the bottom News strip with an embedded, searchable mod showcase dock. */
+#mist-home-main-news { display:none !important; }
+#mist-home-mod-review { position:fixed; z-index:14; right:306px; bottom:94px; left:104px; height:174px; box-sizing:border-box; display:flex; flex-direction:column; gap:7px; padding:9px 11px; overflow:hidden; border:1px solid #353535; border-radius:12px; color:#eee; background:#1a1a1a; box-shadow:0 8px 22px rgba(0,0,0,.24); }
+#mist-home-mod-review[hidden] { display:none !important; }
+.mist-review-heading { display:flex; min-height:32px; align-items:center; gap:9px; }
+.mist-review-heading > div:first-child { display:flex; min-width:155px; flex-direction:column; gap:2px; }
+.mist-review-heading > div strong { font-size:13px; }
+.mist-review-heading > div small { color:#909099; font-size:9px; }
+.mist-review-search { display:flex; height:31px; min-width:100px; flex:1 1 auto; align-items:center; gap:7px; padding:0 8px; border:1px solid #303030; border-radius:8px; background:#141414; }
+.mist-review-search svg { width:15px; height:15px; color:#9b9ba5; }
+.mist-review-search input { width:100%; min-width:0; border:0; outline:0; color:#eee; background:transparent; font-size:10px; }
+.mist-review-heading > button,.mist-review-details > button { min-height:30px; padding:0 11px; border:1px solid #51416f; border-radius:8px; color:#d8caff; background:#292235; cursor:pointer; font-size:10px; }
+.mist-review-body { display:grid; min-height:0; flex:1 1 auto; grid-template-columns:minmax(165px,22%) minmax(190px,1fr) minmax(140px,20%); gap:10px; }
+.mist-review-player { display:flex; min-width:0; flex-direction:column; gap:4px; }
+.mist-review-frame { position:relative; min-height:0; flex:1 1 auto; overflow:hidden; border-radius:7px; background:#080808; }
+.mist-review-frame iframe { width:100%; height:100%; border:0; }
+.mist-review-play { position:absolute; left:50%; top:50%; display:grid; width:36px; height:36px; place-items:center; transform:translate(-50%,-50%); border:1px solid #ffffff66; border-radius:50%; color:white; background:#141414c9; cursor:pointer; }
+.mist-review-now { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:5px; }
+.mist-review-now strong { overflow:hidden; color:#eee; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+.mist-review-now small { flex:0 0 auto; color:#91919a; font-size:9px; }
+.mist-review-results { display:flex; min-width:0; gap:7px; overflow-x:auto; overflow-y:hidden; }
+.mist-review-result { display:flex; min-width:160px; max-width:220px; flex:1 0 160px; align-items:center; gap:7px; padding:5px; border:1px solid #303030; border-radius:8px; color:#e8e8eb; text-align:left; background:#202020; cursor:pointer; }
+.mist-review-result.is-active { border-color:#7959ad; background:#26202f; }
+.mist-review-result img { width:76px; height:50px; flex:0 0 76px; border-radius:5px; object-fit:cover; }
+.mist-review-result span { display:flex; min-width:0; flex-direction:column; gap:4px; background:transparent; }
+.mist-review-result strong { display:-webkit-box; overflow:hidden; font-size:10px; line-height:1.3; -webkit-line-clamp:2; -webkit-box-orient:vertical; background:transparent; }
+.mist-review-result small { display:-webkit-box; overflow:hidden; color:#9999a2; font-size:9px; -webkit-line-clamp:2; -webkit-box-orient:vertical; background:transparent; }
+.mist-review-details { display:flex; min-width:0; flex-direction:column; gap:5px; padding:5px 8px; border-left:1px solid #303030; background:transparent; }
+.mist-review-details > strong { font-size:10px; }
+.mist-review-details p { display:-webkit-box; overflow:hidden; margin:0; color:#a8a8b0; font-size:9px; line-height:1.4; -webkit-line-clamp:3; -webkit-box-orient:vertical; background:transparent; }
+.mist-review-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.mist-review-tags span { padding:3px 6px; border-radius:99px; color:#c6b2ef; background:#292235; font-size:8px; }
+.mist-review-details > button { align-self:flex-start; min-height:24px; margin-top:auto; }
+.mist-review-empty { align-self:center; padding:8px; color:#9c9ca5; font-size:10px; }
+/* Keep the video showcase in the Home document flow so its result grid can be scrolled. */
+.main:has(.home-screen) { overflow-x:hidden !important; overflow-y:auto !important; padding-bottom:100px !important; }
+.home-screen { position:relative !important; height:auto !important; min-height:calc(100vh + 260px) !important; overflow:visible !important; }
+.home-screen .home-grid,.home-screen .home-main { height:auto !important; min-height:calc(100vh - 120px) !important; }
+#mist-home-mod-review { position:absolute !important; top:calc(100vh - 190px) !important; right:306px !important; bottom:auto !important; left:104px !important; height:360px !important; }
+.mist-review-body { grid-template-columns:minmax(210px,24%) minmax(0,1fr) minmax(155px,18%); }
+.mist-review-results { display:grid !important; min-height:0; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); align-content:start; gap:8px; overflow-x:hidden !important; overflow-y:auto !important; }
+.mist-review-result { min-width:0 !important; max-width:none !important; min-height:128px; flex-direction:column; align-items:stretch; gap:5px; }
+.mist-review-result img { width:100% !important; height:auto !important; aspect-ratio:16/9; flex:none !important; }
+@media (max-width:1180px) and (min-width:761px) {
+  #mist-home-mod-review { right:278px !important; left:104px !important; }
+  .mist-review-body { grid-template-columns:minmax(180px,34%) minmax(0,1fr) !important; }
+  .mist-review-details { display:none !important; }
+  .mist-review-heading > div:first-child { min-width:130px; }
+  .mist-review-results { grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); }
+  .mist-review-result { min-height:120px; }
+}
+@media (max-width:900px) {
+  .detail-screen.is-settings-view { left:8px !important; }
+  .detail-screen.is-settings-view > .detail-grid { left:276px !important; padding:16px !important; }
+  #mist-instance-settings-nav { left:8px !important; width:276px !important; }
+  .mist-version-table-head,.mist-version-row { grid-template-columns:minmax(130px,1fr) 90px 100px minmax(90px,1fr) 72px; gap:7px; }
+}
+@media (max-width:760px) {
+  #mist-home-mod-review { position:relative; inset:auto; width:auto; height:280px; margin:8px; }
+  .mist-review-heading { flex-wrap:wrap; }
+  .mist-review-heading > div:first-child { flex:1 0 100%; }
+  .mist-review-body { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+  .mist-review-details { display:none; }
+}
+
+
+/* Repair home dock alignment and keep the review grid below home widgets in scroll flow. */
+.main:has(.home-screen) { overflow-x:hidden !important; overflow-y:auto !important; padding-bottom:24px !important; }
+.home-screen { min-height:0 !important; height:auto !important; overflow:visible !important; }
+.home-screen .home-featured-sidebar { top:70px !important; left:104px !important; right:320px !important; height:230px !important; min-height:230px !important; max-height:230px !important; padding:0 !important; }
+.home-screen .home-featured-sidebar .home-news-sidebar-heading { min-height:28px !important; padding:0 2px !important; border-bottom:0 !important; }
+.home-screen .home-featured-pack-list { height:calc(100% - 36px) !important; }
+.home-screen .home-featured-pack::before { height:122px !important; }
+.home-screen .home-featured-pack-copy { margin-top:125px !important; }
+.home-screen .home-right-rail .home-news-sidebar { top:70px !important; }
+.home-screen .home-hero-left-stack > .home-hero-playtime-card,
+.home-screen .home-server-dock { top:310px !important; }
+#mist-home-mod-review { position:relative !important; inset:auto !important; display:flex !important; width:auto !important; height:390px !important; min-height:390px !important; max-height:none !important; margin:12px 306px 24px 104px !important; overflow:hidden !important; }
+#mist-home-mod-review[hidden] { display:none !important; }
+.mist-review-results { display:grid !important; min-height:0 !important; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)) !important; align-content:start !important; gap:8px !important; overflow-x:hidden !important; overflow-y:auto !important; }
+.mist-review-result { min-width:0 !important; max-width:none !important; min-height:132px !important; flex-direction:column !important; align-items:stretch !important; gap:5px !important; }
+.mist-review-result img { width:100% !important; height:auto !important; aspect-ratio:16/9 !important; flex:none !important; }
+
+/* Keep profile cards on neutral charcoal and remove accidental blue-gray inherited surfaces. */
+.installation-card { background:#1a1a1a !important; }
+.installation-card :is(.installation-card-art,.installation-card-body,.installation-card-title,.installation-card-sub,.installation-card-meta,.installation-card-actions) { background:transparent !important; }
+.installation-card-meta span { background:#242424 !important; }
+.installation-card.add-card { background:#1a1a1a !important; }
+
+/* Popular categories sit immediately below the primary category and sort selectors. */
+.catalog-filters { align-content:start !important; gap:10px !important; }
+.mist-popular-categories { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:7px 0 0; border:0 !important; border-top:0 !important; }
+.mist-popular-categories[hidden] { display:none !important; }
+.mist-category-group { display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:100%; }
+.mist-category-group > span { flex:0 0 100%; color:#999; font-size:10px; font-weight:700; text-transform:uppercase; }
+.mist-category-group.is-more { padding-top:4px; border-top:1px solid #303030; }
+.mist-category-group.is-more > span { color:#777; }
+.mist-popular-categories button { min-height:28px; padding:0 9px; border:1px solid #303030; border-radius:99px; color:#aaa; background:#202020; cursor:pointer; font-size:10px; }
+.mist-popular-categories button:hover,.mist-popular-categories button.is-active { border-color:#7657b4; color:#d4c2ff; background:#292333; }
+.mist-version-rows > .mist-content-state { grid-column:1/-1; padding:12px; text-align:center; color:#999; }
+
+/* No decorative rules between project category chips or item labels. */
+.project-grid .project-tags { border:0 !important; border-top:0 !important; border-bottom:0 !important; box-shadow:none !important; }
+.project-grid .project-tags::before,.project-grid .project-tags::after { display:none !important; }
+.project-detail-tags { border:0 !important; border-top:0 !important; border-bottom:0 !important; box-shadow:none !important; }
+.project-detail-tags::before,.project-detail-tags::after { display:none !important; }
+.mist-version-row { border-top:0 !important; }
+.mist-version-table { border-color:#303030 !important; }
+.mist-version-table-head { border-bottom:1px solid #303030 !important; }
+
+/* Allow real project overview markdown, including embedded media and links, to size naturally. */
+.overlay:has(.project-detail) .project-body { min-width:0 !important; overflow-wrap:anywhere !important; }
+.overlay:has(.project-detail) .project-body :is(img,video) { max-width:100% !important; height:auto !important; }
+.overlay:has(.project-detail) .project-body a { overflow-wrap:anywhere !important; }
+@media (max-width:1180px) {
+  #mist-home-mod-review { margin-right:278px !important; }
+}
+@media (max-width:760px) {
+  #mist-home-mod-review { margin:12px 8px 16px 72px !important; height:340px !important; min-height:340px !important; }
+  .home-screen .home-featured-sidebar { right:12px !important; }
+}
+
+.overlay:has(.project-detail) .project-body details { margin:12px 0; padding:0 12px; border:1px solid #303030; border-radius:8px; background:#1a1a1a; }
+.overlay:has(.project-detail) .project-body summary { padding:10px 0; color:#eee; cursor:pointer; font-weight:650; }
+.overlay:has(.project-detail) .project-body details[open] > :not(summary) { margin:0 0 10px; }
+.overlay:has(.project-detail) .project-body iframe { display:block; width:min(100%,720px); min-height:320px; margin:14px 0; border:0; border-radius:8px; background:#111; }
+
+/* Final, single-source layout overrides: keep the home panels above the frame and in view. */
+@media (min-width:761px) {
+  .main:has(.home-screen) { position:relative !important; height:calc(100vh - 54px) !important; padding:0 0 20px !important; overflow-x:hidden !important; overflow-y:auto !important; }
+  .main:has(.home-screen)::before { z-index:0 !important; inset:18px 306px 96px 78px !important; background:#1a1a1a !important; }
+  .main:has(.home-screen) > * { position:static !important; z-index:auto !important; }
+  .home-screen { position:static !important; display:block !important; width:auto !important; height:auto !important; min-height:calc(100vh - 54px) !important; overflow:visible !important; }
+  .home-screen .home-grid,.home-screen .home-main { position:static !important; width:auto !important; height:auto !important; min-height:0 !important; }
+  .home-screen .hero { position:static !important; width:auto !important; height:calc(100vh - 90px) !important; min-height:650px !important; overflow:visible !important; }
+  .home-screen .hero-main-centered { display:none !important; }
+  .home-screen :is(.home-featured-sidebar,.home-hero-left-stack > .home-hero-playtime-card,.home-server-dock,.home-changelog-card) { position:fixed !important; z-index:40 !important; }
+  .home-screen .home-featured-sidebar { top:70px !important; left:104px !important; right:320px !important; height:230px !important; min-height:230px !important; max-height:230px !important; padding:10px !important; background:#1a1a1a !important; }
+  .home-screen .home-featured-pack-list { height:calc(100% - 36px) !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:12px !important; overflow:hidden !important; }
+  .home-screen .home-featured-pack { min-width:0 !important; height:100% !important; min-height:0 !important; background:transparent !important; }
+  .home-screen .home-featured-pack::before { height:122px !important; background-color:#242424 !important; }
+  .home-screen .home-featured-pack-copy { margin-top:125px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { top:310px !important; right:auto !important; bottom:280px !important; left:104px !important; width:clamp(280px,34vw,410px) !important; height:auto !important; min-height:0 !important; background:#1a1a1a !important; }
+  .home-screen .home-server-dock { top:310px !important; right:320px !important; bottom:280px !important; left:calc(116px + clamp(280px,34vw,410px)) !important; width:auto !important; height:auto !important; min-height:0 !important; background:#1a1a1a !important; }
+  .home-screen .home-right-rail .home-news-sidebar { top:70px !important; right:10px !important; width:286px !important; height:min(54vh,410px) !important; min-height:250px !important; max-height:410px !important; z-index:41 !important; background:#1a1a1a !important; }
+  .home-screen .home-hero-left-stack > .home-changelog-card,.home-screen .home-changelog-card.is-dock-open { top:calc(70px + min(54vh,410px) + 12px) !important; right:10px !important; bottom:96px !important; left:auto !important; width:286px !important; height:auto !important; min-height:180px !important; max-height:none !important; z-index:41 !important; background:#1a1a1a !important; }
+  #mist-home-mod-review { position:relative !important; inset:auto !important; z-index:auto !important; display:flex !important; width:auto !important; height:min(440px,calc(100vh - 130px)) !important; min-height:340px !important; max-height:none !important; margin:0 306px 24px 104px !important; overflow:hidden !important; }
+  #mist-home-mod-review[hidden] { display:none !important; }
+}
+
+/* Navigation swap: category routes move to the left rail; account and instance
+   controls become the compact centered dock in the titlebar. */
+@media (min-width:761px) {
+  .titlebar > .top-route-nav {
+    position:fixed !important; z-index:140 !important; top:66px !important; bottom:8px !important; left:8px !important;
+    display:flex !important; width:158px !important; min-width:158px !important; height:auto !important; min-height:0 !important;
+    flex:initial !important; flex-direction:column !important; align-items:stretch !important; justify-content:flex-start !important;
+    gap:6px !important; padding:10px 8px !important; overflow-x:hidden !important; overflow-y:auto !important;
+    border:1px solid #303034 !important; border-radius:15px !important; background:#1a1a1c !important;
+    box-shadow:0 12px 32px rgba(0,0,0,.3) !important; backdrop-filter:none !important; -webkit-app-region:no-drag !important;
+  }
+  .titlebar > .top-route-nav .top-route-item {
+    display:flex !important; width:100% !important; min-width:0 !important; height:42px !important; min-height:42px !important;
+    flex:0 0 42px !important; justify-content:flex-start !important; gap:11px !important; padding:0 12px !important;
+    border-radius:9px !important; text-align:left !important; font-size:12px !important;
+  }
+  .titlebar > .top-route-nav .top-route-item svg { width:17px !important; height:17px !important; flex:0 0 17px !important; }
+  #mist-left-dock {
+    top:6px !important; right:auto !important; bottom:auto !important; left:50% !important; transform:translateX(-50%) !important;
+    display:flex !important; width:max-content !important; max-width:min(720px,calc(100vw - 430px)) !important; height:52px !important;
+    flex:initial !important; flex-direction:row !important; align-items:center !important; justify-content:center !important;
+    gap:5px !important; padding:4px 8px !important; overflow:visible !important;
+    border:1px solid #303034 !important; border-radius:13px !important; background:#1a1a1c !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.28) !important;
+  }
+  #mist-left-dock .mist-dock-account,
+  #mist-left-dock .mist-dock-item,
+  #mist-left-dock .mist-dock-create,
+  #mist-left-dock .mist-dock-settings { width:40px !important; min-width:40px !important; height:40px !important; min-height:40px !important; margin:0 !important; }
+  #mist-left-dock .mist-dock-divider { width:1px !important; min-width:1px !important; height:28px !important; min-height:28px !important; flex:0 0 1px !important; }
+  #mist-left-dock .mist-dock-instance-list { min-width:0 !important; max-width:min(250px,26vw) !important; min-height:40px !important; flex:0 1 auto !important; flex-direction:row !important; align-items:center !important; gap:4px !important; overflow-x:auto !important; overflow-y:hidden !important; }
+  #mist-left-dock .mist-dock-instance { width:36px !important; min-width:36px !important; height:36px !important; min-height:36px !important; }
+  #mist-left-dock .mist-dock-instance img { width:27px !important; height:27px !important; }
+  #mist-left-dock .mist-dock-tooltip { top:calc(100% + 6px) !important; left:50% !important; transform:translateX(-50%) !important; }
+  .main { padding-left:178px !important; }
+  .main:has(.home-screen) { padding-left:178px !important; }
+  .home-screen .home-featured-sidebar { left:188px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { left:188px !important; }
+  .home-screen .home-server-dock { left:calc(200px + clamp(260px,calc((100vw - 500px)*.35),410px)) !important; }
+}
+@media (max-width:1180px) and (min-width:761px) {
+  .titlebar > .top-route-nav { width:62px !important; min-width:62px !important; align-items:center !important; padding:8px 5px !important; }
+  .titlebar > .top-route-nav .top-route-item { width:44px !important; justify-content:center !important; gap:0 !important; padding:0 !important; }
+  .titlebar > .top-route-nav .top-route-item > :not(svg) { display:none !important; }
+  .main,.main:has(.home-screen) { padding-left:82px !important; }
+  .home-screen .home-featured-sidebar { left:92px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { left:92px !important; }
+  .home-screen .home-server-dock { left:calc(104px + clamp(230px,30vw,330px)) !important; }
+  #mist-left-dock { max-width:calc(100vw - 330px) !important; }
+}
+@media (max-width:760px) {
+  .titlebar > .top-route-nav { position:static !important; width:auto !important; min-width:0 !important; height:40px !important; min-height:40px !important; flex-direction:row !important; }
+  #mist-left-dock { top:auto !important; right:8px !important; bottom:78px !important; left:50% !important; width:max-content !important; max-width:calc(100vw - 16px) !important; height:52px !important; flex-direction:row !important; transform:translateX(-50%) !important; }
+  #mist-left-dock .mist-dock-instance-list { flex-direction:row !important; }
+}
+@media (min-width:1181px) {
+  .home-screen .home-featured-sidebar { left:10px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { left:10px !important; }
+  .home-screen .home-server-dock { left:calc(8px + clamp(260px,calc((100vw - 500px)*.35),410px)) !important; }
+  #mist-home-bottom-dock { left:178px !important; }
+}
+@media (max-width:1180px) and (min-width:761px) { #mist-home-bottom-dock { left:78px !important; } }
+@media (min-width:1181px) {
+  .home-screen .home-featured-sidebar { left:10px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { left:10px !important; }
+  .home-screen .home-server-dock { left:calc(8px + clamp(260px,calc((100vw - 500px)*.35),410px)) !important; }
+  #mist-home-bottom-dock { left:178px !important; }
+}
+@media (max-width:1180px) and (min-width:761px) {
+  #mist-home-bottom-dock { left:78px !important; }
+}
+
+/* Bound the fixed home widgets to the visible launcher frame. */
+@media (min-width:761px) {
+  .main:has(.home-screen) .home-screen .home-hero-left-stack > .home-hero-playtime-card,
+  .main:has(.home-screen) .home-screen .home-server-dock {
+    top:310px !important;
+    bottom:auto !important;
+    height:min(34vh,300px) !important;
+    min-height:230px !important;
+    max-height:300px !important;
+    box-sizing:border-box !important;
+  }
+  .main:has(.home-screen) .home-screen .home-changelog-card {
+    position:fixed !important;
+    top:calc(70px + min(54vh,410px) + 12px) !important;
+    right:10px !important;
+    bottom:auto !important;
+    left:auto !important;
+    width:286px !important;
+    height:clamp(180px,calc(100vh - 70px - min(54vh,410px) - 150px),280px) !important;
+    min-height:180px !important;
+    max-height:280px !important;
+    box-sizing:border-box !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+  }
+  .main:has(.home-screen)::before { bottom:96px !important; }
+  .main:has(.home-screen) .home-screen .home-featured-pack-copy {
+    position:absolute !important;
+    top:128px !important;
+    right:0 !important;
+    bottom:auto !important;
+    left:0 !important;
+    display:flex !important;
+    margin:0 !important;
+    padding:0 10px 4px !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    gap:3px !important;
+    color:#f2f2f2 !important;
+    text-align:left !important;
+  }
+  .main:has(.home-screen) .home-screen .home-featured-pack-copy strong { width:100% !important; color:#f2f2f2 !important; }
+  .main:has(.home-screen) .home-screen .home-featured-pack-copy small { width:100% !important; color:#aaaab4 !important; }
+}
+
+/* Keep smaller windows usable by stacking home sections and keeping the rail visible. */
+@media (max-width:1180px) and (min-width:761px) {
+  .home-screen .home-featured-sidebar { right:290px !important; }
+  .home-screen .home-right-rail .home-news-sidebar,.home-screen .home-hero-left-stack > .home-changelog-card,.home-screen .home-changelog-card.is-dock-open { right:10px !important; width:258px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { width:clamp(230px,30vw,330px) !important; }
+  .home-screen .home-server-dock { left:calc(116px + clamp(230px,30vw,330px)) !important; right:290px !important; }
+  #mist-home-mod-review { margin-right:278px !important; }
+}
+
+/* Neutral charcoal surfaces: remove leftover blue-gray card and content fills. */
+.app-shell :is(.installation-card-art,.installation-card-body,.installation-card-title,.installation-card-sub,.installation-card-meta,.installation-card-actions,.project-card-top,.project-card-main,.project-description,.project-tags,.project-card-foot) { background-color:transparent !important; }
+.project-grid .project-card-top { background-image:linear-gradient(135deg,#272727,#1a1a1a) !important; }
+.project-grid .project-card-top > .project-icon { background:#242424 !important; }
+.project-grid .project-card-main { background:#1a1a1a !important; }
+.project-grid .project-card { background:#1a1a1a !important; }
+.project-grid .project-card-actions { background:#1a1a1a !important; border:0 !important; box-shadow:none !important; }
+.project-grid .project-card-actions .btn { border-color:#3a3a3a !important; color:#eee !important; background:#252525 !important; }
+.project-grid .project-card-foot { border:0 !important; border-top:0 !important; box-shadow:none !important; background:transparent !important; }
+.project-grid .project-card-foot::before,.project-grid .project-card-foot::after { display:none !important; }
+.project-grid .project-tags { border:0 !important; border-top:0 !important; border-bottom:0 !important; box-shadow:none !important; }
+.project-grid .project-card { border-color:#303030 !important; }
+.installation-card { background:#1a1a1a !important; }
+.mist-version-row { grid-template-columns:minmax(150px,1.3fr) 110px 120px minmax(110px,1fr) 90px !important; border:0 !important; }
+.mist-version-table-head { border-bottom:1px solid #303030 !important; }
+
+/* Project details keep their body, gallery, versions and information sidebar in predictable columns. */
+.overlay:has(.project-detail) .project-detail { grid-template-columns:minmax(0,1fr) minmax(250px,30%) !important; align-items:start !important; gap:12px 18px !important; }
+.overlay:has(.project-detail) .project-detail-head,.overlay:has(.project-detail) .mist-project-tabs { grid-column:1/-1 !important; grid-row:auto !important; }
+.overlay:has(.project-detail) .project-body { grid-column:1 !important; grid-row:auto !important; }
+.overlay:has(.project-detail) .project-detail-tags { grid-column:1 !important; grid-row:auto !important; }
+.overlay:has(.project-detail) .mist-project-info { grid-column:2 !important; grid-row:3 !important; }
+.overlay:has(.project-detail) .install-box { grid-column:2 !important; grid-row:4 !important; position:sticky !important; top:12px !important; }
+.overlay:has(.project-detail) .mist-gallery-view .gallery { grid-column:1/-1 !important; grid-row:3 !important; }
+.overlay:has(.project-detail) .mist-versions-view .mist-version-browser { grid-column:1/-1 !important; grid-row:3 !important; }
+.overlay:has(.project-detail) .project-body :is(p,ul,ol,blockquote,pre,table,details) { max-width:100%; }
+.overlay:has(.project-detail) .project-body :is(iframe,video) { width:min(100%,720px) !important; aspect-ratio:16/9; min-height:240px !important; }
+
+/* Keep the install step above the project details dialog. The two dialogs are
+   separate React portals; without an explicit stack the install form sits
+   behind the details page and is destroyed when that page closes. */
+.overlay.modpack-install-dialog { z-index:120 !important; display:flex !important; align-items:center !important; justify-content:center !important; inset:0 !important; padding:24px !important; background:rgba(0,0,0,.74) !important; }
+.overlay.modpack-install-dialog .modal { width:min(560px,calc(100vw - 48px)) !important; max-width:560px !important; max-height:calc(100vh - 48px) !important; height:auto !important; overflow:hidden !important; background:#1a1a1a !important; border:1px solid #393939 !important; }
+.overlay.modpack-install-dialog .modal-body { min-height:0 !important; overflow:auto !important; }
+.overlay:has(.project-detail) { z-index:70 !important; }
+.overlay:has(.project-detail) .mist-project-tabs { position:sticky !important; top:0 !important; z-index:12 !important; grid-column:1/-1 !important; grid-row:2 !important; align-self:start !important; margin:0 !important; padding:8px 0 !important; background:#1a1a1a !important; }
+.overlay:has(.project-detail) .project-detail-head { grid-row:1 !important; }
+.overlay:has(.project-detail) .mist-versions-view .mist-version-browser,
+.overlay:has(.project-detail) .mist-gallery-view .gallery { grid-row:3 !important; align-self:start !important; }
+.overlay:has(.project-detail) .mist-versions-view .mist-project-info,
+.overlay:has(.project-detail) .mist-gallery-view .mist-project-info { grid-row:3 !important; }
+
+@media (max-width:760px) {
+  .main:has(.home-screen) { height:auto !important; min-height:calc(100vh - 54px) !important; }
+  .home-screen { min-height:0 !important; }
+  .home-screen .hero { height:600px !important; min-height:600px !important; }
+  #mist-home-mod-review { margin:12px 8px 24px 72px !important; height:360px !important; }
+}
+
+/* Keep catalog pages on Mist's charcoal surface; wallpaper belongs on Home only. */
+.app-shell:not(:has(.home-screen)),
+.app-shell:has(.catalog),
+.app-body:has(.catalog),
+.main:has(.catalog),
+body:has(.catalog),
+#root:has(.catalog) { background:#1a1a1a !important; background-image:none !important; }
+.app-shell:not(:has(.home-screen)) .app-body,
+.app-shell:not(:has(.home-screen)) .main,
+.app-shell:has(.catalog) .app-body,
+.app-shell:has(.catalog) .main { background:#1a1a1a !important; background-image:none !important; }
+
+/* Give featured cards an explicit grid height so image and caption are both visible. */
+@media (min-width:761px) {
+  .main:has(.home-screen) .home-screen .home-featured-sidebar {
+    display:grid !important;
+    grid-template-rows:30px minmax(0,1fr) !important;
+    align-content:stretch !important;
+  }
+  .main:has(.home-screen) .home-screen .home-featured-pack-list {
+    display:grid !important;
+    height:auto !important;
+    min-height:0 !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    grid-template-rows:minmax(0,1fr) !important;
+    overflow:visible !important;
+  }
+  .main:has(.home-screen) .home-screen .home-featured-pack {
+    display:block !important;
+    position:relative !important;
+    height:100% !important;
+    min-height:150px !important;
+    overflow:hidden !important;
+  }
+  .main:has(.home-screen) .home-screen .home-featured-pack::before { height:112px !important; }
+  .main:has(.home-screen) .home-screen .home-featured-pack-copy {
+    position:absolute !important;
+    inset:116px 0 auto !important;
+    display:flex !important;
+    margin:0 !important;
+    padding:0 10px 4px !important;
+    overflow:visible !important;
+    gap:3px !important;
+  }
+  .main:has(.home-screen) .home-screen .home-featured-pack-copy strong,
+  .main:has(.home-screen) .home-screen .home-featured-pack-copy small {
+    display:block !important;
+    width:100% !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+}
+
+/* Final polish for project tabs, install controls, and the home dashboard. */
+.overlay:has(.project-detail) .mist-project-tabs { grid-row:2 !important; }
+.overlay:has(.project-detail) .project-detail .install-box { grid-column:2 !important; grid-row:3 !important; align-self:start !important; position:sticky !important; top:8px !important; margin:0 !important; }
+.overlay:has(.project-detail) .project-detail .mist-project-info { grid-column:2 !important; grid-row:4 !important; align-self:start !important; }
+.overlay:has(.project-detail) .project-detail .mist-pack-version-source { grid-column:2 !important; grid-row:3 !important; align-self:start !important; margin:0 !important; }
+.overlay:has(.project-detail) .project-detail .mist-version-changelog-source { grid-column:2 !important; grid-row:4 !important; align-self:start !important; margin:0 !important; }
+.overlay:has(.project-detail) .mist-gallery-view :is(.project-body,.project-detail-tags,.install-box,.mist-project-info,.mist-pack-version-source,.mist-version-changelog-source) { display:none !important; }
+.overlay:has(.project-detail) .mist-gallery-view .gallery { grid-column:1/-1 !important; grid-row:3 !important; align-self:start !important; }
+.overlay:has(.project-detail) .mist-versions-view :is(.project-body,.project-detail-tags,.gallery,.install-box,.mist-project-info,.mist-pack-version-source,.mist-version-changelog-source) { display:none !important; }
+.overlay:has(.project-detail) .mist-versions-view .mist-version-browser { display:block !important; grid-column:1/-1 !important; grid-row:3 !important; align-self:start !important; }
+.overlay:has(.project-detail) .project-body > :first-child { margin-top:0 !important; }
+.overlay:has(.project-detail) .project-body :is(a,iframe,video,img) { max-width:100% !important; }
+.overlay:has(.project-detail) .project-body iframe { width:min(100%,720px) !important; aspect-ratio:16/9 !important; min-height:240px !important; }
+.overlay.modpack-install-dialog { align-items:center !important; justify-content:center !important; overflow:auto !important; }
+.overlay.modpack-install-dialog .modal { margin:auto !important; flex:0 1 560px !important; }
+.overlay.modpack-install-dialog .modal-body { flex:1 1 auto !important; min-height:0 !important; }
+.home-screen .home-featured-sidebar { top:76px !important; height:205px !important; min-height:205px !important; max-height:205px !important; }
+.home-screen .home-featured-pack::before { background-image:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.34)),var(--project-art,linear-gradient(135deg,#28282c,#171719)) !important; }
+.home-screen .home-hero-left-stack > .home-hero-playtime-card,.home-screen .home-server-dock { top:293px !important; bottom:auto !important; height:min(34vh,300px) !important; min-height:230px !important; max-height:300px !important; }
+.home-screen .home-changelog-card > ul { gap:8px !important; }
+.home-screen .home-changelog-card > ul > li { line-height:1.45 !important; }
+.home-screen .home-featured-pack-list { gap:14px !important; }
+.home-screen .home-featured-pack { min-height:0 !important; }
+.home-screen .home-featured-pack .project-icon.is-fallback { color:#eee !important; background:linear-gradient(135deg,#34343a,#1a1a1a) !important; }
+#mist-home-mod-review .mist-review-details [data-review-open] { display:none !important; }
+@media (max-width:760px) {
+  .overlay:has(.project-detail) .project-detail :is(.install-box,.mist-project-info,.mist-pack-version-source,.mist-version-changelog-source) { grid-column:1 !important; grid-row:auto !important; position:static !important; }
+  .home-screen .home-featured-sidebar { height:auto !important; min-height:190px !important; max-height:none !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card,.home-screen .home-server-dock { position:relative !important; top:auto !important; height:auto !important; min-height:220px !important; margin:10px 0 !important; }
+}
+
+/* Project detail: keep its metadata rail pinned while the long description scrolls,
+   remove the redundant install-target picker (the left instance dock owns selection),
+   and prevent cards/content from collapsing into each other. */
+.overlay:has(.project-detail) .modal-body { overflow:auto !important; overscroll-behavior:contain; }
+.overlay:has(.project-detail) .project-detail {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(270px,32%) !important;
+  grid-auto-flow:row;
+  align-items:start !important;
+  gap:12px 18px !important;
+  min-width:0 !important;
+}
+.overlay:has(.project-detail) .project-detail-head { grid-column:1/-1 !important; grid-row:1 !important; min-width:0; }
+.overlay:has(.project-detail) .mist-project-tabs { grid-column:1/-1 !important; grid-row:2 !important; position:sticky !important; top:0 !important; z-index:12 !important; margin:0 !important; background:#1a1a1a !important; }
+.overlay:has(.project-detail) .project-body { grid-column:1 !important; grid-row:3 !important; min-width:0 !important; max-height:none !important; overflow:visible !important; }
+.overlay:has(.project-detail) .project-detail-tags { grid-column:1 !important; grid-row:4 !important; min-width:0; }
+.overlay:has(.project-detail) .project-detail .gallery { grid-column:1 !important; grid-row:5 !important; min-width:0; }
+.overlay:has(.project-detail) .project-detail .mist-project-info { grid-column:2 !important; grid-row:3 !important; position:sticky !important; top:48px !important; align-self:start !important; max-height:calc(100vh - 190px) !important; overflow:auto !important; overflow-wrap:anywhere; }
+.overlay:has(.project-detail) .project-detail .install-box { grid-column:2 !important; grid-row:4 !important; min-width:0 !important; align-self:start !important; position:static !important; overflow-wrap:anywhere; }
+.overlay:has(.project-detail) .mist-install-target-field { display:none !important; }
+.overlay:has(.project-detail) .project-body :is(img,iframe,video,table,pre) { max-width:100% !important; }
+.overlay:has(.project-detail) .project-body iframe { width:min(100%,720px) !important; aspect-ratio:16/9 !important; min-height:240px !important; }
+.overlay:has(.project-detail) .project-detail :is(.field,.select,.select select) { min-width:0 !important; max-width:100% !important; }
+.overlay:has(.project-detail) .project-detail :is(.field input,.field select) { box-sizing:border-box; width:100%; min-width:0; }
+.overlay:has(.project-detail) .project-detail :is(.project-detail-head,.project-detail-stats,.install-box,.mist-project-info) { overflow-wrap:anywhere; }
+.overlay.modpack-install-dialog .install-target-field { display:none !important; }
+.project-grid { align-items:stretch !important; }
+.project-grid .project-card { display:flex !important; min-width:0 !important; min-height:284px !important; height:100% !important; flex-direction:column !important; overflow:hidden !important; }
+.project-grid .project-card-main { display:flex !important; min-width:0 !important; flex:1 1 auto !important; flex-direction:column !important; overflow:hidden !important; }
+.project-grid .project-card-top { position:relative !important; flex:0 0 132px !important; min-width:0 !important; width:100% !important; overflow:hidden !important; }
+.project-grid .project-card-heading { min-width:0 !important; max-width:100% !important; }
+.project-grid .project-card-heading :is(.project-title,.project-author) { min-width:0 !important; max-width:100% !important; overflow:hidden !important; text-overflow:ellipsis !important; }
+.project-grid .project-description { display:-webkit-box !important; min-width:0 !important; overflow:hidden !important; -webkit-line-clamp:3 !important; -webkit-box-orient:vertical !important; }
+.project-grid .project-card-foot { min-width:0 !important; flex-wrap:wrap !important; }
+.project-grid .project-card-actions { flex:0 0 auto !important; min-width:0 !important; }
+@media (max-width:760px) {
+  .overlay:has(.project-detail) .project-detail { grid-template-columns:minmax(0,1fr) !important; }
+  .overlay:has(.project-detail) .project-detail :is(.project-body,.project-detail-tags,.gallery,.mist-project-info,.install-box) { grid-column:1 !important; grid-row:auto !important; position:static !important; max-height:none !important; }
+}
+
+/* Keep project dialogs at their header when opened and provide a dedicated changelog tab. */
+.overlay:has(.project-detail) .modal-body { scroll-behavior:auto !important; scroll-padding-top:0 !important; }
+.overlay:has(.project-detail) .project-detail-head { margin-top:0 !important; }
+.overlay:has(.project-detail) .mist-changelog-view :is(.project-body,.project-detail-tags,.gallery,.install-box,.mist-project-info,.mist-pack-version-source,.mist-version-changelog-source) { display:none !important; }
+.overlay:has(.project-detail) .mist-changelog-view .mist-project-changelog { display:block !important; grid-column:1/-1 !important; grid-row:3 !important; min-width:0; }
+.overlay:has(.project-detail) .mist-project-changelog { display:none; }
+.mist-project-changelog { padding:18px 0 30px; }
+.mist-changelog-entry { padding:16px 18px; margin:0 0 12px; border:1px solid #303030; border-radius:10px; background:#1b1b1b; }
+.mist-changelog-entry > header { display:flex; align-items:baseline; justify-content:space-between; gap:14px; padding-bottom:10px; border-bottom:1px solid #303030; }
+.mist-changelog-entry > header strong { color:#eee; font-size:14px; }
+.mist-changelog-entry > header span { color:#9a9aa4; font-size:11px; text-align:right; }
+.mist-changelog-copy { padding-top:12px; color:#c8c8ce; font-size:13px; line-height:1.65; white-space:pre-wrap; overflow-wrap:anywhere; }
+/* ── game-start overlay ──────────────────────────────────────────────── */
+.game-start-overlay { position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:24px; background:radial-gradient(900px 560px at 50% 46%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%), linear-gradient(145deg, var(--bg-soft), var(--bg) 50%, color-mix(in srgb, var(--bg) 88%, var(--accent))); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); animation:mist-start-fade-in .28s cubic-bezier(0.2,0.8,0.2,1) both; }
+.game-start-overlay::before { content:""; position:absolute; inset:20px; border:1px solid color-mix(in srgb, var(--border) 50%, transparent); border-radius:28px; pointer-events:none; }
+.game-start-glow { position:absolute; width:620px; height:620px; border-radius:50%; background:radial-gradient(circle, color-mix(in srgb, var(--accent) 18%, transparent), transparent 65%); filter:blur(40px); pointer-events:none; animation:mist-start-breathe 4s ease-in-out infinite; }
+.game-start-ring { position:absolute; width:420px; height:420px; border:1px solid color-mix(in srgb, var(--accent) 14%, transparent); border-radius:50%; pointer-events:none; animation:mist-start-orbit 16s linear infinite; }
+.game-start-ring-two { width:560px; height:560px; border-style:dashed; opacity:.45; animation-duration:28s; animation-direction:reverse; }
+.game-start-card { position:relative; z-index:1; display:flex; width:min(400px,100%); flex-direction:column; align-items:center; justify-content:center; padding:36px 32px; border:1px solid color-mix(in srgb, var(--accent) 22%, var(--border)); border-radius:24px; background:linear-gradient(145deg, color-mix(in srgb, var(--panel) 85%, transparent), color-mix(in srgb, var(--panel-2) 88%, transparent)); box-shadow:0 32px 100px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,0.06); text-align:center; backdrop-filter:blur(12px); animation:mist-start-arrive .5s cubic-bezier(0.2,0.8,0.2,1) both; }
+.game-start-logo { display:grid; width:88px; height:88px; place-items:center; margin-bottom:20px; border:1px solid color-mix(in srgb, var(--accent) 44%, var(--border)); border-radius:26px; background:linear-gradient(145deg, color-mix(in srgb, var(--panel) 72%, transparent), color-mix(in srgb, var(--panel-2) 75%, transparent)); box-shadow:0 20px 58px color-mix(in srgb, var(--accent) 20%, transparent), inset 0 1px 0 rgba(255,255,255,0.08); animation:mist-start-logo-float 3s ease-in-out infinite; backdrop-filter:blur(10px); }
+.game-start-logo .logo-mark { filter:drop-shadow(0 8px 18px color-mix(in srgb, var(--accent) 38%, transparent)); }
+.game-start-kicker { color:var(--accent); font-size:0.6rem; font-weight:800; letter-spacing:.22em; opacity:.85; }
+.game-start-card h2 { margin:8px 0 6px; font-size:1.4rem; font-weight:800; letter-spacing:.04em; background:linear-gradient(110deg, var(--text), color-mix(in srgb, var(--text) 60%, var(--accent))); color:transparent; background-clip:text; -webkit-background-clip:text; }
+.game-start-installation { max-width:100%; overflow:hidden; color:var(--fg2); font-size:0.82rem; text-overflow:ellipsis; white-space:nowrap; margin-bottom:20px; }
+.game-start-bar { position:relative; width:200px; height:3px; background:color-mix(in srgb, var(--panel-3) 82%, transparent); border:1px solid color-mix(in srgb, var(--border) 70%, transparent); border-radius:99px; overflow:hidden; margin:4px 0 16px; box-shadow:0 0 18px color-mix(in srgb, var(--accent) 12%, transparent); }
+.game-start-bar span { position:absolute; inset:0; background:linear-gradient(90deg, transparent, var(--accent), transparent); animation:mist-start-shimmer 1.6s ease-in-out infinite; }
+.game-start-card p { color:var(--faint); font-size:0.78rem; margin:0; }
+.game-start-dots { display:inline-block; width:18px; overflow:hidden; vertical-align:bottom; animation:mist-start-dots 1.1s steps(4,end) infinite; }
+@keyframes mist-start-fade-in { from { opacity:0; } to { opacity:1; } }
+@keyframes mist-start-arrive { from { opacity:0; transform:scale(.95) translateY(12px); } to { opacity:1; transform:none; } }
+@keyframes mist-start-breathe { 0%,100% { transform:scale(1); opacity:.7; } 50% { transform:scale(1.08); opacity:1; } }
+@keyframes mist-start-orbit { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+@keyframes mist-start-logo-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+@keyframes mist-start-shimmer { 0% { transform:translateX(-100%); } 100% { transform:translateX(200%); } }
+@keyframes mist-start-dots { 0% { width:0; } 100% { width:18px; } }
+@media (prefers-reduced-motion:reduce) { .game-start-overlay,.game-start-logo,.game-start-dots,.game-start-bar span,.game-start-glow,.game-start-ring { animation:none !important; } }
+
+/* Project panels: keep the tabs and side rail anchored in the modal scroll area. */
+.overlay:has(.project-detail) .modal-body { overflow-x:hidden !important; overflow-y:auto !important; }
+.overlay:has(.project-detail) .project-detail { overflow:visible !important; }
+.overlay:has(.project-detail) .project-detail-head { position:sticky !important; top:0 !important; z-index:24 !important; background:#1a1a1a !important; }
+.overlay:has(.project-detail) .mist-project-tabs { position:sticky !important; top:68px !important; z-index:23 !important; background:#1a1a1a !important; }
+.overlay:has(.project-detail) .project-detail .mist-project-info { grid-column:2 !important; grid-row:3 !important; position:sticky !important; top:80px !important; z-index:10 !important; align-self:start !important; max-height:180px !important; overflow:auto !important; }
+.overlay:has(.project-detail) .project-detail .install-box { grid-column:2 !important; grid-row:4 !important; position:sticky !important; top:274px !important; z-index:9 !important; align-self:start !important; min-width:0 !important; max-height:calc(100vh - 360px) !important; overflow:auto !important; }
+.overlay:has(.project-detail) .project-detail.mist-versions-view .mist-project-info { display:none !important; }
+.overlay:has(.project-detail) .project-detail.mist-versions-view .mist-version-browser { grid-column:1 !important; grid-row:3 !important; align-self:start !important; min-width:0 !important; }
+.overlay:has(.project-detail) .project-detail.mist-versions-view .install-box { display:block !important; grid-column:2 !important; grid-row:3 !important; top:80px !important; max-height:calc(100vh - 200px) !important; }
+.overlay:has(.project-detail) .project-detail.mist-versions-view .mist-install-target-field { display:none !important; }
+.overlay:has(.project-detail) .project-detail.mist-project-type-mod .mist-install-target-field,
+.overlay:has(.project-detail) .project-detail.mist-project-type-resourcepack .mist-install-target-field,
+.overlay:has(.project-detail) .project-detail.mist-project-type-shader .mist-install-target-field { display:none !important; }
+.overlay:has(.project-detail) .project-detail.mist-project-type-modpack .mist-install-target-field { display:block !important; }
+@media (max-width:760px) {
+  .overlay:has(.project-detail) .project-detail-head { top:0 !important; }
+  .overlay:has(.project-detail) .mist-project-tabs { top:64px !important; }
+  .overlay:has(.project-detail) .project-detail .mist-project-info,
+  .overlay:has(.project-detail) .project-detail .install-box { grid-column:1 !important; grid-row:auto !important; position:static !important; max-height:none !important; }
+}
+
+/* Use the launcher charcoal canvas on Home; keep artwork controls available in Settings. */
+html:has(.home-screen),
+body:has(.home-screen),
+#root:has(.home-screen),
+.app-shell:has(.home-screen),
+.app-shell:has(.home-screen) .app-body,
+.app-shell:has(.home-screen) .main,
+.app-shell:has(.home-screen) .screen.home-screen,
+.main:has(.home-screen)::before {
+  background-color:#1a1a1a !important;
+  background-image:none !important;
+}
+html:has(.home-screen) { --mist-launcher-wallpaper:none !important; }
+
+/* Final charcoal palette sweep across every screen; reserve color for actions and status. */
+:root[data-theme="dark"],
+.app-shell {
+  --bg:#1a1a1a !important;
+  --bg-soft:#1d1d1d !important;
+  --panel:#202020 !important;
+  --panel-2:#252525 !important;
+  --panel-3:#2b2b2b !important;
+  --panel-hover:#292929 !important;
+  --input:#181818 !important;
+  --border:#303030 !important;
+  --border-strong:#414141 !important;
+  --accent-surface:#202020 !important;
+  --accent-surface-raised:#252525 !important;
+  --accent-surface-deep:#181818 !important;
+}
+.app-shell,
+.app-shell .sidebar,
+.app-shell .main,
+.app-shell .app-body {
+  background-color:#1a1a1a !important;
+  background-image:none !important;
+}
+.app-shell .sidebar { background:#1a1a1a !important; border-right-color:#303030 !important; }
+.app-shell :is(.empty-state,.log-panel,.log-view,.account-card,.version-row,.version-head) {
+  background-color:#202020 !important;
+  border-color:#303030 !important;
+}
+.app-shell .log-toolbar { background:#252525 !important; }
+.app-shell .log-line:hover,.app-shell .version-row:not(.version-head):hover { background:#292929 !important; }
+.app-shell .install-art:not(:has(img)) { background:#252525 !important; box-shadow:none !important; }
+/* Home uses the flat charcoal canvas even when the user has a wallpaper selected. */
+html:has(.home-screen),
+body:has(.home-screen),
+#root:has(.home-screen),
+.app-shell:has(.home-screen),
+.app-shell:has(.home-screen) .app-body,
+.app-shell:has(.home-screen) .main,
+.app-shell:has(.home-screen) .screen.home-screen,
+.main:has(.home-screen)::before {
+  background:#1a1a1a !important;
+  background-image:none !important;
+}
+html:has(.home-screen) { --mist-launcher-wallpaper:none !important; }
+
+/* Keep project controls anchored while the long overview, gallery, or changelog scrolls. */
+@media (min-width:761px) {
+  .overlay:has(.project-detail) .modal-body { position:relative !important; min-height:0 !important; overflow-x:hidden !important; overflow-y:auto !important; }
+  .overlay:has(.project-detail) .project-detail-head { position:sticky !important; top:0 !important; z-index:30 !important; background:#1a1a1a !important; }
+  .overlay:has(.project-detail) .mist-project-tabs { position:sticky !important; top:76px !important; z-index:29 !important; background:#1a1a1a !important; }
+  .overlay:has(.project-detail) .project-detail .mist-project-info { position:sticky !important; top:84px !important; z-index:12 !important; align-self:start !important; }
+  .overlay:has(.project-detail) .project-detail .install-box { position:sticky !important; top:276px !important; z-index:11 !important; align-self:start !important; }
+  .overlay:has(.project-detail) .project-detail.mist-versions-view .install-box { top:84px !important; max-height:calc(100vh - 190px) !important; overflow:auto !important; }
+}
+
+/* Final navigation swap overrides, placed after the legacy layout rules. */
+@media (min-width:761px) {
+  .titlebar > .top-route-nav {
+    position:fixed !important; z-index:140 !important; top:66px !important; bottom:8px !important; left:8px !important;
+    display:flex !important; width:158px !important; min-width:158px !important; height:auto !important; min-height:0 !important;
+    flex:initial !important; flex-direction:column !important; align-items:stretch !important; justify-content:flex-start !important;
+    gap:6px !important; padding:10px 8px !important; overflow-x:hidden !important; overflow-y:auto !important;
+    border:1px solid #303034 !important; border-radius:15px !important; background:#1a1a1c !important;
+    box-shadow:0 12px 32px rgba(0,0,0,.3) !important; backdrop-filter:none !important; -webkit-app-region:no-drag !important;
+  }
+  .titlebar > .top-route-nav .top-route-item {
+    display:flex !important; width:100% !important; min-width:0 !important; height:42px !important; min-height:42px !important;
+    flex:0 0 42px !important; justify-content:flex-start !important; gap:11px !important; padding:0 12px !important;
+    border-radius:9px !important; text-align:left !important; font-size:12px !important;
+  }
+  .titlebar > .top-route-nav .top-route-item svg { width:17px !important; height:17px !important; flex:0 0 17px !important; }
+  #mist-left-dock {
+    top:6px !important; right:auto !important; bottom:auto !important; left:50% !important; transform:translateX(-50%) !important;
+    display:flex !important; width:max-content !important; max-width:min(720px,calc(100vw - 430px)) !important; height:52px !important;
+    flex:initial !important; flex-direction:row !important; align-items:center !important; justify-content:center !important;
+    gap:5px !important; padding:4px 8px !important; overflow:visible !important;
+    border:1px solid #303034 !important; border-radius:13px !important; background:#1a1a1c !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.28) !important;
+  }
+  #mist-left-dock .mist-dock-account,#mist-left-dock .mist-dock-item,#mist-left-dock .mist-dock-create,#mist-left-dock .mist-dock-settings { width:40px !important; min-width:40px !important; height:40px !important; min-height:40px !important; margin:0 !important; }
+  #mist-left-dock .mist-dock-divider { width:1px !important; min-width:1px !important; height:28px !important; min-height:28px !important; flex:0 0 1px !important; }
+  #mist-left-dock .mist-dock-instance-list { min-width:0 !important; max-width:min(250px,26vw) !important; min-height:40px !important; flex:0 1 auto !important; flex-direction:row !important; align-items:center !important; gap:4px !important; overflow-x:auto !important; overflow-y:hidden !important; }
+  #mist-left-dock .mist-dock-instance { width:36px !important; min-width:36px !important; height:36px !important; min-height:36px !important; }
+  #mist-left-dock .mist-dock-instance img { width:27px !important; height:27px !important; }
+  #mist-left-dock .mist-dock-tooltip { top:calc(100% + 6px) !important; left:50% !important; transform:translateX(-50%) !important; }
+  .main,.main:has(.home-screen) { padding-left:178px !important; }
+  .home-screen .home-featured-sidebar { left:188px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { left:188px !important; }
+  .home-screen .home-server-dock { left:calc(200px + clamp(260px,calc((100vw - 500px)*.35),410px)) !important; }
+}
+@media (max-width:1180px) and (min-width:761px) {
+  .titlebar > .top-route-nav { width:62px !important; min-width:62px !important; align-items:center !important; padding:8px 5px !important; }
+  .titlebar > .top-route-nav .top-route-item { width:44px !important; justify-content:center !important; gap:0 !important; padding:0 !important; }
+  .titlebar > .top-route-nav .top-route-item > :not(svg) { display:none !important; }
+  .main,.main:has(.home-screen) { padding-left:82px !important; }
+  .home-screen .home-featured-sidebar { left:92px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { left:92px !important; }
+  .home-screen .home-server-dock { left:calc(104px + clamp(230px,30vw,330px)) !important; }
+  #mist-left-dock { max-width:calc(100vw - 330px) !important; }
+}
+@media (max-width:760px) {
+  .titlebar > .top-route-nav { position:static !important; width:auto !important; min-width:0 !important; height:40px !important; min-height:40px !important; flex-direction:row !important; }
+  #mist-left-dock { top:auto !important; right:8px !important; bottom:78px !important; left:50% !important; width:max-content !important; max-width:calc(100vw - 16px) !important; height:52px !important; flex-direction:row !important; transform:translateX(-50%) !important; }
+  #mist-left-dock .mist-dock-instance-list { flex-direction:row !important; }
+}
+/* Final home-card anchors after navigation swap. */
+@media (min-width:1181px) {
+  .home-screen .home-featured-sidebar { left:10px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { left:10px !important; }
+  .home-screen .home-server-dock { left:calc(8px + clamp(260px,calc((100vw - 500px)*.35),410px)) !important; }
+  #mist-home-bottom-dock { left:178px !important; }
+}
+@media (max-width:1180px) and (min-width:761px) { #mist-home-bottom-dock { left:78px !important; } }
+/* Position pass based on the compact launcher layout reference. */
+@media (min-width:1181px) {
+  .titlebar::before { content:""; display:block; flex:1 1 auto; min-width:0; }
+  .titlebar-actions { margin-left:auto !important; flex:0 0 auto !important; }
+  .titlebar > .top-route-nav { flex:0 0 0 !important; }
+  .titlebar > .top-route-nav {
+    width:76px !important; min-width:76px !important; top:66px !important; left:8px !important; bottom:8px !important;
+    align-items:center !important; padding:10px 6px !important; gap:8px !important;
+  }
+  .titlebar > .top-route-nav .top-route-item {
+    width:48px !important; min-width:48px !important; height:48px !important; min-height:48px !important; flex:0 0 48px !important;
+    justify-content:center !important; gap:0 !important; padding:0 !important; font-size:0 !important;
+  }
+  .titlebar > .top-route-nav .top-route-item span { display:none !important; }
+  #mist-left-dock {
+    left:50% !important; right:auto !important; top:6px !important; bottom:auto !important; transform:translateX(-50%) !important;
+    width:max-content !important; max-width:calc(100vw - 180px) !important; height:52px !important; box-sizing:border-box !important;
+    flex-direction:row !important; justify-content:center !important; align-items:center !important; gap:4px !important;
+    padding:4px 7px !important; overflow:hidden !important;
+  }
+  #mist-left-dock .mist-dock-account,#mist-left-dock .mist-dock-item,#mist-left-dock .mist-dock-create,#mist-left-dock .mist-dock-settings {
+    width:38px !important; min-width:38px !important; height:38px !important; min-height:38px !important; flex:0 0 38px !important; margin:0 !important;
+  }
+  #mist-left-dock .mist-dock-divider { width:1px !important; height:26px !important; min-height:26px !important; flex:0 0 1px !important; }
+  #mist-left-dock .mist-dock-instance-list {
+    width:auto !important; max-width:144px !important; min-width:0 !important; min-height:36px !important; flex:0 1 144px !important;
+    flex-direction:row !important; align-items:center !important; gap:3px !important; overflow-x:auto !important; overflow-y:hidden !important;
+    scrollbar-width:none !important;
+  }
+  #mist-left-dock .mist-dock-instance-list::-webkit-scrollbar { display:none !important; }
+  #mist-left-dock .mist-dock-instance { width:34px !important; min-width:34px !important; height:34px !important; min-height:34px !important; flex:0 0 34px !important; }
+  #mist-left-dock .mist-dock-instance img { width:26px !important; height:26px !important; }
+  #mist-left-dock .mist-dock-tooltip { top:calc(100% + 7px) !important; bottom:auto !important; left:50% !important; transform:translateX(-50%) !important; }
+  .main,.main:has(.home-screen) { padding-left:92px !important; }
+  .home-screen .home-featured-sidebar { left:10px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card {
+    left:10px !important; width:clamp(260px,calc((100vw - 500px)*.33),360px) !important; bottom:110px !important;
+  }
+  .home-screen .home-server-dock {
+    left:calc(26px + clamp(260px,calc((100vw - 500px)*.33),360px)) !important; bottom:110px !important;
+  }
+  #mist-home-bottom-dock { left:92px !important; right:330px !important; }
+}
+@media (max-width:1180px) and (min-width:761px) {
+  .titlebar::before { content:""; display:block; flex:1 1 auto; min-width:0; }
+  .titlebar-actions { margin-left:auto !important; }
+  .titlebar > .top-route-nav { width:58px !important; min-width:58px !important; top:66px !important; left:8px !important; bottom:8px !important; align-items:center !important; padding:8px 4px !important; }
+  .titlebar > .top-route-nav .top-route-item { width:44px !important; min-width:44px !important; height:44px !important; min-height:44px !important; justify-content:center !important; padding:0 !important; font-size:0 !important; }
+  .titlebar > .top-route-nav .top-route-item span { display:none !important; }
+  .main,.main:has(.home-screen) { padding-left:72px !important; }
+  .home-screen .home-featured-sidebar { left:12px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { left:12px !important; width:clamp(220px,29vw,330px) !important; bottom:110px !important; }
+  .home-screen .home-server-dock { left:calc(28px + clamp(220px,29vw,330px)) !important; bottom:110px !important; }
+  #mist-left-dock { max-width:calc(100vw - 130px) !important; }
+  #mist-home-bottom-dock { left:72px !important; right:296px !important; }
+}
+/* Final positioning pass from the SKLauncher home reference. */
+@media (min-width:1181px) {
+  .titlebar > .top-route-nav {
+    width:84px !important; min-width:84px !important; top:66px !important; left:8px !important; bottom:8px !important;
+    align-items:center !important; gap:9px !important; padding:12px 8px !important;
+  }
+  .titlebar > .top-route-nav .top-route-item {
+    width:56px !important; min-width:56px !important; height:56px !important; min-height:56px !important; flex:0 0 56px !important;
+    justify-content:center !important; gap:0 !important; padding:0 !important; border-radius:14px !important; font-size:0 !important;
+    color:#a6a6b0 !important; transition:background-color .16s ease,color .16s ease,transform .16s ease !important;
+  }
+  .titlebar > .top-route-nav .top-route-item svg { width:25px !important; height:25px !important; min-width:25px !important; min-height:25px !important; stroke-width:1.9 !important; }
+  .titlebar > .top-route-nav .top-route-item:hover { background:#242428 !important; color:#f2f2f4 !important; transform:translateY(-1px); }
+  .titlebar > .top-route-nav .top-route-item[aria-current="page"],
+  .titlebar > .top-route-nav .top-route-item.is-active { color:#c6a6ff !important; background:#30243f !important; box-shadow:inset 0 0 0 1px #7048a8 !important; }
+  .titlebar > .top-route-nav .top-route-item span { display:none !important; }
+  .main,.main:has(.home-screen) { padding-left:100px !important; }
+  .home-screen .home-featured-sidebar { top:49px !important; left:10px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card {
+    top:270px !important; bottom:auto !important; left:10px !important; width:clamp(260px,calc((100vw - 500px)*.33),360px) !important;
+    height:min(34vh,300px) !important; min-height:230px !important; max-height:300px !important;
+  }
+  .home-screen .home-server-dock {
+    top:270px !important; bottom:auto !important; left:calc(26px + clamp(260px,calc((100vw - 500px)*.33),360px)) !important;
+    height:min(34vh,300px) !important; min-height:230px !important; max-height:300px !important;
+  }
+  #mist-home-bottom-dock { left:100px !important; right:330px !important; }
+}
+@media (max-width:1180px) and (min-width:761px) {
+  .titlebar > .top-route-nav { width:68px !important; min-width:68px !important; }
+  .titlebar > .top-route-nav .top-route-item { width:50px !important; min-width:50px !important; height:50px !important; min-height:50px !important; flex-basis:50px !important; }
+  .titlebar > .top-route-nav .top-route-item svg { width:23px !important; height:23px !important; }
+  .main,.main:has(.home-screen) { padding-left:82px !important; }
+  .home-screen .home-featured-sidebar { top:49px !important; left:10px !important; }
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card { top:270px !important; bottom:auto !important; left:10px !important; width:clamp(220px,29vw,330px) !important; height:min(34vh,300px) !important; }
+  .home-screen .home-server-dock { top:270px !important; bottom:auto !important; left:calc(26px + clamp(220px,29vw,330px)) !important; height:min(34vh,300px) !important; }
+  #mist-home-bottom-dock { left:82px !important; right:296px !important; }
+}
+/* Tighten the featured-to-dashboard rhythm to match the reference proportions. */
+@media (min-width:761px) {
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card,
+  .home-screen .home-server-dock { top:256px !important; }
+}
+/* Account and settings live at the foot of the launcher navigation rail. */
+.titlebar > .top-route-nav { display:flex !important; flex-direction:column !important; }
+.titlebar > .top-route-nav .mist-route-footer {
+  display:flex !important; flex:0 0 auto !important; flex-direction:column !important; align-items:center !important; gap:8px !important;
+  width:100% !important; margin-top:auto !important; padding-top:12px !important; border-top:1px solid #303034 !important;
+}
+.titlebar > .top-route-nav .mist-route-footer > .mist-dock-account,
+.titlebar > .top-route-nav .mist-route-footer > .mist-dock-settings {
+  display:inline-flex !important; flex:0 0 56px !important; width:56px !important; min-width:56px !important; height:56px !important; min-height:56px !important;
+  align-items:center !important; justify-content:center !important; padding:0 !important; border:1px solid transparent !important; border-radius:14px !important;
+  color:#a6a6b0 !important; background:transparent !important; cursor:pointer !important;
+}
+.titlebar > .top-route-nav .mist-route-footer svg { width:25px !important; height:25px !important; }
+.titlebar > .top-route-nav .mist-route-footer > button:hover { color:#f2f2f4 !important; background:#242428 !important; border-color:#38383f !important; }
+.titlebar > .top-route-nav .mist-route-footer .mist-dock-tooltip { left:calc(100% + 8px) !important; top:50% !important; bottom:auto !important; transform:translateY(-50%) !important; }
+#mist-left-dock {
+  box-sizing:border-box !important; flex-wrap:nowrap !important; border:1px solid transparent !important;
+  background-color:#19191c !important;
+  background-image:linear-gradient(112deg,rgba(238,64,115,.18),rgba(64,199,211,.16),rgba(126,82,226,.20),rgba(248,175,61,.15)) !important;
+  background-size:240% 240% !important; animation:mist-dock-rgb-flow 12s ease-in-out infinite alternate !important;
+  box-shadow:0 8px 28px rgba(0,0,0,.38),0 0 16px rgba(125,85,230,.12) !important;
+}
+#mist-left-dock > .mist-dock-item,
+#mist-left-dock > .mist-dock-create,
+#mist-left-dock > .mist-dock-divider { flex-shrink:0 !important; }
+#mist-left-dock .mist-dock-instance-list { min-width:0 !important; flex:0 1 144px !important; overflow:hidden auto !important; }
+#mist-left-dock .mist-dock-instance-list::-webkit-scrollbar { display:none !important; }
+@keyframes mist-dock-rgb-flow { from { background-position:0% 50%; } to { background-position:100% 50%; } }
+@media (prefers-reduced-motion:reduce) { #mist-left-dock { animation:none !important; } }
+@media (min-width:1181px) {
+  .titlebar > .top-route-nav { width:84px !important; min-width:84px !important; padding-bottom:12px !important; }
+  .titlebar > .top-route-nav .mist-route-footer > .mist-dock-account,
+  .titlebar > .top-route-nav .mist-route-footer > .mist-dock-settings { width:56px !important; height:56px !important; }
+  #mist-left-dock { max-width:calc(100vw - 220px) !important; }
+}
+@media (max-width:1180px) and (min-width:761px) {
+  .titlebar > .top-route-nav .mist-route-footer > .mist-dock-account,
+  .titlebar > .top-route-nav .mist-route-footer > .mist-dock-settings { width:50px !important; min-width:50px !important; height:50px !important; min-height:50px !important; flex-basis:50px !important; }
+  .titlebar > .top-route-nav .mist-route-footer svg { width:23px !important; height:23px !important; }
+  #mist-left-dock { max-width:calc(100vw - 150px) !important; }
+}
+
+/* Titlebar-wide animated RGB wash; button faces retain their own charcoal styling. */
+.titlebar {
+  position:relative !important; isolation:isolate !important; overflow:visible !important;
+  background-color:#171719 !important;
+  background-image:linear-gradient(112deg,#24202a 0%,#27242a 18%,#1e2929 37%,#25212d 56%,#29251f 76%,#211f29 100%) !important;
+  background-size:280% 280% !important;
+  animation:mist-titlebar-rgb-flow 18s ease-in-out infinite alternate !important;
+  border-bottom:1px solid #35313a !important;
+}
+@keyframes mist-titlebar-rgb-flow { from { background-position:0% 50%; } to { background-position:100% 50%; } }
+@media (prefers-reduced-motion:reduce) { .titlebar { animation:none !important; } }
+
+/* Home and Create sit above the content categories in the left rail. */
+.titlebar > .top-route-nav .mist-route-header {
+  display:flex !important; flex:0 0 auto !important; flex-direction:column !important; align-items:center !important;
+  gap:7px !important; width:100% !important; margin:0 0 5px !important; padding:0 0 10px !important;
+  border-bottom:1px solid #303034 !important;
+}
+.titlebar > .top-route-nav .mist-route-header > button {
+  position:relative !important; display:inline-flex !important; flex:0 0 48px !important; width:56px !important; min-width:56px !important;
+  height:48px !important; min-height:48px !important; align-items:center !important; justify-content:center !important;
+  padding:0 !important; border:1px solid transparent !important; border-radius:13px !important;
+  color:#a6a6b0 !important; background:transparent !important; cursor:pointer !important;
+}
+.titlebar > .top-route-nav .mist-route-header > button svg { width:25px !important; height:25px !important; }
+.titlebar > .top-route-nav .mist-route-header > button:hover { color:#f2f2f4 !important; background:#242428 !important; border-color:#38383f !important; }
+.titlebar > .top-route-nav .mist-route-header > .mist-dock-create { color:#c6a6ff !important; background:#282131 !important; border-color:#7048a8 !important; }
+.titlebar > .top-route-nav .mist-route-header .mist-dock-tooltip { left:calc(100% + 8px) !important; top:50% !important; bottom:auto !important; transform:translateY(-50%) !important; }
+.titlebar > .top-route-nav .top-route-item { flex-shrink:0 !important; }
+
+/* No duplicate instance icons or shortcut tray in the titlebar. */
+#mist-left-dock { display:none !important; }
+
+/* Browse instances occupies the upper-left of the home workspace beside its featured heading. */
+.home-screen .home-featured-sidebar { top:76px !important; }
+.home-right-rail .home-news-sidebar { top:76px !important; }
+.home-screen .home-featured-sidebar .home-news-sidebar-heading {
+  display:flex !important; min-width:0 !important; align-items:center !important; justify-content:flex-start !important; gap:14px !important;
+}
+.home-screen .mist-browse-instances {
+  position:relative !important; display:inline-flex !important; flex:0 0 auto !important; min-height:28px !important;
+  align-items:center !important; justify-content:center !important; gap:7px !important; padding:3px 8px !important;
+  border:1px solid #3a3a40 !important; border-radius:8px !important; color:#e7e7eb !important; background:#242427 !important;
+  font-size:11px !important; font-weight:650 !important; cursor:pointer !important;
+}
+.home-screen .mist-browse-instances svg { width:15px !important; height:15px !important; }
+.home-screen .mist-browse-instances .mist-dock-tooltip { display:none !important; }
+.home-screen .mist-browse-instances:hover { border-color:#67518b !important; background:#2a2730 !important; }
+.home-screen .home-featured-sidebar .home-news-sidebar-heading > :not(.mist-browse-instances) { min-width:0; }
+
+/* The Play menu is populated from the launcher's real installation shelf. */
+#mist-play-instance-menu {
+  position:fixed !important; z-index:10020 !important; width:min(310px,calc(100vw - 24px)) !important; max-height:min(420px,65vh) !important;
+  box-sizing:border-box !important; overflow:hidden auto !important; padding:10px !important; border:1px solid #45454d !important;
+  border-radius:13px !important; color:#f1f1f4 !important; background:#202023 !important; box-shadow:0 18px 50px rgba(0,0,0,.55) !important;
+}
+#mist-play-instance-menu[hidden] { display:none !important; }
+.mist-play-menu-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 3px 9px; border-bottom:1px solid #36363c; }
+.mist-play-menu-heading strong { font-size:13px; }
+.mist-play-menu-close { width:28px; height:28px; border:1px solid #3b3b42; border-radius:7px; color:#d8d8de; background:#29292d; cursor:pointer; }
+.mist-play-menu-list { display:grid; gap:5px; padding-top:8px; }
+.mist-play-instance-option,.mist-play-menu-browse { display:flex; width:100%; min-height:45px; align-items:center; gap:10px; padding:6px 8px; border:1px solid transparent; border-radius:8px; color:#ededf1; background:#27272b; text-align:left; cursor:pointer; }
+.mist-play-instance-option:hover,.mist-play-menu-browse:hover { border-color:#66508c; background:#302a38; }
+.mist-play-instance-option[aria-current="true"] { border-color:#7658a8; background:#30263d; }
+.mist-play-instance-option img,.mist-play-instance-option .install-art { width:32px; height:32px; flex:0 0 32px; border-radius:7px; object-fit:cover; image-rendering:pixelated; }
+.mist-play-instance-option > span { min-width:0; overflow:hidden; font-size:12px; font-weight:650; text-overflow:ellipsis; white-space:nowrap; }
+.mist-play-menu-empty { margin:4px 3px; color:#a5a5af; font-size:12px; }
+
+/* Keep the installation selector visible for every content type and in Versions. */
+.overlay:has(.project-detail) .mist-install-target-field { display:block !important; }
+
+@media (max-width:760px) {
+  .titlebar > .top-route-nav .mist-route-header { flex-direction:row !important; width:auto !important; margin:0 5px 0 0 !important; padding:0 7px 0 0 !important; border-right:1px solid #303034 !important; border-bottom:0 !important; }
+  .titlebar > .top-route-nav .mist-route-header > button { width:40px !important; min-width:40px !important; height:40px !important; min-height:40px !important; flex-basis:40px !important; }
+  .home-screen .home-featured-sidebar { top:58px !important; }
+  .home-right-rail .home-news-sidebar { top:58px !important; }
+}
+
+/* Final fit: match the Home and News top edges, keep the full left rail visible. */
+.titlebar {
+  background-image:linear-gradient(112deg,#542238 0%,#1c4545 27%,#34285b 53%,#543b20 78%,#2d1f39 100%) !important;
+  background-size:300% 300% !important;
+}
+.home-screen .home-featured-sidebar { top:46px !important; }
+.titlebar > .top-route-nav { gap:4px !important; }
+.titlebar > .top-route-nav .mist-route-header { gap:5px !important; margin-bottom:3px !important; padding-bottom:7px !important; }
+.titlebar > .top-route-nav .mist-route-header > button { height:42px !important; min-height:42px !important; flex-basis:42px !important; }
+.titlebar > .top-route-nav .top-route-item { height:42px !important; min-height:42px !important; flex-basis:42px !important; }
+.titlebar > .top-route-nav .mist-route-footer { gap:4px !important; padding-top:7px !important; }
+.titlebar > .top-route-nav .mist-route-footer > .mist-dock-account,
+.titlebar > .top-route-nav .mist-route-footer > .mist-dock-settings { height:44px !important; min-height:44px !important; flex-basis:44px !important; }
+@media (max-width:1180px) and (min-width:761px) {
+  .titlebar > .top-route-nav { gap:3px !important; }
+  .titlebar > .top-route-nav .mist-route-header > button { height:38px !important; min-height:38px !important; flex-basis:38px !important; }
+  .titlebar > .top-route-nav .top-route-item { height:38px !important; min-height:38px !important; flex-basis:38px !important; }
+  .titlebar > .top-route-nav .mist-route-footer > .mist-dock-account,
+  .titlebar > .top-route-nav .mist-route-footer > .mist-dock-settings { height:40px !important; min-height:40px !important; flex-basis:40px !important; }
+}

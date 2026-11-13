@@ -1,0 +1,61 @@
+{
+  "name": "mist-launcher",
+  "productName": "Mist Launcher",
+  "version": "0.1.26",
+  "description": "Mist Launcher — a modern, modular Minecraft: Java Edition launcher.",
+  "main": "./out/main/index.js",
+  "author": {
+    "name": "Mist Launcher contributors"
+  },
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "minimatch": "^11.0.1"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2",
+    "skinview3d": "^3.4.2",
+    "zustand": "^5.0.8"
+  },
+  "build": {
+    "directories": {
+      "output": "C:\\Users\\USER\\Downloads\\Mist Launcher Builds\\0.1.26"
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "createStartMenuShortcut": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "oneClick": false,
+      "deleteAppDataOnUninstall": false
+    },
+    "productName": "Mist Launcher",
+    "asar": true,
+    "files": [
+      "out/**/*"
+    ],
+    "appId": "com.mist.launcher",
+    "win": {
+      "signAndEditExecutable": false,
+      "artifactName": "Mist Launcher-${version}-windows-x64.${ext}",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build:installer": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0"
+  }
+}
