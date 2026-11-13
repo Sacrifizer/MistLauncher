@@ -25,6 +25,9 @@ A modern, modular Minecraft: Java Edition launcher for Windows, built with Elect
 
 Prebuilt installers are attached to each [Release](https://github.com/Sacrifizer/MistLauncher/releases).
 
+> The installer is not code-signed yet, so Windows SmartScreen may show
+> "Windows protected your PC". Click **More info → Run anyway** to continue.
+
 ## Build from source
 
 ```bash
