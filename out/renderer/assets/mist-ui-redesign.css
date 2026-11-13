@@ -1825,3 +1825,13 @@ html:has(.home-screen) { --mist-launcher-wallpaper:none !important; }
   .titlebar > .top-route-nav .mist-route-footer > .mist-dock-account,
   .titlebar > .top-route-nav .mist-route-footer > .mist-dock-settings { height:40px !important; min-height:40px !important; flex-basis:40px !important; }
 }
+
+/* Matching animated RGB gutters keep distinct space between each Home dock. */
+.app-shell:has(.home-screen) .main {
+  background-color:#1a1a1a !important;
+  background-image:linear-gradient(112deg,#542238 0%,#1c4545 27%,#34285b 53%,#543b20 78%,#2d1f39 100%) !important;
+  background-size:300% 300% !important;
+  animation:mist-titlebar-rgb-flow 18s ease-in-out infinite alternate !important;
+}
+.main:has(.home-screen)::before { inset:18px 306px 96px 98px !important; }
+@media (prefers-reduced-motion:reduce) { .app-shell:has(.home-screen) .main { animation:none !important; } }
