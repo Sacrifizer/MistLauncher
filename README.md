@@ -25,7 +25,7 @@ A modern, modular Minecraft: Java Edition launcher for Windows, built with Elect
 
 ## Download
 
-**[⬇ Download Mist Launcher 0.1.26 (Windows x64)](https://github.com/Sacrifizer/MistLauncher/releases/download/v0.1.26/Mist%20Launcher-0.1.26-windows-x64.exe)**
+**[⬇ Download Mist Launcher 0.1.26 (Windows x64)](https://github.com/Sacrifizer/MistLauncher/releases/download/v0.1.26/Mist.Launcher-0.1.26-windows-x64.exe)**
 
 Prefer to browse files? See all [releases](https://github.com/Sacrifizer/MistLauncher/releases).
 
@@ -36,7 +36,7 @@ Prefer to browse files? See all [releases](https://github.com/Sacrifizer/MistLau
 
 | Version | File | Size |
 | --- | --- | --- |
-| v0.1.26 | [`Mist Launcher-0.1.26-windows-x64.exe`](https://github.com/Sacrifizer/MistLauncher/releases/download/v0.1.26/Mist%20Launcher-0.1.26-windows-x64.exe) | ~127 MB |
+| v0.1.26 | [`Mist.Launcher-0.1.26-windows-x64.exe`](https://github.com/Sacrifizer/MistLauncher/releases/download/v0.1.26/Mist.Launcher-0.1.26-windows-x64.exe) | ~121 MB |
 
 ## Build from source
 
