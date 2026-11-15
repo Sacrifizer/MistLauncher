@@ -31,6 +31,8 @@ const node_crypto = require("node:crypto");
 const node_stream = require("node:stream");
 const promises = require("node:stream/promises");
 const node_child_process = require("node:child_process");
+const node_net = require("node:net");
+const node_dgram = require("node:dgram");
 const node_util = require("node:util");
 const node_zlib = require("node:zlib");
 const promises$1 = require("node:fs/promises");
@@ -73,13 +75,13 @@ const MOJANG_RUNTIME_PLATFORMS = {
 };
 const EVENTS_CHANNEL = "mist:event";
 const INVOKE_CHANNEL = "mist:invoke";
-const MIST_DATA_DIR = process.env.MIST_DATA_DIR || process.env.SACRIFY_DATA_DIR;
-const MIST_MS_CLIENT_ID = process.env.MIST_MS_CLIENT_ID || process.env.SACRIFY_MS_CLIENT_ID;
-const MIST_CURSEFORGE_API_KEY = process.env.MIST_CURSEFORGE_API_KEY || process.env.SACRIFY_CURSEFORGE_API_KEY;
-const MIST_WORLD_CHAT_URL = process.env.MIST_WORLD_CHAT_URL || process.env.SACRIFY_WORLD_CHAT_URL;
-const MIST_CONTACT = process.env.MIST_CONTACT || process.env.SACRIFY_CONTACT;
-const MIST_SCREENSHOTS = process.env.MIST_SCREENSHOTS || process.env.SACRIFY_SCREENSHOTS;
-const MIST_VERIFY = process.env.MIST_VERIFY || process.env.SACRIFY_VERIFY;
+const MIST_DATA_DIR = process.env.MIST_DATA_DIR;
+const MIST_MS_CLIENT_ID = process.env.MIST_MS_CLIENT_ID;
+const MIST_CURSEFORGE_API_KEY = process.env.MIST_CURSEFORGE_API_KEY;
+const MIST_WORLD_CHAT_URL = process.env.MIST_WORLD_CHAT_URL;
+const MIST_CONTACT = process.env.MIST_CONTACT;
+const MIST_SCREENSHOTS = process.env.MIST_SCREENSHOTS;
+const MIST_VERIFY = process.env.MIST_VERIFY;
 class AppError extends Error {
   code;
   detail;
@@ -266,11 +268,7 @@ class Paths {
   constructor(dataDir) {
     const appData = electron.app.getPath("appData");
     const mistDataDir = path.join(appData, "Mist Launcher");
-    const legacyDataDir = path.join(appData, "Sacrify Launcher");
-    if (!dataDir && !MIST_DATA_DIR && node_fs.existsSync(legacyDataDir) && !node_fs.existsSync(mistDataDir)) {
-      try { node_fs.renameSync(legacyDataDir, mistDataDir); } catch { /* Keep using legacy data in place if it cannot be moved. */ }
-    }
-    this.dataDir = dataDir ?? MIST_DATA_DIR ?? (node_fs.existsSync(legacyDataDir) && !node_fs.existsSync(mistDataDir) ? legacyDataDir : mistDataDir);
+    this.dataDir = dataDir ?? MIST_DATA_DIR ?? mistDataDir;
     this.configDir = path.join(this.dataDir, "config");
     this.logsDir = path.join(this.dataDir, "logs");
     this.cacheDir = path.join(this.dataDir, "cache");
@@ -786,6 +784,7 @@ class DownloadJob {
       createdAt: (/* @__PURE__ */ new Date()).toISOString(),
       updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
       installationId: spec.installationId ?? null,
+      ...(spec.requestId !== void 0 ? { requestId: spec.requestId } : {}),
       cancellable: spec.cancellable !== false
     };
   }
@@ -2462,9 +2461,7 @@ class VersionInstaller {
   inflight = /* @__PURE__ */ new Map();
   markerPath(versionId) {
     const directory = this.paths.versionDir(versionId);
-    const current = path.join(directory, ".mist-install.json");
-    const legacy = path.join(directory, ".sacrify-install.json");
-    return node_fs.existsSync(current) || !node_fs.existsSync(legacy) ? current : legacy;
+    return path.join(directory, ".mist-install.json");
   }
   async isInstalled(versionId) {
     const marker = await readJson(this.markerPath(versionId), null);
@@ -3455,7 +3452,7 @@ class InstallationStore {
     return { ...copy };
   }
   async importProfile(data) {
-    if (!["mist-installation", "sacrify-installation"].includes(data.format) || data.version !== 1) {
+    if (data.format !== "mist-installation" || data.version !== 1) {
       throw new AppError("import-invalid", "That file is not a Mist Launcher installation profile.");
     }
     if (!VERSION_PATTERN.test(data.gameVersion)) {
@@ -4371,7 +4368,7 @@ class ModrinthProvider {
     if (query.gameVersion) params.set("game_versions", JSON.stringify([query.gameVersion]));
     const loader = loaderToModrinth(query.loader);
     if (loader && (query.projectType === "mod" || query.projectType === "modpack")) {
-      params.set("loaders", JSON.stringify([loader]));
+      params.set("loaders", JSON.stringify(loader === "quilt" ? ["quilt", "fabric"] : [loader]));
     }
     const suffix = params.toString() ? `?${params.toString()}` : "";
     const data = await this.http.json(
@@ -4383,8 +4380,11 @@ class ModrinthProvider {
   async version(projectId, versionId) {
     try {
       const data = await this.http.json(`${BASE$1}/version/${encodeURIComponent(versionId)}`, { timeoutMs: 3e4 });
-      if (data.project_id !== projectId) return null;
-      return this.mapVersion(data, projectId);
+      if (data.project_id !== projectId) {
+        const project = await this.http.json(`${BASE$1}/project/${encodeURIComponent(projectId)}`, { timeoutMs: 3e4 });
+        if (project.id !== data.project_id) return null;
+      }
+      return this.mapVersion(data, data.project_id);
     } catch {
       return null;
     }
@@ -4393,7 +4393,7 @@ class ModrinthProvider {
     const file = version.files.find((candidate) => candidate.primary) ?? version.files[0];
     return {
       id: version.id,
-      projectId,
+      projectId: version.project_id || projectId,
       name: version.name,
       versionNumber: version.version_number,
       gameVersions: version.game_versions ?? [],
@@ -4666,12 +4666,7 @@ function unique(values) {
   return [...new Set(values.filter(Boolean))];
 }
 function mistMetadataDir(gameDir) {
-  const current = path.join(gameDir, ".mist");
-  const legacy = path.join(gameDir, ".sacrify");
-  if (!node_fs.existsSync(current) && node_fs.existsSync(legacy)) {
-    try { node_fs.renameSync(legacy, current); } catch { return legacy; }
-  }
-  return current;
+  return path.join(gameDir, ".mist");
 }
 const EMPTY = { version: 1, mods: {}, resourcepacks: {}, shaders: {}, datapacks: {} };
 function contentTypeKey(kind) {
@@ -4829,8 +4824,54 @@ class ContentManager {
     if (!installation) throw new AppError("installation-missing", "That installation no longer exists.");
     return installation;
   }
+  activeRequests = /* @__PURE__ */ new Map();
+  validateRequestId(requestId) {
+    if (typeof requestId !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(requestId)) {
+      throw new AppError("invalid-request-id", "requestId must contain 1–128 letters, digits, underscores or hyphens.");
+    }
+    return requestId;
+  }
+  cancel(requestId) {
+    this.validateRequestId(requestId);
+    const active = this.activeRequests.get(requestId);
+    // Unknown/completed IDs are not retained: install registers synchronously
+    // before its first await, including when called through catalog.install IPC.
+    if (!active) return false;
+    active.cancelled = true;
+    active.job?.cancel();
+    return true;
+  }
   async install(request) {
+    const requestId = request.requestId;
+    if (requestId !== void 0) {
+      this.validateRequestId(requestId);
+      if (this.activeRequests.has(requestId)) throw new AppError("duplicate-request-id", "That install request is already active.");
+    }
+    const active = { cancelled: false, job: null };
+    const checkCancelled = () => {
+      if (active.cancelled || active.job?.signal.aborted) {
+        throw new AppError("cancelled", "Installation cancelled. Files already installed may remain.");
+      }
+    };
+    if (requestId !== void 0) this.activeRequests.set(requestId, active);
+    try {
+      const result = await this.installRequest(request, active, checkCancelled);
+      checkCancelled();
+      return result;
+    } catch (error) {
+      try {
+        checkCancelled();
+      } catch (cancelled) {
+        error = cancelled;
+      }
+      throw error;
+    } finally {
+      if (requestId !== void 0) this.activeRequests.delete(requestId);
+    }
+  }
+  async installRequest(request, active, checkCancelled) {
     const installation = await this.requireInstallation(request.installationId);
+    checkCancelled();
     const provider = this.provider(request.source);
     if (!provider.isConfigured()) {
       throw new AppError("provider-unconfigured", `${request.source === "curseforge" ? "CurseForge" : "Modrinth"} is not configured.`, {
@@ -4839,6 +4880,7 @@ class ContentManager {
     }
     const kind = request.projectType;
     const version = await provider.version(request.projectId, request.versionId);
+    checkCancelled();
     if (!version) {
       throw new AppError("project-version-missing", "That file version is no longer available from the provider.");
     }
@@ -4847,21 +4889,24 @@ class ContentManager {
       throw new AppError("incompatible", compatibility.errors[0], { hint: compatibility.warnings[0] });
     }
     const targetDir = await this.targetDirectory(installation, kind, request.worldFolder);
-    const job = this.downloads.create({
+    checkCancelled();
+    const job = active.job = this.downloads.create({
       kind: "content",
       title: `Installing ${kind === "mod" ? "mod" : kind === "resourcepack" ? "resource pack" : kind === "shader" ? "shader pack" : "data pack"}`,
       subtitle: installation.name,
       source: `${request.source === "modrinth" ? "Modrinth" : "CurseForge"} · ${hostOf(version.file.url)}`,
-      installationId: installation.id
+      installationId: installation.id,
+      requestId: request.requestId
     });
     job.setRetry(() => {
-      void this.install(request).catch(() => void 0);
+      void this.install({ ...request, requestId: void 0 }).catch(() => void 0);
     });
     try {
       job.start();
       job.setPhase("Resolving dependencies");
       const seenProjects = /* @__PURE__ */ new Set([request.projectId]);
       const store = await this.meta.read(installation.gameDir);
+      checkCancelled();
       const recordKey = (filename) => kind === "datapack" ? `${request.worldFolder ?? ""}/${filename}` : filename;
       for (const [key, record] of Object.entries(store[contentTypeKey(kind)])) {
         if (record.projectId) seenProjects.add(record.projectId);
@@ -4878,8 +4923,9 @@ class ContentManager {
         kind
       });
       if (request.withDependencies && kind === "mod") {
-        await this.collectDependencies(provider, version, installation, kind, pending, skipped, seenProjects, 1, request.source);
+        await this.collectDependencies(provider, version, installation, kind, pending, skipped, seenProjects, 1, request.source, checkCancelled);
       }
+      checkCancelled();
       const queued = [];
       for (const entry of pending) {
         if (entry.version.file.url == null) {
@@ -4894,7 +4940,9 @@ class ContentManager {
           });
           continue;
         }
-        if (!record && await pathExists(entry.dest)) {
+        const exists = !record && await pathExists(entry.dest);
+        checkCancelled();
+        if (exists) {
           skipped.push({ name: entry.filename, reason: "A file with this name already exists and was not installed by Mist Launcher." });
           continue;
         }
@@ -4904,6 +4952,7 @@ class ContentManager {
         }
         queued.push(entry);
       }
+      checkCancelled();
       if (queued.length === 0) {
         job.complete("Nothing to install");
         return { installed: [], skipped, warnings };
@@ -4920,8 +4969,10 @@ class ContentManager {
         }))
       );
       await job.run();
+      checkCancelled();
       const installed = [];
       await this.meta.mutate(installation.gameDir, (data) => {
+        checkCancelled();
         const bucket = data[contentTypeKey(kind)];
         for (const entry of queued) {
           const key = recordKey(entry.filename);
@@ -4947,6 +4998,7 @@ class ContentManager {
           }
         }
       });
+      checkCancelled();
       job.complete("Installed");
       this.logger.info("content", `Installed ${installed.length} file(s) into ${installation.name}.`);
       return { installed, skipped, warnings };
@@ -4955,7 +5007,8 @@ class ContentManager {
       throw error;
     }
   }
-  async collectDependencies(provider, version, installation, kind, pending, skipped, seenProjects, depth, source) {
+  async collectDependencies(provider, version, installation, kind, pending, skipped, seenProjects, depth, source, checkCancelled = () => {}) {
+    checkCancelled();
     if (depth > 6) return;
     for (const dependency of version.dependencies) {
       if (dependency.type !== "required" || !dependency.projectId || seenProjects.has(dependency.projectId)) continue;
@@ -4963,6 +5016,7 @@ class ContentManager {
         let dependencyVersion = null;
         if (dependency.versionId) {
           dependencyVersion = await provider.version(dependency.projectId, dependency.versionId);
+          checkCancelled();
         }
         if (!dependencyVersion) {
           const candidates = await provider.versions({
@@ -4972,6 +5026,7 @@ class ContentManager {
             loader: installation.loader.type,
             projectType: "mod"
           });
+          checkCancelled();
           dependencyVersion = candidates.find((candidate) => candidate.releaseType === "release") ?? candidates[0] ?? null;
         }
         if (!dependencyVersion) {
@@ -5004,9 +5059,12 @@ class ContentManager {
           skipped,
           seenProjects,
           depth + 1,
-          source
+          source,
+          checkCancelled
         );
+        checkCancelled();
       } catch (error) {
+        checkCancelled();
         skipped.push({
           name: `dependency ${dependency.projectId}`,
           reason: error instanceof Error ? error.message : "Dependency lookup failed."
@@ -5015,6 +5073,7 @@ class ContentManager {
     }
     if (depth === 1) {
       const base = await this.targetDirectory(installation, kind, null);
+      checkCancelled();
       for (const entry of pending) {
         if (!entry.dest) entry.dest = resolveInside(base, entry.filename);
       }
@@ -5567,8 +5626,7 @@ const PRESERVED = [
   "logs",
   "crash-reports",
   "backups",
-  ".mist",
-  ".sacrify"
+  ".mist"
 ];
 class ModpackManager {
   constructor(paths, installations, loaders, downloads, modrinth, curseforge, logger) {
@@ -5782,28 +5840,30 @@ class ModpackManager {
       job.setSubtitle(`${plan.gameVersion} · ${plan.loader.type}${plan.loader.version ? ` ${plan.loader.version}` : ""}`);
       const icon = input.icon?.startsWith("url:") || input.icon?.startsWith("preset:") ? input.icon : "preset:modpack";
       let installation;
+      const matches = (i) => i.gameVersion === plan.gameVersion && i.loader.type === plan.loader.type &&
+        (!i.loader.version || !plan.loader.version || i.loader.version === plan.loader.version);
+      const createMatching = () => this.installations.create(
+        {
+          name: input.name || plan.name,
+          gameVersion: plan.gameVersion,
+          loader: plan.loader,
+          icon: icon.startsWith("preset:") ? icon.slice(7) : icon,
+          memoryMb: input.memoryMb,
+          modpack: { ...plan.ref, versionId: input.versionId || plan.versionId }
+        },
+        { memoryMb: input.memoryMb ?? 4096 }
+      );
       if (input.installationId) {
         installation = this.installations.get(str(input.installationId, "installationId"));
         if (!installation) throw new AppError("installation-missing", "The selected installation no longer exists.");
-        if (installation.gameVersion !== plan.gameVersion || installation.loader.type !== plan.loader.type) {
-          throw new AppError("modpack-target-incompatible", `This pack requires Minecraft ${plan.gameVersion} with ${plan.loader.type}; ${installation.name} uses Minecraft ${installation.gameVersion} with ${installation.loader.type}. Choose a matching installation or create a new one.`);
-        }
-        if (installation.loader.version && plan.loader.version && installation.loader.version !== plan.loader.version) {
-          throw new AppError("modpack-loader-incompatible", `This pack requires ${plan.loader.type} ${plan.loader.version}; ${installation.name} uses ${installation.loader.version}. Choose a matching installation or create a new one.`);
+        if (!matches(installation)) {
+          const existing = this.installations.list().find((i) => i.id !== installation.id && matches(i));
+          installation = existing || await createMatching();
         }
       } else {
-        installation = await this.installations.create(
-          {
-            name: input.name || plan.name,
-            gameVersion: plan.gameVersion,
-            loader: plan.loader,
-            icon: icon.startsWith("preset:") ? icon.slice(7) : icon,
-            memoryMb: input.memoryMb,
-            modpack: { ...plan.ref, versionId: input.versionId || plan.versionId }
-          },
-          { memoryMb: input.memoryMb ?? 4096 }
-        );
+        installation = await createMatching();
       }
+      job.setSubtitle(`${installation.name} · ${plan.gameVersion} · ${plan.loader.type}${plan.loader.version ? ` ${plan.loader.version}` : ""}`);
       if (plan.loader.type !== "vanilla") {
         job.setPhase(`Installing ${plan.loader.type}`);
         await this.loaders.install(installation.id, plan.loader);
@@ -6038,7 +6098,7 @@ class ModpackManager {
       } catch {
         throw new AppError("import-invalid", "That JSON file could not be read.");
       }
-      if (!["mist-modpack", "sacrify-modpack"].includes(profile.format) || !profile.ref?.projectId) {
+      if (profile.format !== "mist-modpack" || !profile.ref?.projectId) {
         throw new AppError("import-invalid", "That file is not a Mist Launcher modpack profile.");
       }
       return this.install({
@@ -6824,6 +6884,1433 @@ function offlineSkinPackMeta(version) {
   else if (b >= 9) packFormat = 2;
   return { pack_format: packFormat, description: "Mist Launcher local offline skin" };
 }
+const SERVER_GAMEMODES = ["survival", "creative", "adventure", "spectator"];
+const SERVER_DIFFICULTIES = ["peaceful", "easy", "normal", "hard"];
+const SERVER_KEY_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function mistRandomKey(length = 6) {
+  const bytes = node_crypto.randomBytes(length);
+  let out = "";
+  for (let i = 0; i < length; i++) out += SERVER_KEY_ALPHABET[bytes[i] % SERVER_KEY_ALPHABET.length];
+  return out;
+}
+function mistLanAddresses() {
+  const out = [];
+  for (const list of Object.values(os.networkInterfaces())) {
+    for (const entry of list ?? []) {
+      if (entry.family === "IPv4" && !entry.internal) out.push(entry.address);
+    }
+  }
+  return [...new Set(out)];
+}
+const SERVER_INVITE_KEY = node_crypto.createHash("sha256").update("mist-launcher/invite/v1/9f2c7ab4d15e6038", "utf8").digest();
+const SERVER_DISCOVERY_PORT = 41235;
+const SERVER_DISCOVERY_TAG = "MIST-DISCOVER-1";
+const SERVER_DISCOVERY_KIND = "mist-local-server";
+function mistVarInt(value) {
+  let v = value >>> 0;
+  const bytes = [];
+  do {
+    let byte = v & 127;
+    v >>>= 7;
+    if (v !== 0) byte |= 128;
+    bytes.push(byte);
+  } while (v !== 0);
+  return Buffer.from(bytes);
+}
+function mistReadVarInt(buffer, offset) {
+  let value = 0;
+  let shift = 0;
+  let index = offset;
+  while (index < buffer.length) {
+    const byte = buffer[index];
+    value |= (byte & 127) << shift;
+    index += 1;
+    if ((byte & 128) === 0) return [value >>> 0, index - offset];
+    shift += 7;
+    if (shift > 35) break;
+  }
+  return null;
+}
+function mistString(value) {
+  const body = Buffer.from(String(value), "utf8");
+  return Buffer.concat([mistVarInt(body.length), body]);
+}
+function encodeServerInvite(payload) {
+  const iv = node_crypto.randomBytes(12);
+  const cipher = node_crypto.createCipheriv("aes-256-gcm", SERVER_INVITE_KEY, iv);
+  const data = Buffer.concat([cipher.update(JSON.stringify(payload), "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `MIST1.${Buffer.concat([iv, tag, data]).toString("base64url")}`;
+}
+function inviteBody(code) {
+  const raw = String(code ?? "").trim().replace(/\s+/g, "");
+  if (!raw) return null;
+  const body = /^MIST1\./i.test(raw) ? raw.slice(6) : raw;
+  if (!/^[A-Za-z0-9_-]{16,4096}$/.test(body)) return null;
+  return body;
+}
+function inviteFromEncrypted(body) {
+  const blob = Buffer.from(body, "base64url");
+  if (blob.length < 30) return null;
+  try {
+    const decipher = node_crypto.createDecipheriv("aes-256-gcm", SERVER_INVITE_KEY, blob.subarray(0, 12));
+    decipher.setAuthTag(blob.subarray(12, 28));
+    const text = Buffer.concat([decipher.update(blob.subarray(28)), decipher.final()]).toString("utf8");
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+function inviteFromLegacy(body) {
+  try {
+    const decoded = Buffer.from(body, "base64url").toString("utf8");
+    if (!decoded.trimStart().startsWith("{")) return null;
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+}
+function decodeServerInvite(code) {
+  const body = inviteBody(code);
+  if (!body) return null;
+  try {
+    const parsed = inviteFromEncrypted(body) ?? inviteFromLegacy(body);
+    if (!parsed || typeof parsed !== "object" || typeof parsed.h !== "string" || typeof parsed.p !== "number") return null;
+    const host = parsed.h.trim().slice(0, 253);
+    const port = Math.floor(Number(parsed.p));
+    if (!host || !Number.isFinite(port) || port < 1 || port > 65535) return null;
+    return {
+      host,
+      port,
+      name: typeof parsed.n === "string" ? parsed.n.trim().slice(0, 100) || host : host,
+      key: typeof parsed.k === "string" ? parsed.k.slice(0, 64) : ""
+    };
+  } catch {
+    return null;
+  }
+}
+function mistServerProperties(server) {
+  const rows = [
+    ["motd", server.motd],
+    ["server-port", String(server.port)],
+    ["max-players", String(server.maxPlayers)],
+    ["gamemode", server.gamemode],
+    ["difficulty", server.difficulty],
+    ["level-name", server.levelName],
+    ["level-seed", server.levelSeed],
+    ["level-type", server.levelType],
+    ["online-mode", server.onlineMode ? "true" : "false"],
+    ["pvp", server.pvp ? "true" : "false"],
+    ["allow-flight", server.allowFlight ? "true" : "false"],
+    ["white-list", server.whiteList ? "true" : "false"],
+    ["view-distance", String(server.viewDistance)],
+    ["spawn-protection", String(server.spawnProtection)],
+    ["enable-command-block", server.enableCommandBlock ? "true" : "false"],
+    ["hardcore", server.hardcore ? "true" : "false"],
+    ["server-ip", server.serverIp || ""],
+    ["enable-query", "false"],
+    ["enforce-secure-profile", "false"],
+    ["prevent-proxy-connections", "false"],
+    ["require-resource-pack", "false"],
+    ["resource-pack", ""],
+    ["resource-pack-sha1", ""],
+    ["enable-status", "true"],
+    ["enable-rcon", "false"]
+  ];
+  return `#Minecraft server properties (managed by Mist Launcher)\n${rows.map(([key, value]) => `${key}=${String(value).replace(/[\r\n]/g, "")}`).join("\n")}\n`;
+}
+const SERVER_SOFTWARE_IDS = ["vanilla", "paper", "purpur", "fabric", "forge", "neoforge", "quilt", "pumpkin"];
+const SERVER_SOFTWARE_INFO = [
+  { id: "vanilla", label: "Vanilla", tagline: "Official Mojang server", description: "The official Minecraft server. Nothing added, maximum compatibility, no plugins.", plugins: false, mods: false, rust: false, recommended: false },
+  { id: "paper", label: "Paper", tagline: "Fast, plugin ready", description: "High performance fork of Spigot. Best choice for plugins; supports Bukkit/Spigot/Paper plugins.", plugins: true, mods: false, rust: false, recommended: true },
+  { id: "purpur", label: "Purpur", tagline: "Paper with extras", description: "Paper fork with hundreds of extra gameplay and configuration options. Plugin compatible.", plugins: true, mods: false, rust: false, recommended: false },
+  { id: "fabric", label: "Fabric", tagline: "Lightweight mod loader", description: "Modern, fast mod loader. Install Fabric mods from the mods folder.", plugins: false, mods: true, rust: false, recommended: false },
+  { id: "forge", label: "Forge", tagline: "Classic mod loader", description: "The classic modding platform for large modpacks. First start prepares libraries and can take a few minutes.", plugins: false, mods: true, rust: false, recommended: false },
+  { id: "neoforge", label: "NeoForge", tagline: "Modern Forge fork", description: "Community-driven fork of Forge for recent Minecraft versions. Supports NeoForge mods.", plugins: false, mods: true, rust: false, recommended: false },
+  { id: "quilt", label: "Quilt", tagline: "Open mod loader", description: "Open-source Fabric fork. Runs Quilt and most Fabric mods.", plugins: false, mods: true, rust: false, recommended: false },
+  { id: "pumpkin", label: "Pumpkin (Rust)", tagline: "Experimental Rust server", description: "A Minecraft server written in Rust. Very fast and lightweight. Native .wasm plugins; Bukkit/Paper .jar plugins run through the optional PatchBukkit bridge.", plugins: false, mods: false, rust: true, patchbukkit: true, recommended: false }
+];
+function serverSoftwareInfo(id) {
+  return SERVER_SOFTWARE_INFO.find((entry) => entry.id === id) ?? SERVER_SOFTWARE_INFO[0];
+}
+function compareVersionsDesc(a, b) {
+  const pa = String(a).split(".").map(Number);
+  const pb = String(b).split(".").map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const diff = (pb[i] ?? 0) - (pa[i] ?? 0);
+    if (diff) return diff;
+  }
+  return 0;
+}
+function neoForgeMcVersion(neoVersion, known = null) {
+  const parts = String(neoVersion).split(".").filter((part) => /^\d+$/.test(part));
+  for (let n = parts.length - 1; n >= 2; n--) {
+    const candidate = parts.slice(0, n).join(".");
+    if (!known) return candidate;
+    if (known.has(candidate)) return candidate;
+    if (known.has(`1.${candidate}`)) return `1.${candidate}`;
+  }
+  return null;
+}
+function neoForgeArtifactPrefix(mcVersion) {
+  const parts = String(mcVersion).split(".");
+  if (parts[0] === "1") return `${parts[1]}.${parts[2] ?? 0}`;
+  return parts.length >= 3 ? `${parts[0]}.${parts[1]}.${parts[2]}` : `${parts[0]}.${parts[1]}`;
+}
+function mavenArtifactPath(name) {
+  const [group, artifact, version, ...rest] = String(name).split(":");
+  const classifier = rest.length ? `-${rest.join(":")}` : "";
+  return `${group.replace(/\./g, "/")}/${artifact}/${version}/${artifact}-${version}${classifier}.jar`;
+}
+function mistBoolean(value, fallback = false) {
+  return typeof value === "boolean" ? value : fallback;
+}
+function tomlString(value) {
+  return JSON.stringify(String(value ?? ""));
+}
+function mistPumpkinToml(server) {
+  const gamemode = server.gamemode.charAt(0).toUpperCase() + server.gamemode.slice(1);
+  const difficulty = server.difficulty.charAt(0).toUpperCase() + server.difficulty.slice(1);
+  return [
+    ...(server.levelSeed ? [`seed = ${tomlString(server.levelSeed)}`] : []),
+    `default_difficulty = ${tomlString(difficulty)}`,
+    `default_gamemode = ${tomlString(gamemode)}`,
+    `force_gamemode = false`,
+    `hardcore = ${server.hardcore ? "true" : "false"}`,
+    `white_list = ${server.whiteList ? "true" : "false"}`,
+    `enforce_whitelist = ${server.whiteList ? "true" : "false"}`,
+    `spawn_protection = ${server.spawnProtection}`,
+    `default_level_name = ${tomlString(server.levelName)}`,
+    `allow_nether = true`,
+    `allow_end = true`,
+    "",
+    "[networking.java]",
+    `enabled = true`,
+    `address = "0.0.0.0:${server.port}"`,
+    `online_mode = ${server.onlineMode ? "true" : "false"}`,
+    `max_players = ${server.maxPlayers}`,
+    `view_distance = ${server.viewDistance}`,
+    `motd = ${tomlString(server.motd)}`,
+    "",
+    "[pvp]",
+    `enabled = ${server.pvp ? "true" : "false"}`,
+    "",
+    "[networking.bedrock]",
+    `enabled = false`,
+    "",
+    "[networking.bedrock.nethernet]",
+    `enabled = false`,
+    "",
+    "[plugins]",
+    `enabled = true`,
+    `allow_unsigned = true`,
+    `ask_permission_confirmation = false`,
+    "",
+    "[telemetry]",
+    `enabled = false`,
+    "",
+    "[logging]",
+    `enabled = true`,
+    `level = "info"`,
+    ""
+  ].join("\n");
+}
+class LocalServerManager {
+  constructor(paths, meta, java, downloads, logger, options, http) {
+    this.paths = paths;
+    this.meta = meta;
+    this.java = java;
+    this.downloads = downloads;
+    this.logger = logger;
+    this.options = options;
+    this.http = http ?? null;
+  }
+  paths;
+  meta;
+  java;
+  downloads;
+  logger;
+  options;
+  http;
+  softwareCache = /* @__PURE__ */ new Map();
+  servers = [];
+  running = /* @__PURE__ */ new Map();
+  discoverySocket = null;
+  get serversFile() {
+    return path.join(this.paths.configDir, "local-servers.json");
+  }
+  get serversRoot() {
+    return path.join(this.paths.dataDir, "servers");
+  }
+  serverDir(id) {
+    return path.join(this.serversRoot, safeSegment(id));
+  }
+  async load() {
+    this.servers = [];
+    const data = await readJson(this.serversFile, { version: 1, servers: [] });
+    for (const entry of Array.isArray(data.servers) ? data.servers : []) {
+      const server = this.sanitize(entry, true);
+      if (server) this.servers.push(server);
+    }
+  }
+  async save() {
+    await ensureDir(this.paths.configDir);
+    await writeJsonAtomic(this.serversFile, { version: 1, servers: this.servers });
+    this.options.emit("dataChanged");
+  }
+  require(id) {
+    const server = this.servers.find((entry) => entry.id === id);
+    if (!server) throw new AppError("server-missing", "That local server no longer exists.");
+    return server;
+  }
+  sanitize(input, forgiving = false) {
+    const name = typeof input.name === "string" ? input.name.trim().slice(0, 60) : "";
+    const version = typeof input.version === "string" ? input.version.trim() : "";
+    if (!name || !VERSION_PATTERN.test(version)) {
+      if (forgiving) return null;
+      throw new AppError("server-invalid", "Enter a server name and a valid Minecraft version.");
+    }
+    const port = Math.round(Number(input.port));
+    const server = {
+      id: typeof input.id === "string" && input.id ? input.id : null,
+      name,
+      version,
+      software: SERVER_SOFTWARE_IDS.includes(input.software) ? input.software : "vanilla",
+      port: Number.isFinite(port) && port >= 1 && port <= 65535 ? port : 25565,
+      memoryMb: Math.round(clampNumber(input.memoryMb, 512, 65536, 2048)),
+      maxPlayers: Math.round(clampNumber(input.maxPlayers, 1, 1000, 20)),
+      gamemode: SERVER_GAMEMODES.includes(input.gamemode) ? input.gamemode : "survival",
+      difficulty: SERVER_DIFFICULTIES.includes(input.difficulty) ? input.difficulty : "normal",
+      motd: typeof input.motd === "string" ? input.motd.replace(/[\r\n]/g, " ").slice(0, 100) || "A Mist Launcher server" : "A Mist Launcher server",
+      levelName: typeof input.levelName === "string" && input.levelName.trim() ? safeSegment(input.levelName.trim().slice(0, 40)) : "world",
+      levelSeed: typeof input.levelSeed === "string" ? input.levelSeed.slice(0, 200) : "",
+      levelType: typeof input.levelType === "string" && input.levelType.trim() ? input.levelType.trim().slice(0, 40) : "minecraft:normal",
+      onlineMode: input.onlineMode !== false,
+      visibility: input.visibility === "public" ? "public" : "private",
+      pvp: input.pvp !== false,
+      allowFlight: input.allowFlight === true,
+      whiteList: input.whiteList === true,
+      enableCommandBlock: input.enableCommandBlock === true,
+      hardcore: input.hardcore === true,
+      viewDistance: Math.round(clampNumber(input.viewDistance, 2, 32, 10)),
+      spawnProtection: Math.round(clampNumber(input.spawnProtection, 0, 64, 16)),
+      serverIp: typeof input.serverIp === "string" ? input.serverIp.trim().slice(0, 120) : "",
+      javaPath: typeof input.javaPath === "string" && input.javaPath.trim() ? input.javaPath.trim() : null,
+      customHost: typeof input.customHost === "string" && input.customHost.trim() ? input.customHost.trim().slice(0, 253) : null,
+      inviteKey: typeof input.inviteKey === "string" && input.inviteKey ? input.inviteKey : mistRandomKey(6),
+      created: typeof input.created === "string" ? input.created : (/* @__PURE__ */ new Date()).toISOString(),
+      lastPlayed: typeof input.lastPlayed === "string" ? input.lastPlayed : null
+    };
+    return server;
+  }
+  state(id) {
+    const record = this.running.get(id);
+    if (record) return { ...record.state };
+    return { id, running: false, pid: null, startedAt: null, exitCode: null, ready: false, players: 0 };
+  }
+  joinInfo(server) {
+    const host = server.customHost || mistLanAddresses()[0] || "localhost";
+    return { port: server.port, code: encodeServerInvite({ v: 1, h: host, p: server.port, k: server.inviteKey, n: server.name }) };
+  }
+  decorate(server) {
+    return { ...server, state: this.state(server.id), join: this.joinInfo(server) };
+  }
+  portAvailable(port) {
+    return new Promise((resolve) => {
+      const tester = node_net.createServer();
+      tester.unref();
+      tester.once("error", () => resolve(false));
+      tester.once("listening", () => tester.close(() => resolve(true)));
+      tester.listen({ port, host: "0.0.0.0", exclusive: true });
+    });
+  }
+  async nextFreePort(preferred) {
+    const used = new Set(this.servers.map((entry) => entry.port));
+    const start = Number.isFinite(preferred) && preferred >= 1 && preferred <= 65535 ? preferred : 25565;
+    for (let port = start; port <= Math.min(65535, start + 50); port++) {
+      if (used.has(port)) continue;
+      if (await this.portAvailable(port)) return port;
+    }
+    return start;
+  }
+  async ensurePortFree(server) {
+    const clash = this.servers.find((entry) => entry.id !== server.id && entry.port === server.port && this.running.has(entry.id));
+    if (clash) {
+      throw new AppError("port-in-use", `Port ${server.port} is already used by “${clash.name}”.`, {
+        hint: "Stop that server or pick another port in Settings."
+      });
+    }
+    if (!await this.portAvailable(server.port)) {
+      throw new AppError("port-in-use", `Port ${server.port} is already in use on this PC.`, {
+        hint: "Another app or server is using it. Pick another port in Settings."
+      });
+    }
+  }
+  list() {
+    return this.servers.map((server) => this.decorate(server));
+  }
+  discoveryPayload(server) {
+    const state = this.state(server.id);
+    return JSON.stringify({
+      mist: SERVER_DISCOVERY_KIND,
+      v: 1,
+      id: server.id,
+      name: server.name,
+      version: server.version,
+      software: server.software,
+      port: server.port,
+      players: state.players ?? 0,
+      maxPlayers: state.maxPlayers ?? server.maxPlayers,
+      ready: Boolean(state.ready),
+      motd: server.motd
+    });
+  }
+  ensureDiscovery() {
+    if (this.discoverySocket) return;
+    try {
+      const socket = node_dgram.createSocket({ type: "udp4", reuseAddr: true });
+      socket.on("message", (message, rinfo) => {
+        if (String(message).trim() !== SERVER_DISCOVERY_TAG) return;
+        for (const server of this.servers) {
+          if (server.visibility !== "public") continue;
+          if (!this.running.has(server.id)) continue;
+          const buffer = Buffer.from(this.discoveryPayload(server), "utf8");
+          socket.send(buffer, 0, buffer.length, rinfo.port, rinfo.address, () => void 0);
+        }
+      });
+      socket.on("error", () => void 0);
+      socket.bind(SERVER_DISCOVERY_PORT, "0.0.0.0", () => {
+        try { socket.setBroadcast(true); } catch { /* ignore */ }
+      });
+      socket.unref();
+      this.discoverySocket = socket;
+    } catch {
+      this.discoverySocket = null;
+    }
+  }
+  closeDiscovery() {
+    if (!this.discoverySocket) return;
+    try { this.discoverySocket.close(); } catch { /* ignore */ }
+    this.discoverySocket = null;
+  }
+  async pingServer(host, port, timeoutMs = 2200) {
+    return new Promise((resolve) => {
+      let settled = false;
+      let buffer = Buffer.alloc(0);
+      const socket = node_net.createConnection({ host, port });
+      const finish = (value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        try { socket.destroy(); } catch { /* ignore */ }
+        resolve(value);
+      };
+      const timer = setTimeout(() => finish({ online: false }), timeoutMs);
+      socket.setNoDelay(true);
+      socket.on("error", () => finish({ online: false }));
+      socket.on("close", () => finish({ online: false }));
+      socket.on("connect", () => {
+        const payload = Buffer.concat([
+          mistVarInt(0),
+          mistVarInt(4294967295),
+          mistString(host),
+          Buffer.from([(port >> 8) & 255, port & 255]),
+          mistVarInt(1)
+        ]);
+        const handshake = Buffer.concat([mistVarInt(payload.length), payload]);
+        const request = Buffer.from([1, 0]);
+        socket.write(Buffer.concat([handshake, request]));
+      });
+      socket.on("data", (chunk) => {
+        buffer = Buffer.concat([buffer, chunk]);
+        const length = mistReadVarInt(buffer, 0);
+        if (!length) return;
+        const [packetLength, lengthBytes] = length;
+        if (buffer.length < packetLength + lengthBytes) return;
+        try {
+          const body = buffer.subarray(lengthBytes, lengthBytes + packetLength);
+          const packetId = mistReadVarInt(body, 0);
+          if (!packetId || packetId[0] !== 0) return finish({ online: false });
+          const strLength = mistReadVarInt(body, packetId[1]);
+          if (!strLength) return finish({ online: false });
+          const start = packetId[1] + strLength[1];
+          const json = body.subarray(start, start + strLength[0]).toString("utf8");
+          const data = JSON.parse(json);
+          const description = data.description;
+          const motd = typeof description === "string"
+            ? description
+            : Array.isArray(description?.extra)
+              ? [description.text ?? "", ...description.extra.map((part) => part?.text ?? "")].join("")
+              : String(description?.text ?? "");
+          finish({
+            online: true,
+            versionName: typeof data.version?.name === "string" ? data.version.name.slice(0, 40) : "",
+            protocol: Number(data.version?.protocol) || null,
+            players: Number(data.players?.online) || 0,
+            maxPlayers: Number(data.players?.max) || 0,
+            motd: motd.replace(/§[0-9a-fk-or]/gi, "").slice(0, 200),
+            icon: typeof data.favicon === "string" && data.favicon.startsWith("data:image/") ? data.favicon.slice(0, 40960) : ""
+          });
+        } catch {
+          finish({ online: false });
+        }
+      });
+    });
+  }
+  async pingMany(entries) {
+    const results = await Promise.all(entries.map(async (entry) => {
+      const ping = await this.pingServer(entry.host, entry.port).catch(() => ({ online: false }));
+      return { ...entry, ...ping, players: ping.online ? ping.players : entry.players };
+    }));
+    return results;
+  }
+  async browseServers() {
+    const found = /* @__PURE__ */ new Map();
+    let socket = null;
+    try {
+      socket = node_dgram.createSocket({ type: "udp4" });
+      socket.on("message", (message, rinfo) => {
+        try {
+          const entry = JSON.parse(String(message));
+          if (!entry || entry.mist !== SERVER_DISCOVERY_KIND || typeof entry.id !== "string") return;
+          found.set(entry.id, { ...entry, host: rinfo.address, local: false });
+        } catch { /* ignore */ }
+      });
+      await new Promise((resolve, reject) => {
+        socket.once("error", reject);
+        socket.bind(0, () => {
+          socket.off("error", reject);
+          resolve();
+        });
+      });
+      try { socket.setBroadcast(true); } catch { /* ignore */ }
+      const buffer = Buffer.from(SERVER_DISCOVERY_TAG, "utf8");
+      for (const target of ["255.255.255.255", "127.0.0.1"]) {
+        await new Promise((resolve) => socket.send(buffer, 0, buffer.length, SERVER_DISCOVERY_PORT, target, () => resolve()));
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1300));
+    } catch {
+      /* discovery is best-effort */
+    } finally {
+      if (socket) { try { socket.close(); } catch { /* ignore */ } }
+    }
+    for (const server of this.servers) {
+      if (server.visibility !== "public" || !this.running.has(server.id)) continue;
+      const state = this.state(server.id);
+      found.set(server.id, {
+        mist: SERVER_DISCOVERY_KIND,
+        v: 1,
+        id: server.id,
+        name: server.name,
+        version: server.version,
+        software: server.software,
+        port: server.port,
+        players: state.players ?? 0,
+        maxPlayers: state.maxPlayers ?? server.maxPlayers,
+        ready: Boolean(state.ready),
+        motd: server.motd,
+        host: "127.0.0.1",
+        local: true
+      });
+    }
+    const entries = [...found.values()].map((entry) => ({
+      id: entry.id,
+      name: String(entry.name ?? "Server").slice(0, 60),
+      version: String(entry.version ?? ""),
+      software: SERVER_SOFTWARE_IDS.includes(entry.software) ? entry.software : "vanilla",
+      port: Number(entry.port),
+      host: String(entry.host ?? ""),
+      players: Number(entry.players) || 0,
+      maxPlayers: Number(entry.maxPlayers) || 0,
+      ready: Boolean(entry.ready),
+      local: Boolean(entry.local),
+      motd: typeof entry.motd === "string" ? entry.motd.slice(0, 100) : "",
+      icon: ""
+    }));
+    const pinged = await this.pingMany(entries);
+    return pinged.map((entry) => ({
+      ...entry,
+      icon: typeof entry.icon === "string" ? entry.icon.slice(0, 40960) : "",
+      motd: (entry.online && typeof entry.motd === "string" && entry.motd.trim()) ? entry.motd : entry.motd,
+      players: entry.online ? (Number(entry.players) || 0) : entry.players,
+      ready: entry.online ? true : entry.ready
+    }));
+  }
+  get(id) {
+    const server = this.servers.find((entry) => entry.id === id);
+    if (!server) return null;
+    return this.decorate(server);
+  }
+  async create(input) {
+    const server = this.sanitize({ ...(input ?? {}), id: null }, false);
+    server.id = `srv_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+    server.inviteKey = mistRandomKey(6);
+    server.port = await this.nextFreePort(server.port);
+    await ensureDir(this.serverDir(server.id));
+    this.servers.push(server);
+    await this.save();
+    return this.decorate(server);
+  }
+  async update(id, patch) {
+    const index = this.servers.findIndex((entry) => entry.id === id);
+    if (index < 0) throw new AppError("server-missing", "That local server no longer exists.");
+    const existing = this.servers[index];
+    const server = this.sanitize({ ...existing, ...(patch ?? {}) }, false);
+    if (server.port !== existing.port) {
+      const clash = this.servers.find((entry) => entry.id !== id && entry.port === server.port);
+      if (clash) {
+        throw new AppError("port-in-use", `Port ${server.port} is already used by “${clash.name}”.`, {
+          hint: "Pick another port."
+        });
+      }
+    }
+    this.servers[index] = server;
+    await this.save();
+    return this.decorate(server);
+  }
+  async remove(id) {
+    const index = this.servers.findIndex((entry) => entry.id === id);
+    if (index < 0) return;
+    await this.stop(id);
+    const [server] = this.servers.splice(index, 1);
+    await this.save();
+    await trashPath(this.serverDir(server.id)).catch(() => void 0);
+  }
+  async start(id) {
+    const server = this.require(id);
+    if (this.running.has(id)) return this.state(id);
+    await this.ensurePortFree(server);
+    this.ensureDiscovery();
+    const info = serverSoftwareInfo(server.software);
+    const resolved = info.rust ? null : await this.meta.resolve(server.version);
+    if (!info.rust && !resolved.downloads?.server?.url) {
+      throw new AppError("server-jar-missing", `Mojang does not publish a server jar for Minecraft ${server.version}. Choose a release version.`);
+    }
+    const settings = this.options.getSettings();
+    let javaPath = null;
+    if (!info.rust) {
+    const available = await this.java.status(resolved.javaMajor, server.javaPath || settings.javaPath);
+    if (!available.compatible && !settings.autoJava) {
+      throw new AppError("java-missing", `Java ${resolved.javaMajor} is required to host a Minecraft ${server.version} server, but no compatible runtime was found.`, {
+        hint: "Enable automatic Java in Settings → Game & Java, or pick a Java runtime for this server."
+      });
+    }
+    const javaInfo = await this.java.ensure(
+      resolved.javaVersion?.component ?? null,
+      resolved.javaMajor,
+      `Installing Java ${resolved.javaMajor} for ${server.name}`,
+      `server:${server.id}`
+    );
+    javaPath = server.javaPath || settings.javaPath || javaInfo.path;
+    }
+    const dir = this.serverDir(server.id);
+    await ensureDir(dir);
+    const memory = Math.max(512, Math.min(server.memoryMb, 65536));
+    const launch = await this.prepareSoftware(server, resolved, { dir, javaPath, memory, settings });
+    if (!info.rust) {
+      await node_fs.promises.writeFile(path.join(dir, "eula.txt"), "# By using this server you agree to the Minecraft EULA (https://aka.ms/MinecraftEULA).\neula=true\n", "utf8");
+      await node_fs.promises.writeFile(path.join(dir, "server.properties"), mistServerProperties(server), "utf8");
+    }
+    for (const folder of ["logs", "plugins"]) await ensureDir(path.join(dir, folder));
+    const logPath = path.join(this.paths.logsDir, `server-${server.id}.log`);
+    const stream = node_fs.createWriteStream(logPath, { flags: "w" });
+    const child = node_child_process.spawn(launch.command, launch.args, {
+      cwd: dir,
+      env: { ...process.env, ...(launch.env ?? {}) },
+      stdio: ["pipe", "pipe", "pipe"],
+      windowsHide: true
+    });
+    const state = { id: server.id, running: true, pid: child.pid ?? null, startedAt: (/* @__PURE__ */ new Date()).toISOString(), exitCode: null, ready: false, players: 0, maxPlayers: server.maxPlayers };
+    const record = { child, state, lines: [], logPath, stream, stopping: false };
+    this.running.set(server.id, record);
+    this.options.emit("serverState", { ...state });
+    const forward = (chunk) => {
+      const text2 = chunk.toString("utf8");
+      stream.write(text2);
+      for (const line of text2.split(/\r?\n/)) {
+        if (!line.trim()) continue;
+        record.lines.push(line);
+        if (record.lines.length > 800) record.lines.shift();
+        if (!state.ready && (/Done \(\d+(?:\.\d+)?s\)!/.test(line) || /Server is now running/.test(line))) {
+          state.ready = true;
+          this.options.emit("serverState", { ...state });
+        }
+        const count = /There are (\d+) of a max(?:imum)? of (\d+) players online/.exec(line);
+        if (count) {
+          state.players = Number(count[1]);
+          state.maxPlayers = Number(count[2]);
+          this.options.emit("serverState", { ...state });
+        }
+        this.options.emit("serverLog", { id: server.id, line });
+      }
+    };
+    child.stdout.on("data", forward);
+    child.stderr.on("data", forward);
+    child.on("error", (error) => {
+      this.logger.error("servers", `Server process error: ${errorMessage(error)}`);
+      stream.write(`
+[Mist Launcher] Process error: ${error.message}
+`);
+    });
+    child.on("exit", (code, signal) => {
+      this.running.delete(server.id);
+      stream.end();
+      const finalState = { ...state, running: false, exitCode: code, ready: false };
+      this.logger.info("servers", `Server ${server.name} exited (code ${code ?? signal ?? "unknown"}).`);
+      this.options.emit("serverState", finalState);
+    });
+    return { ...state };
+  }
+  async prepareSoftware(server, resolved, ctx) {
+    switch (server.software) {
+      case "paper":
+        return this.preparePaper(server, ctx);
+      case "purpur":
+        return this.preparePurpur(server, ctx);
+      case "fabric":
+        return this.prepareFabric(server, ctx);
+      case "quilt":
+        return this.prepareQuilt(server, ctx);
+      case "forge":
+        return this.prepareForge(server, ctx, false);
+      case "neoforge":
+        return this.prepareForge(server, ctx, true);
+      case "pumpkin":
+        return this.preparePumpkin(server, ctx);
+      default:
+        return this.prepareVanilla(server, resolved, ctx);
+    }
+  }
+  javaArgs(ctx) {
+    return [`-Xmx${ctx.memory}M`, `-Xms${Math.min(1024, Math.floor(ctx.memory / 2))}M`];
+  }
+  async ensureDownload(server, item) {
+    if (await pathExists(item.dest)) {
+      if (!item.sha256) return item.dest;
+      const existing = await hashFile(item.dest, "sha256").catch(() => null);
+      if (existing && existing.toLowerCase() === String(item.sha256).toLowerCase()) return item.dest;
+      await node_fs.promises.rm(item.dest, { force: true }).catch(() => void 0);
+    }
+    const job = this.downloads.create({
+      kind: "server",
+      title: item.title ?? `Minecraft server ${server.version}`,
+      subtitle: server.name,
+      source: item.source ?? "Mist Launcher"
+    });
+    job.add({ url: item.url, dest: item.dest, size: item.size, sha1: item.sha1, label: item.label ?? path.basename(item.dest) });
+    job.start();
+    try {
+      await job.run();
+      job.complete("Ready");
+    } catch (error) {
+      job.fail(error);
+      throw error;
+    }
+    if (item.sha256) {
+      const actual = await hashFile(item.dest, "sha256");
+      if (actual.toLowerCase() !== String(item.sha256).toLowerCase()) {
+        throw new AppError("hash-mismatch", `Checksum verification failed for ${item.label ?? path.basename(item.dest)}.`);
+      }
+    }
+    return item.dest;
+  }
+  async runTool(command, args, cwd, label) {
+    return await new Promise((resolve, reject) => {
+      let tail = "";
+      const child = node_child_process.spawn(command, args, { cwd, env: { ...process.env }, windowsHide: true });
+      child.stdout?.on("data", (chunk) => { tail = (tail + chunk.toString("utf8")).slice(-6000); });
+      child.stderr?.on("data", (chunk) => { tail = (tail + chunk.toString("utf8")).slice(-6000); });
+      child.on("error", (error) => reject(new AppError("software-install", `${label} could not run: ${error.message}`)));
+      child.on("exit", (code) => {
+        if (code === 0) resolve(tail);
+        else reject(new AppError("software-install", `${label} failed (exit code ${code ?? "unknown"}).`, { detail: tail.slice(-800), hint: "Check the server console for the full installer output." }));
+      });
+    });
+  }
+  async prepareVanilla(server, resolved, ctx) {
+    const dest = path.join(ctx.dir, "server.jar");
+    const dl = resolved.downloads.server;
+    await this.ensureDownload(server, { url: dl.url, dest, size: dl.size, sha1: dl.sha1, label: "server.jar", source: "piston-meta.mojang.com" });
+    return { command: ctx.javaPath, args: [...this.javaArgs(ctx), "-jar", "server.jar", "nogui"] };
+  }
+  async paperBuild(server) {
+    const key = `paper:${server.version}`;
+    const cached = this.softwareCache.get(key);
+    if (cached && Date.now() - cached.at < 6e5) return cached.value;
+    const base = "https://fill.papermc.io/v3/projects/paper";
+    const version = encodeURIComponent(server.version);
+    const info = await this.http.json(`${base}/versions/${version}`, { timeoutMs: 3e4 });
+    const builds = Array.isArray(info?.builds) ? info.builds : [];
+    if (!builds.length) {
+      throw new AppError("software-unsupported", `Paper does not publish a server for Minecraft ${server.version}.`, {
+        hint: "Pick another server software or a version Paper supports."
+      });
+    }
+    const first = builds[0];
+    const buildId = first && typeof first === "object" ? first.id : first;
+    const build = await this.http.json(`${base}/versions/${version}/builds/${buildId}`, { timeoutMs: 3e4 });
+    const dl = build?.downloads?.["server:default"] ?? Object.values(build?.downloads ?? {})[0];
+    if (!dl?.url) throw new AppError("software-unsupported", `Paper did not return a download for Minecraft ${server.version}.`);
+    const value = {
+      url: dl.url,
+      name: dl.name || `paper-${server.version}-${buildId}.jar`,
+      size: dl.size,
+      sha256: dl.checksums?.sha256 ?? null,
+      javaMajor: info?.version?.java?.version?.minimum ?? null
+    };
+    this.softwareCache.set(key, { at: Date.now(), value });
+    return value;
+  }
+  async preparePaper(server, ctx) {
+    const build = await this.paperBuild(server);
+    const dest = path.join(ctx.dir, "server.jar");
+    await this.ensureDownload(server, { ...build, dest, label: path.basename(build.name), source: "fill.papermc.io" });
+    return { command: ctx.javaPath, args: [...this.javaArgs(ctx), "-jar", "server.jar", "nogui"] };
+  }
+  async preparePurpur(server, ctx) {
+    const meta = await this.http.json(`https://api.purpurmc.org/v2/purpur/${encodeURIComponent(server.version)}`, { timeoutMs: 3e4 }).catch(() => null);
+    const build = meta?.builds?.latest;
+    if (!build) {
+      throw new AppError("software-unsupported", `Purpur does not publish a server for Minecraft ${server.version}.`, {
+        hint: "Pick another server software or a version Purpur supports."
+      });
+    }
+    const dest = path.join(ctx.dir, "server.jar");
+    await this.ensureDownload(server, {
+      url: `https://api.purpurmc.org/v2/purpur/${encodeURIComponent(server.version)}/${build}/download`,
+      dest,
+      label: `purpur-${server.version}.jar`,
+      source: "api.purpurmc.org"
+    });
+    return { command: ctx.javaPath, args: [...this.javaArgs(ctx), "-jar", "server.jar", "nogui"] };
+  }
+  async prepareFabric(server, ctx) {
+    const loaders = await this.http.json(`https://meta.fabricmc.net/v2/versions/loader/${encodeURIComponent(server.version)}`, { timeoutMs: 3e4 }).catch(() => null);
+    const loader = (Array.isArray(loaders) ? loaders.find((entry) => entry.loader?.stable) ?? loaders[0] : null)?.loader?.version;
+    if (!loader) {
+      throw new AppError("software-unsupported", `Fabric does not publish a loader for Minecraft ${server.version}.`, {
+        hint: "Pick another server software or a version Fabric supports."
+      });
+    }
+    const installers = await this.http.json("https://meta.fabricmc.net/v2/versions/installer", { timeoutMs: 3e4 }).catch(() => null);
+    const installerVersion = Array.isArray(installers) ? installers[0]?.version : null;
+    if (!installerVersion) throw new AppError("software-unsupported", "Could not resolve the Fabric installer version.");
+    const resolved = await this.meta.resolve(server.version);
+    const vanillaJar = path.join(ctx.dir, "server.jar");
+    if (!await pathExists(vanillaJar) && resolved?.downloads?.server?.url) {
+      await this.ensureDownload(server, { url: resolved.downloads.server.url, dest: vanillaJar, size: resolved.downloads.server.size, sha1: resolved.downloads.server.sha1, label: "server.jar", source: "piston-meta.mojang.com" });
+    }
+    const launchJar = path.join(ctx.dir, "fabric-server-launch.jar");
+    if (!await pathExists(launchJar)) {
+      const installerJar = path.join(ctx.dir, "fabric-installer.jar");
+      await this.ensureDownload(server, {
+        url: `https://maven.fabricmc.net/net/fabricmc/fabric-installer/${installerVersion}/fabric-installer-${installerVersion}.jar`,
+        dest: installerJar,
+        label: "fabric-installer.jar",
+        source: "maven.fabricmc.net"
+      });
+      await this.runTool(ctx.javaPath, ["-jar", "fabric-installer.jar", "server", "-mcversion", server.version, "-loader", loader, "-downloadMinecraft", "-dir", "."], ctx.dir, "Fabric installer");
+    }
+    return { command: ctx.javaPath, args: [...this.javaArgs(ctx), "-jar", "fabric-server-launch.jar", "nogui"] };
+  }
+  async prepareQuilt(server, ctx) {
+    const launchJar = path.join(ctx.dir, "quilt-server-launch.jar");
+    if (await pathExists(launchJar)) {
+      return { command: ctx.javaPath, args: [...this.javaArgs(ctx), "-jar", "quilt-server-launch.jar", "nogui"] };
+    }
+    const versions = await this.http.json(`https://meta.quiltmc.org/v3/versions/loader/${encodeURIComponent(server.version)}`, { timeoutMs: 3e4 }).catch(() => null);
+    const loader = (Array.isArray(versions) ? versions[0]?.loader?.version : null) ?? null;
+    if (!loader) {
+      throw new AppError("software-unsupported", `Quilt does not publish a loader for Minecraft ${server.version}.`, {
+        hint: "Pick another server software or a version Quilt supports."
+      });
+    }
+    const installerJar = path.join(ctx.dir, "quilt-installer.jar");
+    await this.ensureDownload(server, {
+      url: "https://quiltmc.org/api/v1/download-latest-installer/java-universal",
+      dest: installerJar,
+      label: "quilt-installer.jar",
+      source: "quiltmc.org"
+    });
+    await this.runTool(ctx.javaPath, ["-jar", "quilt-installer.jar", "install", "server", server.version, loader, "--install-dir=.", "--download-dir=.", "--create-scripts"], ctx.dir, "Quilt installer");
+    await node_fs.promises.rm(installerJar, { force: true }).catch(() => void 0);
+    if (!await pathExists(launchJar)) {
+      throw new AppError("software-install", "The Quilt installer did not produce quilt-server-launch.jar.", {
+        hint: "Check the server console for the installer output, or use Fabric instead."
+      });
+    }
+    return { command: ctx.javaPath, args: [...this.javaArgs(ctx), "-jar", "quilt-server-launch.jar", "nogui"] };
+  }
+  async forgeCoordinates(server, neo) {
+    if (neo) {
+      const xml = await this.http.text("https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml", { timeoutMs: 3e4 });
+      const versions = [...xml.matchAll(/<version>([^<]+)<\/version>/g)].map((match) => match[1]);
+      const prefix = neoForgeArtifactPrefix(server.version);
+      const matching = versions.filter((entry) => prefix && entry.startsWith(`${prefix}.`)).sort(compareVersionsDesc);
+      const version = matching[0];
+      if (!version) {
+        throw new AppError("software-unsupported", `NeoForge does not publish a server for Minecraft ${server.version}.`, {
+          hint: "Pick another server software or a version NeoForge supports."
+        });
+      }
+      return {
+        full: `${server.version}-${version}`,
+        mavenVersion: version,
+        installerUrl: `https://maven.neoforged.net/releases/net/neoforged/neoforge/${version}/neoforge-${version}-installer.jar`,
+        source: "maven.neoforged.net"
+      };
+    }
+    const promos = await this.http.json("https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json", { timeoutMs: 3e4 });
+    const build = promos?.promos?.[`${server.version}-recommended`] ?? promos?.promos?.[`${server.version}-latest`];
+    if (!build) {
+      throw new AppError("software-unsupported", `Forge does not publish a server for Minecraft ${server.version}.`, {
+        hint: "Pick another server software or a version Forge supports."
+      });
+    }
+    const full = `${server.version}-${build}`;
+    return {
+      full,
+      mavenVersion: build,
+      installerUrl: `https://maven.minecraftforge.net/net/minecraftforge/forge/${full}/forge-${full}-installer.jar`,
+      source: "maven.minecraftforge.net"
+    };
+  }
+  async prepareForge(server, ctx, neo) {
+    const coords = await this.forgeCoordinates(server, neo);
+    const label = neo ? "NeoForge" : "Forge";
+    const argsFile = path.join(ctx.dir, "libraries", "net", neo ? "neoforged" : "minecraftforge", neo ? "neoforge" : "forge", coords.mavenVersion, process.platform === "win32" ? "win_args.txt" : "unix_args.txt");
+    if (!await pathExists(argsFile)) {
+      const installerJar = path.join(ctx.dir, `${neo ? "neoforge" : "forge"}-installer.jar`);
+      await this.ensureDownload(server, { url: coords.installerUrl, dest: installerJar, label: `${label} installer`, source: coords.source });
+      await this.runTool(ctx.javaPath, ["-jar", path.basename(installerJar), "--installServer"], ctx.dir, `${label} installer`);
+      if (!await pathExists(argsFile)) {
+        throw new AppError("software-install", `${label} did not finish installing.`, { hint: "Try starting the server again; the installer output is logged to the console." });
+      }
+      await node_fs.promises.rm(installerJar, { force: true }).catch(() => void 0);
+    }
+    await node_fs.promises.writeFile(path.join(ctx.dir, "user_jvm_args.txt"), `# Managed by Mist Launcher\n${this.javaArgs(ctx).join("\n")}\n`, "utf8");
+    return {
+      command: ctx.javaPath,
+      args: [`@user_jvm_args.txt`, `@${path.relative(ctx.dir, argsFile).split(path.sep).join("/")}`, "nogui"]
+    };
+  }
+  async pumpkinRelease(server) {
+    const key = `pumpkin:${server.version}`;
+    const cached = this.softwareCache.get(key);
+    if (cached && Date.now() - cached.at < 6e5) return cached.value;
+    const releases = await this.http.json("https://api.github.com/repos/Pumpkin-MC/Pumpkin/releases?per_page=30", {
+      timeoutMs: 3e4,
+      headers: { Accept: "application/vnd.github+json", "User-Agent": USER_AGENT }
+    });
+    const list = Array.isArray(releases) ? releases : [];
+    const release = list.find((entry) => {
+      const tag = String(entry?.tag_name ?? "");
+      const match = tag.match(/\+(\d+\.\d+(?:\.\d+)?)/);
+      return match && match[1] === server.version;
+    });
+    if (!release) {
+      throw new AppError("software-unsupported", `Pumpkin has no build for Minecraft ${server.version}.`, {
+        hint: "Pumpkin supports only the newest Minecraft release. Try the latest version or another server software."
+      });
+    }
+    const assets = Array.isArray(release.assets) ? release.assets : [];
+    const wanted = process.platform === "win32"
+      ? (process.arch === "arm64" ? "pumpkin-ARM64-Windows.exe" : "pumpkin-X64-Windows.exe")
+      : process.platform === "darwin"
+        ? "pumpkin-ARM64-macOS"
+        : (process.arch === "arm64" ? "pumpkin-ARM64-Linux" : "pumpkin-X64-Linux");
+    const asset = assets.find((entry) => entry.name === wanted) ?? assets.find((entry) => entry.name === wanted.replace(/-v3/, ""));
+    if (!asset?.browser_download_url) {
+      throw new AppError("software-unsupported", "Pumpkin does not provide a binary for this platform.");
+    }
+    const value = { url: asset.browser_download_url, name: wanted, version: release.tag_name };
+    this.softwareCache.set(key, { at: Date.now(), value });
+    return value;
+  }
+  async preparePumpkin(server, ctx) {
+    const fileName = process.platform === "win32" ? "pumpkin.exe" : "pumpkin";
+    const dest = path.join(ctx.dir, fileName);
+    let reused = false;
+    let release = null;
+    try {
+      release = await this.pumpkinRelease(server);
+    } catch (error) {
+      release = null;
+    }
+    if (release) {
+      await this.ensureDownload(server, { url: release.url, dest, label: `Pumpkin ${release.version}`, source: "github.com/Pumpkin-MC" });
+    } else if (!await pathExists(dest)) {
+      const existing = await this.findPumpkinBinary(fileName);
+      if (!existing) {
+        throw new AppError("software-download-failed", "Could not download Pumpkin right now.", {
+          hint: "GitHub may be rate-limiting the launcher. Try Start again in a minute."
+        });
+      }
+      await node_fs.promises.copyFile(existing, dest);
+      reused = true;
+    }
+    if (process.platform !== "win32") await node_fs.promises.chmod(dest, 493).catch(() => void 0);
+    await node_fs.promises.writeFile(path.join(ctx.dir, "pumpkin.toml"), mistPumpkinToml(server), "utf8");
+    return { command: dest, args: [], env: {} };
+  }
+  async findPumpkinBinary(fileName) {
+    const entries = await node_fs.promises.readdir(this.serversRoot, { withFileTypes: true }).catch(() => []);
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const candidate = path.join(this.serversRoot, entry.name, fileName);
+      if (await pathExists(candidate)) return candidate;
+    }
+    return null;
+  }
+  async softwareVersions(software) {
+    const id = SERVER_SOFTWARE_IDS.includes(software) ? software : "vanilla";
+    const key = `versions:${id}`;
+    const cached = this.softwareCache.get(key);
+    if (cached && Date.now() - cached.at < 6e5) return cached.value;
+    let versions = [];
+    try {
+      if (id === "paper") {
+        const data = await this.http.json("https://fill.papermc.io/v3/projects/paper", { timeoutMs: 3e4 });
+        const groups = data?.versions;
+        versions = Array.isArray(groups) ? groups : Object.values(groups ?? {}).flat();
+      } else if (id === "purpur") {
+        const data = await this.http.json("https://api.purpurmc.org/v2/purpur", { timeoutMs: 3e4 });
+        versions = Array.isArray(data?.versions) ? data.versions : [];
+      } else if (id === "fabric") {
+        const data = await this.http.json("https://meta.fabricmc.net/v2/versions/game", { timeoutMs: 3e4 });
+        versions = (Array.isArray(data) ? data : []).filter((entry) => entry.stable !== false).map((entry) => entry.version);
+      } else if (id === "quilt") {
+        const data = await this.http.json("https://meta.quiltmc.org/v3/versions/game", { timeoutMs: 3e4 });
+        versions = (Array.isArray(data) ? data : []).filter((entry) => entry.stable !== false).map((entry) => entry.version);
+      } else if (id === "forge") {
+        const promos = await this.http.json("https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json", { timeoutMs: 3e4 });
+        versions = [...new Set(Object.keys(promos?.promos ?? {}).map((key2) => key2.replace(/-(?:recommended|latest)$/, "")))];
+      } else if (id === "neoforge") {
+        const xml = await this.http.text("https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml", { timeoutMs: 3e4 });
+        const raw = [...xml.matchAll(/<version>([^<]+)<\/version>/g)].map((match) => match[1]);
+        const known = new Set((await this.meta.list()).filter((entry) => entry.type === "release").map((entry) => entry.id));
+        const mapped = /* @__PURE__ */ new Set();
+        for (const entry of raw) {
+          const mc = neoForgeMcVersion(entry, known);
+          if (mc) mapped.add(mc);
+        }
+        versions = [...mapped];
+      } else if (id === "pumpkin") {
+        const releases = await this.http.json("https://api.github.com/repos/Pumpkin-MC/Pumpkin/releases?per_page=30", {
+          timeoutMs: 3e4,
+          headers: { Accept: "application/vnd.github+json", "User-Agent": USER_AGENT }
+        });
+        versions = [...new Set((Array.isArray(releases) ? releases : []).map((entry) => String(entry?.tag_name ?? "").match(/\+(\d+\.\d+(?:\.\d+)?)/)?.[1]).filter(Boolean))];
+      } else {
+        versions = (await this.meta.list()).filter((entry) => entry.type === "release" && /^\d+\.\d+(?:\.\d+)?$/.test(entry.id)).map((entry) => entry.id);
+      }
+    } catch (error) {
+      this.logger.warn("servers", `Could not list ${id} versions.`, { reason: errorMessage(error) });
+      versions = [];
+    }
+    const value = versions.filter((version) => /^\d+\.\d+(?:\.\d+)?$/.test(version)).sort(compareVersionsDesc);
+    this.softwareCache.set(key, { at: Date.now(), value });
+    return value;
+  }
+  async stop(id) {
+    const record = this.running.get(id);
+    if (!record) return;
+    record.stopping = true;
+    try {
+      record.child.stdin.write("stop\n");
+    } catch {
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    if (!record.child.killed) record.child.kill("SIGKILL");
+  }
+  async send(id, command) {
+    const record = this.running.get(id);
+    if (!record) throw new AppError("server-stopped", "Start the server before sending commands.");
+    record.child.stdin.write(`${command}\n`);
+  }
+  async logs(id, limit = 400) {
+    const record = this.running.get(id);
+    if (record) return record.lines.slice(-Math.max(1, Math.min(2000, Math.floor(limit))));
+    const file = path.join(this.serverDir(id), "logs", "latest.log");
+    try {
+      const raw = await node_fs.promises.readFile(file, "utf8");
+      return raw.split(/\r?\n/).filter((line) => line.trim()).slice(-Math.max(1, Math.min(2000, Math.floor(limit))));
+    } catch {
+      return [];
+    }
+  }
+  async listFiles(id, subpath = "") {
+    const server = this.require(id);
+    const dir = resolveInside(this.serverDir(server.id), ...(subpath ? subpath.split("/").filter(Boolean) : []));
+    const entries = await node_fs.promises.readdir(dir, { withFileTypes: true }).catch(() => []);
+    const items = [];
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      const stat = await node_fs.promises.stat(full).catch(() => null);
+      items.push({ name: entry.name, type: entry.isDirectory() ? "dir" : "file", size: stat?.size ?? 0, mtime: stat?.mtimeMs ?? 0 });
+    }
+    items.sort((a, b) => a.type === b.type ? a.name.localeCompare(b.name) : a.type === "dir" ? -1 : 1);
+    return { path: subpath, items };
+  }
+  async deleteEntry(id, subpath) {
+    const server = this.require(id);
+    if (this.running.has(id)) throw new AppError("server-running", "Stop the server before deleting files.");
+    const target = resolveInside(this.serverDir(server.id), ...subpath.split("/").filter(Boolean));
+    await trashPath(target);
+  }
+  async openFolder(id) {
+    const server = this.require(id);
+    const dir = this.serverDir(server.id);
+    await ensureDir(dir);
+    const error = await electron.shell.openPath(dir);
+    if (error) throw new AppError("open-folder", "Could not open the server folder.");
+  }
+  serverPath(id, subpath) {
+    const server = this.require(id);
+    return resolveInside(this.serverDir(server.id), ...String(subpath ?? "").split("/").filter(Boolean));
+  }
+  async readFile(id, subpath) {
+    const target = this.serverPath(id, subpath);
+    const stat = await node_fs.promises.stat(target).catch(() => null);
+    if (!stat || !stat.isFile()) throw new AppError("file-missing", "That file no longer exists.");
+    const result = { path: subpath, size: stat.size, mtime: stat.mtimeMs, binary: false, truncated: false, content: "" };
+    if (stat.size > 2e6) {
+      result.truncated = true;
+      return result;
+    }
+    const buffer = await node_fs.promises.readFile(target);
+    result.binary = buffer.includes(0);
+    if (!result.binary) result.content = buffer.toString("utf8");
+    return result;
+  }
+  async writeFile(id, subpath, content) {
+    const target = this.serverPath(id, subpath);
+    if (typeof content !== "string") throw new AppError("file-invalid", "File contents must be text.");
+    if (content.length > 4e6) throw new AppError("file-too-large", "That file is too large to edit in the launcher.");
+    const stat = await node_fs.promises.stat(target).catch(() => null);
+    if (stat?.isDirectory()) throw new AppError("file-invalid", "That path is a folder.");
+    await ensureDir(path.dirname(target));
+    await node_fs.promises.writeFile(target, content, "utf8");
+    return { path: subpath, size: Buffer.byteLength(content, "utf8") };
+  }
+  async createFolder(id, subpath, name) {
+    const clean = safeSegment(String(name ?? "").trim());
+    if (!clean) throw new AppError("file-invalid", "Enter a folder name.");
+    const dir = this.serverPath(id, subpath ? `${subpath}/${clean}` : clean);
+    await ensureDir(dir);
+    return { name: clean };
+  }
+  async uploadFiles(id, subpath, files) {
+    const list = Array.isArray(files) ? files : [];
+    const dir = this.serverPath(id, subpath);
+    await ensureDir(dir);
+    const saved = [];
+    for (const file of list) {
+      const source = typeof file === "string" ? file : file?.path;
+      if (!source) continue;
+      const name = safeSegment(path.basename(source));
+      if (!name) continue;
+      await node_fs.promises.copyFile(source, path.join(dir, name));
+      saved.push(name);
+    }
+    return { saved };
+  }
+  async renameEntry(id, subpath, name) {    if (this.running.has(id)) throw new AppError("server-running", "Stop the server before renaming files.");
+    const target = this.serverPath(id, subpath);
+    const clean = safeSegment(String(name ?? "").trim());
+    if (!clean) throw new AppError("file-invalid", "Enter a new name.");
+    const dest = path.join(path.dirname(target), clean);
+    if (!isInside(this.serverDir(this.require(id).id), dest)) throw new AppError("file-invalid", "Invalid name.");
+    await node_fs.promises.rename(target, dest);
+    return { name: clean };
+  }
+  async pluginSearch(query, gameVersion, offset = 0, limit = 20, index = "downloads", categories = [], kind = "plugin", loader = "") {
+    const isMod = String(kind) === "mod";
+    const facets = [[`project_type:${isMod ? "mod" : "plugin"}`]];
+    if (gameVersion) facets.push([`versions:${gameVersion}`]);
+    if (isMod) {
+      const loaders = ["fabric", "forge", "neoforge", "quilt"];
+      const chosen = loaders.includes(String(loader || "").toLowerCase()) ? String(loader).toLowerCase() : "";
+      facets.push(chosen ? [`categories:${chosen}`] : loaders.map((l) => `categories:${l}`));
+    } else {
+      facets.push(["categories:paper", "categories:purpur", "categories:spigot", "categories:bukkit"]);
+    }
+    if (Array.isArray(categories) && categories.length) facets.push(categories.map((c) => `categories:${c}`));
+    const url = new URL("https://api.modrinth.com/v2/search");
+    url.searchParams.set("query", String(query ?? ""));
+    url.searchParams.set("facets", JSON.stringify(facets));
+    url.searchParams.set("index", ["relevance", "downloads", "newest", "updated"].includes(String(index)) ? String(index) : "downloads");
+    url.searchParams.set("limit", String(Math.max(1, Math.min(30, Math.floor(limit) || 20))));
+    url.searchParams.set("offset", String(Math.max(0, Math.floor(offset) || 0)));
+    const data = await this.http.json(url.toString(), { timeoutMs: 3e4 });
+    return {
+      total: data.total_hits ?? 0,
+      offset: data.offset ?? offset,
+      hits: (data.hits ?? []).map((hit) => ({
+        id: hit.project_id,
+        slug: hit.slug,
+        title: hit.title,
+        description: hit.description,
+        iconUrl: hit.icon_url,
+        downloads: hit.downloads,
+        author: hit.author ?? "",
+        categories: hit.categories ?? []
+      }))
+    };
+  }
+  async pluginDetails(id, projectId) {
+    const server = this.require(id);
+    const info = serverSoftwareInfo(server.software);
+    if (!info.plugins && !info.mods && !info.patchbukkit) {
+      throw new AppError("plugin-unsupported", `${info.label} does not load plugins or mods.`, {
+        hint: "Choose Paper, Purpur, Fabric, Forge, NeoForge, Quilt, or Pumpkin (with PatchBukkit)."
+      });
+    }
+    const data = await this.http.json(`https://api.modrinth.com/v2/project/${encodeURIComponent(projectId)}`, { timeoutMs: 3e4 });
+    let author = "";
+    if (data.team) {
+      try {
+        const members = await this.http.json(`https://api.modrinth.com/v2/team/${encodeURIComponent(data.team)}/members`, { timeoutMs: 2e4 });
+        const owner = (Array.isArray(members) ? members : []).find((m) => String(m.role || "").toLowerCase() === "owner") ?? members?.[0];
+        author = owner?.user?.username ?? "";
+      } catch { /* optional */ }
+    }
+    let versionList = [];
+    try {
+      const versions = await this.http.json(`https://api.modrinth.com/v2/project/${encodeURIComponent(data.id ?? projectId)}/version`, { timeoutMs: 3e4 });
+      versionList = (Array.isArray(versions) ? versions : []).slice(0, 60).map((v) => ({
+        id: v.id,
+        name: v.name || v.version_number || "",
+        number: v.version_number || "",
+        gameVersions: Array.isArray(v.game_versions) ? v.game_versions : [],
+        loaders: Array.isArray(v.loaders) ? v.loaders : [],
+        date: v.date_published || "",
+        featured: Boolean(v.featured)
+      }));
+    } catch { /* optional */ }
+    return {
+      id: data.id,
+      slug: data.slug,
+      title: data.title,
+      description: data.description,
+      body: String(data.body ?? "").slice(0, 24000),
+      iconUrl: data.icon_url,
+      downloads: data.downloads,
+      followers: data.followers,
+      author,
+      published: data.published ?? "",
+      updated: data.updated ?? "",
+      categories: Array.isArray(data.categories) ? data.categories : [],
+      additionalCategories: Array.isArray(data.additional_categories) ? data.additional_categories : [],
+      loaders: Array.isArray(data.loaders) ? data.loaders : [],
+      gameVersions: Array.isArray(data.game_versions) ? data.game_versions : [],
+      clientSide: data.client_side ?? "",
+      serverSide: data.server_side ?? "",
+      projectType: data.project_type ?? "",
+      license: data.license?.id ?? "",
+      licenseName: data.license?.name ?? "",
+      sourceUrl: data.source_url ?? "",
+      issuesUrl: data.issues_url ?? "",
+      wikiUrl: data.wiki_url ?? "",
+      discordUrl: data.discord_url ?? "",
+      gallery: Array.isArray(data.gallery) ? data.gallery.map((entry) => ({ url: entry.url, title: entry.title, featured: Boolean(entry.featured) })) : [],
+      versions: Array.isArray(data.versions) ? data.versions.length : 0,
+      versionList
+    };
+  }
+  async pluginInstall(id, projectId, versionId) {
+    const server = this.require(id);
+    const info = serverSoftwareInfo(server.software);
+    const isMod = Boolean(info.mods);
+    const isBukkit = Boolean(info.patchbukkit);
+    if (!info.plugins && !isMod && !isBukkit) {
+      throw new AppError("plugin-unsupported", `${info.label} does not load plugins or mods.`, {
+        hint: "Choose Paper, Purpur, Fabric, Forge, NeoForge, Quilt, or Pumpkin (with PatchBukkit)."
+      });
+    }
+    const base = `https://api.modrinth.com/v2/project/${encodeURIComponent(projectId)}/version`;
+    const url = new URL(base);
+    url.searchParams.set("game_versions", JSON.stringify([server.version]));
+    const loaders = isMod
+      ? [String(server.software), "fabric", "forge", "neoforge", "quilt"]
+      : ["paper", "purpur", "spigot", "bukkit"];
+    url.searchParams.set("loaders", JSON.stringify([...new Set(loaders)]));
+    let versions;
+    if (versionId) {
+      versions = [await this.http.json(`https://api.modrinth.com/v2/version/${encodeURIComponent(versionId)}`, { timeoutMs: 3e4 })];
+    } else {
+      versions = await this.http.json(url.toString(), { timeoutMs: 3e4 }).catch(() => []);
+    }
+    if (!Array.isArray(versions) || !versions.length) {
+      const fallback = await this.http.json(base, { timeoutMs: 3e4 }).catch(() => []);
+      versions = (Array.isArray(fallback) ? fallback : []).filter((version) => Array.isArray(version.game_versions) && version.game_versions.includes(server.version));
+    }
+    const version = (Array.isArray(versions) ? versions : []).find((entry) => entry.featured) ?? (Array.isArray(versions) ? versions[0] : null);
+    const file = version?.files?.find((entry) => entry.primary) ?? version?.files?.[0];
+    if (!file?.url) throw new AppError("plugin-unavailable", `No compatible ${isMod ? "mod" : "plugin"} download was found.`, { hint: `It may not support Minecraft ${server.version}.` });
+    let dir;
+    if (isMod) dir = path.join(this.serverDir(server.id), "mods");
+    else if (isBukkit) dir = path.join(this.serverDir(server.id), "patchbukkit", "patchbukkit-plugins");
+    else dir = path.join(this.serverDir(server.id), "plugins");
+    await ensureDir(dir);
+    const dest = path.join(dir, safeSegment(file.filename));
+    await this.ensureDownload(server, {
+      url: file.url,
+      dest,
+      size: file.size,
+      sha1: file.hashes?.sha1,
+      label: file.filename,
+      title: `${isMod ? "Mod" : "Plugin"} · ${file.filename}`,
+      source: "cdn.modrinth.com"
+    });
+    return { name: file.filename, version: version.version_number ?? null, projectId };
+  }
+  async listPlugins(id) {
+    const server = this.require(id);
+    const info = serverSoftwareInfo(server.software);
+    const root = this.serverDir(server.id);
+    const targets = [];
+    if (info.mods) {
+      targets.push({ dir: path.join(root, "mods"), ext: ".jar", type: "jar" });
+    } else if (info.patchbukkit) {
+      targets.push({ dir: path.join(root, "plugins"), ext: ".wasm", type: "wasm" });
+      targets.push({ dir: path.join(root, "patchbukkit", "patchbukkit-plugins"), ext: ".jar", type: "jar" });
+    } else if (info.plugins) {
+      targets.push({ dir: path.join(root, "plugins"), ext: ".jar", type: "jar" });
+    } else {
+      targets.push({ dir: path.join(root, "plugins"), ext: ".wasm", type: "wasm" });
+    }
+    const out = [];
+    for (const target of targets) {
+      await ensureDir(target.dir);
+      const entries = await node_fs.promises.readdir(target.dir, { withFileTypes: true }).catch(() => []);
+      for (const entry of entries) {
+        if (entry.isFile() && entry.name.toLowerCase().endsWith(target.ext)) out.push({ name: entry.name, type: target.type });
+      }
+    }
+    return out;
+  }
+  async addPlugin(id, filePath) {
+    const server = this.require(id);
+    const info = serverSoftwareInfo(server.software);
+    const root = this.serverDir(server.id);
+    const name = path.basename(filePath);
+    const lower = name.toLowerCase();
+    let dir;
+    let allowed;
+    if (info.mods) { dir = path.join(root, "mods"); allowed = [".jar"]; }
+    else if (info.patchbukkit) {
+      if (lower.endsWith(".wasm")) { dir = path.join(root, "plugins"); allowed = [".wasm"]; }
+      else { dir = path.join(root, "patchbukkit", "patchbukkit-plugins"); allowed = [".jar"]; }
+    } else if (info.plugins) { dir = path.join(root, "plugins"); allowed = [".jar"]; }
+    else { dir = path.join(root, "plugins"); allowed = [".wasm"]; }
+    if (!allowed.some((ext) => lower.endsWith(ext))) {
+      throw new AppError("plugin-invalid", info.mods ? "Mods must be .jar files." : (info.plugins || info.patchbukkit ? "Plugins must be .jar files." : "Pumpkin plugins must be .wasm files."), {
+        hint: info.mods || info.plugins || info.patchbukkit ? void 0 : "Java plugin jars cannot run on Pumpkin. Use PatchBukkit for jars, or a native .wasm plugin."
+      });
+    }
+    await ensureDir(dir);
+    await node_fs.promises.copyFile(filePath, path.join(dir, safeSegment(name)));
+    return this.listPlugins(id);
+  }
+  async removePlugin(id, filename) {
+    const root = this.serverDir(this.require(id).id);
+    const dirs = [path.join(root, "plugins"), path.join(root, "mods"), path.join(root, "patchbukkit", "patchbukkit-plugins")];
+    for (const dir of dirs) {
+      const target = path.join(dir, safeSegment(filename));
+      if (!isInside(dir, target)) continue;
+      try { await node_fs.promises.access(target); await trashPath(target); return; } catch { /* try next */ }
+    }
+    throw new AppError("plugin-missing", "That file could not be found.");
+  }
+  async patchbukkitStatus(id) {
+    const server = this.require(id);
+    const root = this.serverDir(server.id);
+    const plugins = path.join(root, "plugins");
+    const files = await node_fs.promises.readdir(plugins).catch(() => []);
+    const native = files.find((n) => !/\.(jar|wasm)$/i.test(n)) || null;
+    let javaOk = false;
+    let javaVersion = "";
+    try {
+      const out = await new Promise((resolve) => {
+        const child = node_child_process.spawn("java", ["-version"]);
+        let text = "";
+        child.stderr.on("data", (chunk) => { text += chunk; });
+        child.on("error", () => resolve(""));
+        child.on("close", () => resolve(text));
+      });
+      javaVersion = String(out).split("\n")[0]?.trim() || "";
+      const m = javaVersion.match(/(\d+)(?:\.(\d+))?/);
+      const major = m ? Number(m[1] === "1" ? m[2] : m[1]) : 0;
+      javaOk = major >= 25;
+    } catch { /* ignore */ }
+    return {
+      nativeInstalled: Boolean(native),
+      nativeName: native,
+      javaOk,
+      javaVersion,
+      jarFolder: path.join(root, "patchbukkit", "patchbukkit-plugins")
+    };
+  }
+  async patchbukkitInstall(id) {
+    const server = this.require(id);
+    const root = this.serverDir(server.id);
+    const plugins = path.join(root, "plugins");
+    await ensureDir(plugins);
+    const res = await fetch("https://api.github.com/repos/Pumpkin-MC/PatchBukkit/releases/latest", {
+      headers: { "User-Agent": "MistLauncher", Accept: "application/vnd.github+json" }
+    });
+    if (!res.ok) throw new AppError("patchbukkit-unavailable", "Could not reach the PatchBukkit release feed.", { hint: "Check your internet connection or install it manually from the releases page." });
+    const release = await res.json();
+    const assets = Array.isArray(release.assets) ? release.assets : [];
+    const arch = process.arch === "arm64" ? "arm64" : "x64";
+    const osPattern = process.platform === "win32"
+      ? /windows\.dll$/i
+      : process.platform === "darwin"
+        ? /macos\.dylib$/i
+        : /linux\.so$/i;
+    const archPattern = new RegExp(arch, "i");
+    const asset = assets.find((entry) => osPattern.test(entry.name) && archPattern.test(entry.name))
+      ?? assets.find((entry) => osPattern.test(entry.name));
+    if (!asset?.browser_download_url) {
+      throw new AppError("patchbukkit-unavailable", "No PatchBukkit build was found for this operating system.", { hint: "Download it manually from github.com/Pumpkin-MC/PatchBukkit/releases." });
+    }
+    const fileRes = await fetch(asset.browser_download_url, { headers: { "User-Agent": "MistLauncher" } });
+    if (!fileRes.ok) throw new AppError("patchbukkit-unavailable", "The PatchBukkit download failed.", { hint: `HTTP ${fileRes.status}` });
+    const buffer = Buffer.from(await fileRes.arrayBuffer());
+    if (!buffer.length) throw new AppError("patchbukkit-unavailable", "The PatchBukkit download was empty.", { hint: "Try again, or download it manually from the releases page." });
+    const entries = await node_fs.promises.readdir(plugins).catch(() => []);
+    for (const entry of entries) {
+      if (/^patchbukkit-.*\.(dll|so|dylib)$/i.test(entry)) await node_fs.promises.rm(path.join(plugins, entry), { force: true }).catch(() => {});
+    }
+    await node_fs.promises.writeFile(path.join(plugins, safeSegment(asset.name)), buffer);
+    await ensureDir(path.join(root, "patchbukkit", "patchbukkit-plugins"));
+    return { name: asset.name, url: asset.browser_download_url, tag: release.tag_name ?? null };
+  }
+  async listWorlds(id) {
+    const dir = this.serverDir(this.require(id).id);
+    await ensureDir(dir);
+    const entries = await node_fs.promises.readdir(dir, { withFileTypes: true }).catch(() => []);
+    const worlds = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const level = path.join(dir, entry.name, "level.dat");
+      if (await pathExists(level)) {
+        const stat = await node_fs.promises.stat(level).catch(() => null);
+        worlds.push({ name: entry.name, size: await directorySize(path.join(dir, entry.name)), mtime: stat?.mtimeMs ?? 0 });
+      }
+    }
+    return worlds;
+  }
+  async deleteWorld(id, name) {
+    const server = this.require(id);
+    if (this.running.has(id)) throw new AppError("server-running", "Stop the server before deleting worlds.");
+    await trashPath(path.join(this.serverDir(server.id), safeSegment(name)));
+  }
+  async setDefaultWorld(id, name) {
+    return this.update(id, { levelName: safeSegment(name) });
+  }
+}
 class Services {
   paths;
   logger;
@@ -6847,6 +8334,7 @@ class Services {
   diagnostics;
   news;
   servers;
+  localServers;
   worldChat;
   visibilityHandler = null;
   constructor() {
@@ -6922,6 +8410,10 @@ class Services {
     this.diagnostics = new DiagnosticsService(this.paths, this.installations, this.downloads, this.logger);
     this.news = new NewsService(this.http, this.logger);
     this.servers = new ServerDirectoryService(this.http);
+    this.localServers = new LocalServerManager(this.paths, this.meta, this.java, this.downloads, this.logger, {
+      getSettings: () => this.settings.get(),
+      emit: (type, payload) => this.emit(type, payload)
+    }, this.http);
     this.worldChat = new WorldChatService(this.http);
   }
   async init() {
@@ -6934,6 +8426,7 @@ class Services {
     await this.accounts.load();
     await this.installations.load();
     await this.worlds.init();
+    await this.localServers.load();
     this.logger.info("launcher", `${APP_NAME} ${APP_VERSION} starting on ${process.platform} ${process.arch}.`);
     this.logger.info("launcher", `Data directory: ${this.paths.dataDir}`);
     this.logger.info("launcher", `Shared game root: ${this.paths.gameRoot()}`);
@@ -7012,8 +8505,7 @@ class Services {
       path.join(installation.gameDir, "CustomSkinLoader", "LocalSkin", "skins", filename),
       path.join(installation.gameDir, "config", "offlineskins", filename),
       path.join(installation.gameDir, "cachedImages", "skins", filename),
-      path.join(installation.gameDir, "resourcepacks", `MistOfflineSkin-${targetUsername}.zip`),
-      path.join(installation.gameDir, "resourcepacks", `SacrifyOfflineSkin-${targetUsername}.zip`)
+      path.join(installation.gameDir, "resourcepacks", `MistOfflineSkin-${targetUsername}.zip`)
     ];
     for (const candidate of candidates) {
       if (await pathExists(candidate)) return { skinId: null, name: "Local skin", username: targetUsername, appliedAt: null };
@@ -7104,8 +8596,7 @@ class Services {
   async disableOfflineSkinResourcePack(gameDir, username) {
     const entry = `file/MistOfflineSkin-${username}.zip`;
     const options = await readOptions(gameDir);
-    const legacyEntry = `file/SacrifyOfflineSkin-${username}.zip`;
-    const selected = parseResourcePackList(options.get("resourcePacks")).filter((value) => value !== entry && value !== legacyEntry);
+    const selected = parseResourcePackList(options.get("resourcePacks")).filter((value) => value !== entry);
     if (options.has("resourcePacks")) {
       options.set("resourcePacks", JSON.stringify(selected.includes("vanilla") ? selected : ["vanilla", ...selected]));
       await writeOptions(gameDir, options);
@@ -7250,7 +8741,7 @@ class Services {
     if (!installation) throw new AppError("installation-missing", "That installation no longer exists.");
     const count = async (folder) => (await node_fs.promises.readdir(path.join(installation.gameDir, folder)).catch(() => [])).length;
     const worlds = (await node_fs.promises.readdir(path.join(installation.gameDir, "saves"), { withFileTypes: true }).catch(() => [])).filter((entry) => entry.isDirectory()).length;
-    const known = /* @__PURE__ */ new Set(["mods", "saves", "resourcepacks", "shaderpacks", "logs", "crash-reports", "config", "screenshots", ".mist", ".sacrify", "options.txt"]);
+    const known = /* @__PURE__ */ new Set(["mods", "saves", "resourcepacks", "shaderpacks", "logs", "crash-reports", "config", "screenshots", ".mist", "options.txt"]);
     const top = await node_fs.promises.readdir(installation.gameDir, { withFileTypes: true }).catch(() => []);
     return {
       mods: await count("mods"),
@@ -7554,6 +9045,61 @@ function trustedSender(event) {
     return false;
   }
 }
+const videoSearchCache = /* @__PURE__ */ new Map();
+async function searchYouTubeVideos(query, limit) {
+  const q = String(query).replace(/\s+/g, " ").trim().slice(0, 120);
+  if (!q) return [];
+  const max = Math.max(1, Math.min(20, Math.floor(limit) || 8));
+  const key = q.toLowerCase() + "|" + max;
+  const cached = videoSearchCache.get(key);
+  if (cached && Date.now() - cached.at < 30 * 60 * 1e3) return cached.items;
+  const url = "https://www.youtube.com/results?hl=en&gl=US&search_query=" + encodeURIComponent(q);
+  const response = await electron.net.fetch(url, {
+    headers: {
+      "Accept-Language": "en-US,en;q=0.9",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+      Cookie: "CONSENT=YES+1; SOCS=CAI"
+    }
+  });
+  if (!response.ok) throw new AppError("video-search", `Video search failed (${response.status}).`);
+  const html = await response.text();
+  const markerIndex = html.search(/(?:var\s+ytInitialData|window\["ytInitialData"\])\s*=\s*/);
+  if (markerIndex < 0) return [];
+  const start = html.indexOf("{", markerIndex);
+  const end = html.indexOf(";</script>", start);
+  if (start < 0 || end < 0) return [];
+  let data;
+  try {
+    data = JSON.parse(html.slice(start, end));
+  } catch {
+    return [];
+  }
+  const text = (node) => node?.simpleText ?? (Array.isArray(node?.runs) ? node.runs.map((run) => run.text).join("") : "");
+  const items = [];
+  const seen = /* @__PURE__ */ new Set();
+  const stack = [data];
+  while (stack.length && items.length < max) {
+    const node = stack.pop();
+    if (!node || typeof node !== "object") continue;
+    const video = node.videoRenderer;
+    if (video && typeof video.videoId === "string" && /^[\w-]{11}$/.test(video.videoId) && !seen.has(video.videoId)) {
+      seen.add(video.videoId);
+      items.push({
+        id: video.videoId,
+        title: text(video.title).slice(0, 200),
+        channel: text(video.ownerText || video.longBylineText).slice(0, 100),
+        duration: text(video.lengthText).slice(0, 20),
+        views: text(video.shortViewCountText || video.viewCountText).slice(0, 40),
+        published: text(video.publishedTimeText).slice(0, 40)
+      });
+      continue;
+    }
+    const values = Array.isArray(node) ? node : Object.values(node);
+    for (let i = values.length - 1; i >= 0; i--) if (values[i] && typeof values[i] === "object") stack.push(values[i]);
+  }
+  videoSearchCache.set(key, { at: Date.now(), items });
+  return items;
+}
 function buildHandlers(services2) {
   const windowOf = (event) => electron.BrowserWindow.fromWebContents(event.sender);
   const installationDir = async (id) => {
@@ -7725,6 +9271,7 @@ function buildHandlers(services2) {
     "catalog.project": async (_event, args) => services2.content.project(str(args[0]), str(args[1], "projectId")),
     "catalog.versions": async (_event, args) => services2.content.versions(args[0]),
     "catalog.install": async (_event, args) => services2.content.install(args[0]),
+    "catalog.cancel": async (_event, args) => services2.content.cancel(args[0]),
     "catalog.categories": async (_event, args) => services2.content.categories(str(args[0]), str(args[1])),
     /* ---------------------------------------------------------------- mods */
     "mods.list": async (_event, args) => services2.content.listMods(str(args[0], "installationId")),
@@ -7847,6 +9394,7 @@ function buildHandlers(services2) {
     "logs.diagnostics": async (_event, args) => services2.diagnostics.diagnostics(optionalString(args[0]) ?? void 0),
     /* ----------------------------------------------------------------- news */
     "news.list": async () => services2.news.list(),
+    "videos.search": async (_event, args) => searchYouTubeVideos(str(args[0], "query"), args[1] == null ? 8 : num(args[1])),
     "servers.list": async (_event, args) => {
       const query = args[0] ?? {};
       const filter = query.filter === "cracked" || query.filter === "premium" ? query.filter : "all";
@@ -7854,6 +9402,83 @@ function buildHandlers(services2) {
       const page = Number.isFinite(query.page) ? Math.max(1, Math.min(1e3, Math.floor(query.page))) : 1;
       return services2.servers.list({ search: typeof query.search === "string" ? query.search.slice(0, 100) : "", filter, sort, page });
     },
+    /* -------------------------------------------------------- local servers */
+    "localServers.list": async () => services2.localServers.list(),
+    "localServers.browse": async () => services2.localServers.browseServers(),
+    "localServers.get": async (_event, args) => services2.localServers.get(str(args[0], "id")),
+    "localServers.create": async (_event, args) => services2.localServers.create(args[0] ?? {}),
+    "localServers.update": async (_event, args) => services2.localServers.update(str(args[0], "id"), args[1] ?? {}),
+    "localServers.remove": async (_event, args) => services2.localServers.remove(str(args[0], "id")),
+    "localServers.start": async (_event, args) => services2.localServers.start(str(args[0], "id")),
+    "localServers.stop": async (_event, args) => services2.localServers.stop(str(args[0], "id")),
+    "localServers.send": async (_event, args) => services2.localServers.send(str(args[0], "id"), String(args[1] ?? "").slice(0, 500)),
+    "localServers.logs": async (_event, args) => services2.localServers.logs(str(args[0], "id"), args[1] == null ? 400 : num(args[1])),
+    "localServers.state": async (_event, args) => services2.localServers.state(str(args[0], "id")),
+    "localServers.files": async (_event, args) => services2.localServers.listFiles(str(args[0], "id"), typeof args[1] === "string" ? args[1] : ""),
+    "localServers.deleteEntry": async (_event, args) => services2.localServers.deleteEntry(str(args[0], "id"), str(args[1], "path")),
+    "localServers.openFolder": async (_event, args) => services2.localServers.openFolder(str(args[0], "id")),
+    "localServers.plugins": async (_event, args) => services2.localServers.listPlugins(str(args[0], "id")),
+    "localServers.addPlugin": async (_event, args) => {
+      const id = str(args[0], "id");
+      const record = services2.localServers.get(id);
+      if (!record) throw new AppError("server-missing", "That local server no longer exists.");
+      const info = serverSoftwareInfo(record.software);
+      const filters = info.mods
+        ? [{ name: "Mod jars", extensions: ["jar"] }]
+        : info.plugins
+          ? [{ name: "Plugin jars", extensions: ["jar"] }]
+          : info.patchbukkit
+            ? [{ name: "Plugins", extensions: ["jar", "wasm"] }]
+            : [{ name: "Pumpkin plugins", extensions: ["wasm"] }];
+      const picked = await services2.pickFile({
+        title: info.mods ? "Add server mod" : info.patchbukkit ? "Add plugin (jar) or native plugin (wasm)" : "Add server plugin",
+        filters,
+        multi: true
+      });
+      const installed = [];
+      for (const file of picked) installed.push(...await services2.localServers.addPlugin(id, file.path));
+      return installed;
+    },
+    "localServers.removePlugin": async (_event, args) => services2.localServers.removePlugin(str(args[0], "id"), str(args[1], "filename")),
+    "localServers.worlds": async (_event, args) => services2.localServers.listWorlds(str(args[0], "id")),
+    "localServers.deleteWorld": async (_event, args) => services2.localServers.deleteWorld(str(args[0], "id"), str(args[1], "name")),
+    "localServers.setDefaultWorld": async (_event, args) => services2.localServers.setDefaultWorld(str(args[0], "id"), str(args[1], "name")),
+    "localServers.joinInfo": async (_event, args) => {
+      const server = services2.localServers.get(str(args[0], "id"));
+      if (!server) throw new AppError("server-missing", "That local server no longer exists.");
+      return server.join;
+    },
+    "localServers.parseInvite": async (_event, args) => decodeServerInvite(str(args[0], "invite code")),
+    "localServers.versions": async () => (await services2.meta.list()).filter((version) => version.type === "release" && /^\d+\.\d+(?:\.\d+)?$/.test(version.id)).map((version) => ({ id: version.id, type: version.type })).slice(0, 40),
+    "localServers.software": async () => SERVER_SOFTWARE_INFO,
+    "localServers.softwareVersions": async (_event, args) => services2.localServers.softwareVersions(str(args[0], "software")),
+    "localServers.readFile": async (_event, args) => services2.localServers.readFile(str(args[0], "id"), str(args[1], "path")),
+    "localServers.writeFile": async (_event, args) => services2.localServers.writeFile(str(args[0], "id"), str(args[1], "path"), String(args[2] ?? "")),
+    "localServers.createFolder": async (_event, args) => services2.localServers.createFolder(str(args[0], "id"), typeof args[1] === "string" ? args[1] : "", str(args[2], "name")),
+    "localServers.renameEntry": async (_event, args) => services2.localServers.renameEntry(str(args[0], "id"), str(args[1], "path"), str(args[2], "name")),
+    "localServers.upload": async (_event, args) => {
+      const id = str(args[0], "id");
+      const target = typeof args[1] === "string" ? args[1] : "";
+      const picked = await services2.pickFile({ title: "Upload to server", multi: true });
+      return services2.localServers.uploadFiles(id, target, picked);
+    },
+    "localServers.pluginSearch": async (_event, args) => {
+      const query = args[0] ?? {};
+      return services2.localServers.pluginSearch(
+        typeof query.query === "string" ? query.query.slice(0, 100) : "",
+        typeof query.version === "string" ? query.version : "",
+        Number.isFinite(query.offset) ? query.offset : 0,
+        Number.isFinite(query.limit) ? query.limit : 20,
+        typeof query.index === "string" ? query.index : "downloads",
+        Array.isArray(query.categories) ? query.categories : [],
+        typeof query.kind === "string" ? query.kind : "plugin",
+        typeof query.loader === "string" ? query.loader : ""
+      );
+    },
+    "localServers.pluginDetails": async (_event, args) => services2.localServers.pluginDetails(str(args[0], "id"), str(args[1], "projectId")),
+    "localServers.pluginInstall": async (_event, args) => services2.localServers.pluginInstall(str(args[0], "id"), str(args[1], "projectId"), typeof args[2] === "string" ? args[2] : ""),
+    "localServers.patchbukkitStatus": async (_event, args) => services2.localServers.patchbukkitStatus(str(args[0], "id")),
+    "localServers.patchbukkitInstall": async (_event, args) => services2.localServers.patchbukkitInstall(str(args[0], "id")),
     "worldChat.latest": async () => services2.worldChat.latest(),
     "worldChat.feed": async (_event, args) => services2.worldChat.feed(
       str(args[0], "channel"),
@@ -7928,7 +9553,7 @@ function registerIpc(services2) {
   });
 }
 const SHOTS = [
-  { name: "01-home-dark", route: "/home" },
+  { name: "01-home-dark", route: "/home", waitMs: 3000 },
   { name: "02-installations", route: "/installations" },
   { name: "03-versions", route: "/versions", waitMs: 1200 },
   { name: "04-modpacks", route: "/modpacks", waitMs: 1600 },
@@ -8060,7 +9685,7 @@ async function createWindow() {
     frame: false,
     backgroundColor: "#0b0d12",
     title: "Mist Launcher",
-    icon: path.join(__dirname, "../../build/icon.png"),
+    icon: path.join(__dirname, "../renderer/assets/mist-logo-DWC6NdSO.png"),
     webPreferences: {
       preload: path.join(__dirname, "../preload/index.js"),
       contextIsolation: true,

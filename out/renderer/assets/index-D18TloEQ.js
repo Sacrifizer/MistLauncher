@@ -14824,7 +14824,7 @@ function Tabs({
   ariaLabel
 }) {
   const refs = reactExports.useRef([]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "tabs", role: "tablist", "aria-label": ariaLabel, children: tabs.map((tab, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `tabs ${tabs.length === 1 ? "is-solo" : ""}`, role: "tablist", "aria-label": ariaLabel, children: tabs.map((tab, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "button",
     {
       ref: (node) => {
@@ -14845,6 +14845,7 @@ function Tabs({
         refs.current[(index + direction + tabs.length) % tabs.length]?.focus();
       },
       children: [
+        tab.icon ? /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { name: tab.icon, size: 14, className: "tab-icon" }) : null,
         tab.label,
         typeof tab.count === "number" ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "tab-count", children: tab.count }) : null
       ]
@@ -14963,6 +14964,7 @@ function ConfirmDialog({
     }
   );
 }
+const MIST_STEVE_FACE = "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" shape-rendering="crispEdges"><rect width="8" height="8" fill="#b5835a"/><rect width="8" height="2" fill="#3a2a1a"/><rect y="2" width="1" height="2" fill="#3a2a1a"/><rect x="7" y="2" width="1" height="2" fill="#3a2a1a"/><rect x="1" y="3" width="2" height="1" fill="#f4f4f4"/><rect x="5" y="3" width="2" height="1" fill="#f4f4f4"/><rect x="2" y="3" width="1" height="1" fill="#3b2e8c"/><rect x="5" y="3" width="1" height="1" fill="#3b2e8c"/><rect x="3" y="4" width="2" height="1" fill="#9a6a48"/><rect x="2" y="5" width="4" height="1" fill="#6d4630"/><rect x="3" y="6" width="2" height="1" fill="#6d4630"/></svg>');
 function Avatar({
   name,
   skinUrl,
@@ -14980,14 +14982,15 @@ function Avatar({
         width: size,
         height: size,
         borderRadius: Math.max(6, Math.round(size * 0.22)),
-        backgroundImage: showSkin ? `url(${skinUrl})` : void 0,
-        backgroundSize: showSkin ? "800% 800%" : void 0,
-        backgroundPosition: showSkin ? "14.28% 14.28%" : void 0
+        backgroundImage: showSkin ? `url(${skinUrl})` : `url("${MIST_STEVE_FACE}")`,
+        backgroundSize: showSkin ? "800% 800%" : "100% 100%",
+        backgroundPosition: showSkin ? "14.28% 14.28%" : "center",
+        imageRendering: "pixelated"
       },
       role: "img",
       "aria-label": `${name} avatar`,
       title: name,
-      children: showSkin ? /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: skinUrl ?? "", alt: "", "aria-hidden": "true", style: { display: "none" }, onError: () => setFailed(true) }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "avatar-initials", children: initials || "?" })
+      children: showSkin ? /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: skinUrl ?? "", alt: "", "aria-hidden": "true", style: { display: "none" }, onError: () => setFailed(true) }) : null
     }
   );
 }
@@ -15841,6 +15844,10 @@ function InstallationArt({
   size = "md"
 }) {
   const kind = icon.startsWith("custom:") ? "custom" : icon.startsWith("url:") ? "url" : icon;
+  if (kind !== "custom" && kind !== "url" && window.__mistInstanceArt) {
+    const art = window.__mistInstanceArt(kind, label, version);
+    return jsxRuntimeExports.jsx("span", { className: "install-art mist-gen-icon", "data-size": size, "aria-hidden": "true", style: art.style, dangerouslySetInnerHTML: { __html: art.html } });
+  }
   if (icon.startsWith("url:")) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "install-art", "data-size": size, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: icon.slice(4), alt: "", loading: "lazy" }) });
   }
@@ -15871,6 +15878,7 @@ function InstallationArt({
     version ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "art-version", children: version }) : null
   ] });
 }
+window.__mistApp = useApp;
 function InstallationSelect({
   installation,
   onChange,
@@ -18839,8 +18847,7 @@ function ModpacksScreen() {
           value: tab,
           onChange: setTab,
           tabs: [
-            { id: "browse", label: "Browse" },
-            { id: "installed", label: "Installed", count: modpackInstallations.length }
+            { id: "browse", label: "Browse", icon: "compass" },
           ]
         }
       ),
@@ -19207,8 +19214,7 @@ function ModsScreen() {
           value: tab,
           onChange: setTab,
           tabs: [
-            { id: "browse", label: "Browse" },
-            { id: "installed", label: "Installed", count: mods.length }
+            { id: "browse", label: "Browse", icon: "compass" },
           ]
         }
       ),
@@ -19465,8 +19471,7 @@ function ResourcePacksScreen() {
           value: tab,
           onChange: setTab,
           tabs: [
-            { id: "browse", label: "Browse" },
-            { id: "installed", label: "Installed", count: packs.length }
+            { id: "browse", label: "Browse", icon: "compass" },
           ]
         }
       ),
@@ -19663,8 +19668,7 @@ function ShadersScreen() {
           value: tab,
           onChange: setTab,
           tabs: [
-            { id: "browse", label: "Browse" },
-            { id: "installed", label: "Installed", count: shaders.length }
+            { id: "browse", label: "Browse", icon: "compass" },
           ]
         }
       ),

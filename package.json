@@ -2,7 +2,7 @@
   "name": "mist-launcher",
   "productName": "Mist Launcher",
   "version": "0.1.26",
-  "description": "Mist Launcher — a modern, modular Minecraft: Java Edition launcher.",
+  "description": "Mist Launcher â€” a modern, modular Minecraft: Java Edition launcher.",
   "main": "./out/main/index.js",
   "author": {
     "name": "Mist Launcher contributors"
@@ -39,7 +39,8 @@
     ],
     "appId": "com.mist.launcher",
     "win": {
-      "signAndEditExecutable": false,
+      "icon": "build/icon.png",
+      "signAndEditExecutable": true,
       "artifactName": "Mist Launcher-${version}-windows-x64.${ext}",
       "target": [
         {

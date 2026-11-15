@@ -825,8 +825,10 @@ html, body, #root, .app-shell { background-color: #1a1a1a !important; }
 .detail-screen.is-settings-view .detail-main > section .panel-actions { position:sticky; bottom:-22px; margin-top:24px; padding:14px 0; background:#1a1a1a; }
 
 /* Featured project details open as a roomy information page instead of a small centered dialog. */
-.overlay:has(.project-detail) { z-index:70 !important; inset:54px 300px 0 80px !important; display:flex !important; align-items:stretch !important; justify-content:stretch !important; padding:12px !important; background:rgba(10,10,10,.72) !important; backdrop-filter:blur(5px); }
+.overlay:has(.project-detail) { z-index:70 !important; inset:54px 300px 0 92px !important; display:flex !important; align-items:stretch !important; justify-content:stretch !important; padding:12px 12px 12px 0 !important; background:rgba(18,18,22,.6) !important; backdrop-filter:blur(5px); }
 .overlay:has(.project-detail) .modal { width:100% !important; max-width:none !important; height:100% !important; max-height:none !important; border-color:#303030 !important; border-radius:13px !important; background:#1a1a1a !important; }
+/* Keep the full-page modal from collapsing into a small centered box during the close fade. */
+.modal.modal-xl { width:100% !important; max-width:none !important; height:100% !important; max-height:none !important; transform:none !important; }
 .overlay:has(.project-detail) .modal-body { padding:18px 20px !important; }
 .overlay:has(.project-detail) .project-detail { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(270px,32%); align-items:start; gap:15px 20px; }
 .overlay:has(.project-detail) .project-detail-head { grid-column:1/-1; align-items:center; }
@@ -843,7 +845,7 @@ html, body, #root, .app-shell { background-color: #1a1a1a !important; }
 }
 
 /* Final geometry and content fixes for the v0.1.26 redesign. */
-.home-screen .home-featured-sidebar { z-index:12 !important; top:78px !important; left:104px !important; right:320px !important; width:auto !important; max-width:none !important; height:218px !important; min-height:218px !important; max-height:218px !important; display:grid !important; grid-template-rows:28px minmax(0,1fr) !important; gap:8px !important; padding:8px 0 0 !important; overflow:hidden !important; }
+.home-screen .home-featured-sidebar { z-index:12 !important; top:78px !important; left:104px !important; right:324px !important; width:auto !important; max-width:none !important; height:218px !important; min-height:218px !important; max-height:218px !important; display:grid !important; grid-template-rows:28px minmax(0,1fr) !important; gap:8px !important; padding:8px 0 0 !important; overflow:hidden !important; }
 .home-screen .home-featured-sidebar .home-news-sidebar-heading { min-height:26px !important; }
 .home-screen .home-featured-pack-list { display:grid !important; width:100% !important; height:auto !important; min-height:0 !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:12px !important; overflow:hidden !important; }
 .home-screen .home-featured-pack { position:relative !important; display:block !important; width:auto !important; min-width:0 !important; height:100% !important; min-height:0 !important; padding:0 !important; overflow:hidden !important; border:0 !important; border-radius:10px !important; background:transparent !important; box-shadow:none !important; transform:none !important; }
@@ -853,7 +855,7 @@ html, body, #root, .app-shell { background-color: #1a1a1a !important; }
 .home-screen .home-featured-pack-copy strong { display:-webkit-box !important; overflow:hidden !important; -webkit-line-clamp:1 !important; -webkit-box-orient:vertical !important; line-height:1.3 !important; }
 .home-screen .home-featured-pack-copy small { overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
 .home-screen .home-hero-left-stack > .home-hero-playtime-card { z-index:12 !important; top:310px !important; bottom:280px !important; left:104px !important; right:auto !important; width:clamp(280px,34vw,410px) !important; height:auto !important; min-height:0 !important; max-height:none !important; overflow:hidden !important; }
-.home-screen .home-server-dock { z-index:12 !important; top:310px !important; bottom:280px !important; left:calc(116px + clamp(280px,34vw,410px)) !important; right:320px !important; width:auto !important; height:auto !important; min-height:0 !important; max-height:none !important; overflow:hidden !important; }
+.home-screen .home-server-dock { z-index:12 !important; top:310px !important; bottom:280px !important; left:calc(116px + clamp(280px,34vw,410px)) !important; right:324px !important; width:auto !important; height:auto !important; min-height:0 !important; max-height:none !important; overflow:hidden !important; }
 .home-screen .home-right-rail .home-news-sidebar { top:76px !important; }
 .home-screen .home-screen .home-changelog-card,
 .home-screen .home-hero-left-stack > .home-changelog-card,
@@ -1795,8 +1797,8 @@ html:has(.home-screen) { --mist-launcher-wallpaper:none !important; }
 .mist-play-instance-option > span { min-width:0; overflow:hidden; font-size:12px; font-weight:650; text-overflow:ellipsis; white-space:nowrap; }
 .mist-play-menu-empty { margin:4px 3px; color:#a5a5af; font-size:12px; }
 
-/* Keep the installation selector visible for every content type and in Versions. */
-.overlay:has(.project-detail) .mist-install-target-field { display:block !important; }
+/* Install target is chosen through the popup opened by the Install button. */
+.overlay:has(.project-detail) .mist-install-target-field { display:none !important; }
 
 @media (max-width:760px) {
   .titlebar > .top-route-nav .mist-route-header { flex-direction:row !important; width:auto !important; margin:0 5px 0 0 !important; padding:0 7px 0 0 !important; border-right:1px solid #303034 !important; border-bottom:0 !important; }
@@ -1833,5 +1835,1727 @@ html:has(.home-screen) { --mist-launcher-wallpaper:none !important; }
   background-size:300% 300% !important;
   animation:mist-titlebar-rgb-flow 18s ease-in-out infinite alternate !important;
 }
-.main:has(.home-screen)::before { inset:18px 306px 96px 98px !important; }
+.main:has(.home-screen)::before { inset:18px 312px 96px 98px !important; }
+.home-screen { position:relative !important; }
+.home-screen .mist-browse-instances {
+  position:absolute !important; z-index:12 !important; top:10px !important; left:12px !important;
+  min-height:30px !important; padding:4px 9px !important; white-space:nowrap !important;
+}
+.home-screen .home-featured-sidebar .home-news-sidebar-heading { justify-content:space-between !important; gap:8px !important; }
+@media (min-width:761px) {
+  .home-screen .home-hero-left-stack > .home-hero-playtime-card,
+  .home-screen .home-server-dock {
+    top:261px !important; bottom:auto !important; height:calc(100vh - 408px) !important; min-height:0 !important; max-height:none !important;
+    transform:translateY(-52px) !important;
+  }
+  .home-screen .home-hero-playtime-card .playtime-chart { height:min(260px,calc(100% - 78px)) !important; }
+  .home-screen .home-server-dock { left:calc(19px + clamp(260px,calc((100vw - 500px)*.33),360px)) !important; right:302px !important; }
+  .home-screen .home-featured-sidebar { right:304px !important; }
+  #mist-home-bottom-dock { right:314px !important; }
+  .titlebar > .top-route-nav { top:72px !important; bottom:8px !important; }
+}
+.titlebar { position:relative !important; }
+.mist-titlebar-brand {
+  position:absolute !important; z-index:145 !important; top:0 !important; left:12px !important; height:54px !important;
+  display:flex !important; align-items:center !important; gap:8px !important; color:#f1f1f4 !important; pointer-events:none !important;
+}
+.mist-titlebar-brand img { width:30px !important; height:30px !important; object-fit:contain !important; }
+.mist-titlebar-brand > span { display:flex !important; flex-direction:column !important; gap:1px !important; line-height:1.1 !important; }
+.mist-titlebar-brand strong { font-size:12px !important; font-weight:750 !important; letter-spacing:.02em !important; }
+.mist-titlebar-brand small { color:#c0c1cb !important; font-size:9px !important; }
+.titlebar-utilities > .titlebar-menu-anchor:has(.titlebar-profile-button),
+.titlebar-utilities > .titlebar-utility-divider { display:none !important; }
+.home-screen .home-right-rail .home-news-sidebar {
+  top:24px !important; right:8px !important; width:300px !important;
+  height:min(52vh,460px) !important; min-height:min(52vh,460px) !important; max-height:460px !important;
+}
+/* Keep the center canvas and play bar on the same rails, with a clear small gutter. */
+.main:has(.home-screen)::before { inset:18px 326px 104px 100px !important; }
+#mist-home-bottom-dock { left:100px !important; right:326px !important; }
+/* Project title stays in the modal chrome; metadata scrolls normally and only tabs pin. */
+.overlay:has(.project-detail) .project-detail-head {
+  position:relative !important; top:auto !important; z-index:auto !important; background:transparent !important;
+}
+.overlay:has(.project-detail) .mist-project-tabs {
+  position:sticky !important; top:0 !important; z-index:31 !important; background:#1a1a1a !important;
+}
 @media (prefers-reduced-motion:reduce) { .app-shell:has(.home-screen) .main { animation:none !important; } }
+
+/* v0.1.26 QA: pull the mod-review dock up to sit right under the playtime/server docks. */
+#mist-home-mod-review { position:relative !important; inset:auto !important; margin:-232px 324px 96px 10px !important; }
+
+/* v0.1.26 QA: keep featured/server docks 16px clear of the news rail (right edge = 1106). */
+.home-screen .home-featured-sidebar { right:324px !important; }
+.home-screen .home-server-dock { right:324px !important; }
+
+/* =====================================================================================
+   v0.1.26 QA: project detail modal = full-page panel filling the library content area.
+   Scoped to .modal-xl (set on the modal shell at open, before async content loads) so
+   the panel is correctly sized from the first frame — no "big -> default" jump, and no
+   collapse on close. Opaque backdrop kills the "background on background" effect.
+   ===================================================================================== */
+.overlay:has(.modal.modal-xl) {
+  z-index:70 !important;
+  inset:54px 0 0 92px !important;
+  display:flex !important;
+  align-items:stretch !important;
+  justify-content:stretch !important;
+  padding:0 !important;
+  background:#121216 !important;
+  backdrop-filter:none !important;
+}
+.overlay:has(.modal.modal-xl) .modal {
+  width:100% !important; max-width:none !important;
+  height:100% !important; max-height:none !important;
+  border:0 !important; border-radius:0 !important;
+  box-shadow:none !important;
+  background:#121216 !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+.modal.modal-xl {
+  width:100% !important; max-width:none !important;
+  height:100% !important; max-height:none !important;
+  transform:none !important;
+  animation:none !important;
+  transition:none !important;
+}
+.overlay:has(.modal.modal-xl) .modal-header { border-bottom:1px solid #26262c !important; }
+.overlay:has(.modal.modal-xl) .modal-footer { border-top:1px solid #26262c !important; }
+.overlay:has(.modal.modal-xl) .modal-body {
+  padding:18px 26px !important;
+  min-height:0 !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+}
+
+/* Two-column grid: content (left) + install/info (right); head & tabs span full width. */
+.overlay:has(.modal.modal-xl) .project-detail {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 340px !important;
+  align-items:start !important;
+  gap:14px 22px !important;
+}
+.overlay:has(.modal.modal-xl) .project-detail-head {
+  grid-column:1/-1 !important; grid-row:1 !important;
+  position:relative !important; top:auto !important; z-index:auto !important;
+  background:transparent !important; margin-top:0 !important;
+}
+.overlay:has(.modal.modal-xl) .mist-project-tabs {
+  grid-column:1/-1 !important; grid-row:2 !important;
+  position:sticky !important; top:0 !important; z-index:40 !important;
+  align-self:start !important;
+  background:#121216 !important;
+  padding:6px 0 10px !important; margin:0 !important;
+}
+/* Left column: every content block. */
+.overlay:has(.modal.modal-xl) .project-detail > :is(.mist-version-browser,.mist-project-changelog,.project-body,.project-detail-tags,.gallery,.mist-version-data,.mist-gallery-data,.mist-project-data,.field) {
+  grid-column:1 !important; grid-row:auto !important; align-self:start !important;
+}
+/* Right column: install panel / version selector on top, information below, changelog last. */
+.overlay:has(.modal.modal-xl) .project-detail > :is(.install-box,.mist-pack-version-source) {
+  grid-column:2 !important; grid-row:3 !important; align-self:start !important;
+  position:static !important; margin:0 !important; min-width:0 !important;
+}
+.overlay:has(.modal.modal-xl) .project-detail > .mist-project-info {
+  grid-column:2 !important; grid-row:4 !important; align-self:start !important;
+  position:static !important; margin:0 !important; min-width:0 !important;
+  border:1px solid #303030 !important; border-radius:10px !important;
+  padding:14px !important; color:#ccc !important; background:#1a1a1a !important;
+}
+.overlay:has(.modal.modal-xl) .project-detail > .mist-version-changelog-source {
+  grid-column:2 !important; grid-row:5 !important; align-self:start !important;
+  position:static !important; margin:0 !important;
+}
+.overlay:has(.modal.modal-xl) .project-detail > .install-box {
+  border:1px solid #303030 !important; border-radius:12px !important;
+  padding:14px !important; background:#1a1a1a !important;
+}
+.overlay:has(.modal.modal-xl) .project-body {
+  max-height:none !important; overflow:visible !important;
+  color:#c8c8ce !important; line-height:1.7 !important; overflow-wrap:anywhere !important;
+}
+.overlay:has(.modal.modal-xl) .project-detail .gallery img {
+  width:100% !important; height:auto !important; max-height:none !important;
+  aspect-ratio:16/10 !important; object-fit:cover !important; border-radius:8px !important;
+}
+
+/* View modes: the active tab's content spans the full width (tabs stay pinned). */
+.overlay:has(.modal.modal-xl) .project-detail.mist-gallery-view .gallery { grid-column:1/-1 !important; grid-row:3 !important; }
+.overlay:has(.modal.modal-xl) .project-detail.mist-versions-view .mist-version-browser { grid-column:1/-1 !important; grid-row:3 !important; }
+.overlay:has(.modal.modal-xl) .project-detail.mist-changelog-view .mist-project-changelog { grid-column:1/-1 !important; grid-row:3 !important; }
+
+/* Single-column fallback for narrow windows. */
+@media (max-width:900px) {
+  .overlay:has(.modal.modal-xl) { inset:54px 0 0 68px !important; }
+  .overlay:has(.modal.modal-xl) .project-detail { grid-template-columns:minmax(0,1fr) !important; }
+  .overlay:has(.modal.modal-xl) .project-detail > :is(.project-body,.project-detail-tags,.gallery,.install-box,.mist-project-info,.mist-pack-version-source,.mist-version-changelog-source,.mist-version-browser,.mist-project-changelog) {
+    grid-column:1 !important; grid-row:auto !important; position:static !important;
+  }
+}
+
+/* =====================================================================================
+   v0.1.26 QA round 2: pinned hero header, overview cleanup, install picker,
+   left-rail alignment and compact play bar.
+   ===================================================================================== */
+
+/* The modal's duplicate title bar is replaced by the pinned hero below. */
+.overlay:has(.project-detail) .modal-header { display: none !important; }
+
+/* Hero: back + icon + title/subtitle/stats + Install + close, pinned on scroll. */
+.overlay:has(.modal.modal-xl) .project-detail-head {
+  position: sticky !important; top: 0 !important; z-index: 46 !important;
+  grid-column: 1 / -1 !important; grid-row: 1 !important;
+  display: flex !important; align-items: center !important; gap: 14px !important;
+  height: 96px !important; box-sizing: border-box !important;
+  margin: 0 !important; padding: 12px 2px 14px !important;
+  background: #121216 !important;
+  border-bottom: 1px solid #26262c !important;
+}
+.mist-hero-back,
+.mist-hero-close {
+  flex: 0 0 auto !important; display: inline-flex !important; align-items: center !important;
+  justify-content: center !important; width: 36px !important; height: 36px !important;
+  border: 1px solid #30303a !important; border-radius: 9px !important; color: #e6e6ea !important;
+  background: #1d1d22 !important; cursor: pointer !important;
+}
+.mist-hero-back:hover, .mist-hero-close:hover { background: #26262c !important; }
+.mist-hero-back svg, .mist-hero-close svg { width: 18px !important; height: 18px !important; }
+.overlay:has(.modal.modal-xl) .project-detail-head .project-icon {
+  flex: 0 0 auto !important; width: 56px !important; height: 56px !important; border-radius: 12px !important; overflow: hidden !important;
+}
+.overlay:has(.modal.modal-xl) .project-detail-head .project-icon img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+.mist-hero-copy { flex: 1 1 auto !important; min-width: 0 !important; display: flex !important; flex-direction: column !important; gap: 3px !important; }
+.mist-hero-title { margin: 0 !important; font-size: 21px !important; font-weight: 750 !important; color: #f4f4f7 !important; line-height: 1.15 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+.mist-hero-subtitle { margin: 0 !important; font-size: 12.5px !important; color: #9c9ca6 !important; }
+.mist-hero-copy .project-detail-stats { display: flex !important; flex-wrap: wrap !important; gap: 4px 14px !important; margin-top: 3px !important; }
+.mist-hero-copy .project-detail-stats span { font-size: 12px !important; color: #a6a6b0 !important; white-space: nowrap !important; }
+.mist-hero-install {
+  flex: 0 0 auto !important; display: inline-flex !important; align-items: center !important; gap: 8px !important;
+  height: 40px !important; padding: 0 18px !important; border: 1px solid #7250bd !important; border-radius: 10px !important;
+  color: #fff !important; background: #6846b4 !important; font-weight: 650 !important; font-size: 13.5px !important;
+  cursor: pointer !important; box-shadow: 0 5px 16px rgba(104,70,180,.28) !important;
+}
+.mist-hero-install:hover { background: #7a57c4 !important; }
+.mist-hero-install svg { width: 17px !important; height: 17px !important; }
+
+/* Tabs pin directly below the hero. */
+.overlay:has(.modal.modal-xl) .mist-project-tabs {
+  grid-column: 1 / -1 !important; grid-row: 2 !important;
+  position: sticky !important; top: 96px !important; z-index: 40 !important;
+  align-self: start !important; background: #121216 !important;
+  padding: 8px 0 12px !important; margin: 0 !important; border-bottom: 1px solid #202027 !important;
+}
+
+/* Scrolled: hero compacts into a slim bar and tabs move up to match. */
+.overlay:has(.modal.modal-xl) .project-detail.mist-hero-scrolled .project-detail-head { height: 62px !important; padding: 8px 2px 10px !important; }
+.overlay:has(.modal.modal-xl) .project-detail.mist-hero-scrolled .project-detail-head .project-icon { width: 38px !important; height: 38px !important; border-radius: 8px !important; }
+.overlay:has(.modal.modal-xl) .project-detail.mist-hero-scrolled .mist-hero-title { font-size: 17px !important; }
+.overlay:has(.modal.modal-xl) .project-detail.mist-hero-scrolled .mist-hero-subtitle,
+.overlay:has(.modal.modal-xl) .project-detail.mist-hero-scrolled .project-detail-stats { display: none !important; }
+.overlay:has(.modal.modal-xl) .project-detail.mist-hero-scrolled .mist-hero-copy { gap: 0 !important; }
+.overlay:has(.modal.modal-xl) .project-detail.mist-hero-scrolled .mist-project-tabs { top: 62px !important; }
+
+/* Badges row (categories + loaders) under the tabs, left column. */
+.overlay:has(.modal.modal-xl) .project-detail > .mist-project-badges {
+  grid-column: 1 !important; grid-row: 3 !important; align-self: start !important;
+  display: flex !important; flex-wrap: wrap !important; gap: 8px !important; padding: 4px 0 2px !important; margin: 0 !important;
+}
+.overlay:has(.modal.modal-xl) .project-detail:is(.mist-gallery-view,.mist-versions-view,.mist-changelog-view) .mist-project-badges { display: none !important; }
+.mist-badge { display: inline-flex !important; align-items: center !important; padding: 4px 11px !important; border: 1px solid #33333b !important; border-radius: 999px !important; background: #1d1d22 !important; color: #cfcfd6 !important; font-size: 12px !important; }
+
+/* Overview mode hides the screenshot gallery (it belongs to the Gallery tab). */
+.overlay:has(.modal.modal-xl) .project-detail:not(.mist-gallery-view) .gallery { display: none !important; }
+
+/* Left rail starts flush with the content area (titlebar is 54px tall). */
+.titlebar > .top-route-nav { top: 54px !important; }
+
+/* Compact, centered play bar. */
+#mist-home-bottom-dock {
+  position: fixed !important; left: 50% !important; right: auto !important; top: auto !important;
+  bottom: 12px !important; transform: translateX(-50%) !important;
+  width: max-content !important; min-width: 0 !important; max-width: calc(100vw - 220px) !important;
+  display: flex !important; align-items: center !important; justify-content: center !important; gap: 12px !important;
+  height: auto !important; padding: 9px 14px !important;
+  border-radius: 16px !important;
+}
+#mist-home-bottom-dock .mist-bottom-manage { min-width: 0 !important; width: auto !important; padding: 0 14px !important; }
+#mist-home-bottom-dock .mist-bottom-play { width: 54px !important; height: 54px !important; border-radius: 50% !important; }
+#mist-home-bottom-dock .mist-bottom-selected { max-width: 280px !important; }
+
+/* Install-target picker: hide the native select, show instance rows. */
+.modpack-install-dialog .modal-body { padding-bottom: 14px !important; }
+.mist-install-picker { display: flex !important; flex-direction: column !important; gap: 8px !important; margin: 2px 0 10px !important; }
+.mist-install-option {
+  display: flex !important; align-items: center !important; gap: 12px !important; width: 100% !important;
+  padding: 10px 12px !important; border: 1px solid #33333b !important; border-radius: 11px !important;
+  background: #1d1d22 !important; color: #ececf0 !important; cursor: pointer !important; text-align: left !important;
+  box-sizing: border-box !important;
+}
+.mist-install-option:hover { background: #232329 !important; border-color: #3f3f49 !important; }
+.mist-install-option.is-active { border-color: #7250bd !important; background: #241f33 !important; box-shadow: 0 0 0 1px #7250bd inset !important; }
+.mist-install-option-icon { flex: 0 0 auto !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 40px !important; height: 40px !important; border-radius: 9px !important; background: #26262c !important; overflow: hidden !important; }
+.mist-install-option-icon .install-art { width: 40px !important; height: 40px !important; }
+.mist-install-option-icon svg { width: 20px !important; height: 20px !important; color: #b9b9c3 !important; }
+.mist-install-option-copy { flex: 1 1 auto !important; min-width: 0 !important; display: flex !important; flex-direction: column !important; gap: 2px !important; }
+.mist-install-option-copy strong { font-size: 13.5px !important; font-weight: 650 !important; color: #f1f1f4 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+.mist-install-option-copy small { font-size: 12px !important; color: #9c9ca6 !important; }
+.mist-install-warn { flex: 0 0 auto !important; padding: 3px 9px !important; border-radius: 999px !important; background: rgba(230,126,34,.16) !important; color: #f0a45a !important; font-size: 11px !important; font-weight: 650 !important; }
+
+/* v0.1.26 QA round 3: interactive instance selector in the play dock. */
+#mist-home-bottom-dock .mist-bottom-selected { display: flex !important; align-items: center !important; gap: 10px !important; max-width: 340px !important; }
+#mist-home-bottom-dock .mist-bottom-selected > .install-art,
+#mist-home-bottom-dock .mist-bottom-selected > img { width: 42px !important; height: 42px !important; flex: 0 0 42px !important; border-radius: 9px !important; object-fit: cover !important; image-rendering: pixelated !important; }
+#mist-home-bottom-dock .mist-bottom-select {
+  min-width: 0 !important; max-width: 250px !important; height: 46px !important; padding: 0 30px 0 12px !important;
+  border: 1px solid #3a3a40 !important; border-radius: 10px !important; color: #f1f1f4 !important; background-color: #242427 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: right 10px center !important;
+  -webkit-appearance: none !important; appearance: none !important;
+  font-size: 12px !important; font-weight: 600 !important; cursor: pointer !important; box-sizing: border-box !important;
+}
+#mist-home-bottom-dock .mist-bottom-select option { background: #1a1a1d !important; color: #f1f1f4 !important; }
+
+/* Remove the oversized empty gap below home content (base CSS pads .home-screen 168–230px). */
+.main:has(.home-screen) { padding-bottom: 96px !important; }
+.home-screen { padding-bottom: 96px !important; }
+
+/* ======================= v0.1.26 QA round 4: sidebar dock, contacts, datapacks, recently-played ======================= */
+
+/* --- Titlebar contact links (Discord / GitHub / website) --- */
+.titlebar .mist-titlebar-contacts {
+  display:flex !important; align-items:center !important; gap:6px !important; margin-right:10px !important;
+}
+.titlebar .mist-contact-button {
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  width:34px !important; height:34px !important; padding:0 !important;
+  border:1px solid #35353c !important; border-radius:9px !important; color:#c9c9d2 !important;
+  background:#1e1e23 !important; cursor:pointer !important; transition:color 150ms ease, background-color 150ms ease, border-color 150ms ease, transform 150ms ease !important;
+}
+.titlebar .mist-contact-button svg { width:18px !important; height:18px !important; }
+.titlebar .mist-contact-button:hover { color:#fff !important; border-color:#6a4bb6 !important; background:#2a2237 !important; transform:translateY(-1px) !important; }
+
+/* --- Left sidebar game dock (Manage / Play / Instances) above the account icon --- */
+.titlebar > .top-route-nav .mist-side-dock {
+  display:flex !important; flex-direction:column !important; align-items:center !important; gap:8px !important; width:100% !important;
+}
+.titlebar > .top-route-nav .mist-side-dock[hidden] { display:none !important; }
+.titlebar > .top-route-nav .mist-side-dock > button {
+  position:relative !important; display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  width:56px !important; min-width:56px !important; height:56px !important; min-height:56px !important; padding:0 !important;
+  border:1px solid #33333b !important; border-radius:15px !important; color:#b9b9c3 !important; background:#202024 !important; cursor:pointer !important;
+  transition:color 150ms ease, background-color 150ms ease, border-color 150ms ease, transform 150ms ease !important;
+}
+.titlebar > .top-route-nav .mist-side-dock > button:hover { color:#f2f2f4 !important; border-color:#6a4bb6 !important; background:#2a2237 !important; transform:translateY(-1px) !important; }
+.titlebar > .top-route-nav .mist-side-dock > button svg { width:24px !important; height:24px !important; }
+.titlebar > .top-route-nav .mist-side-dock .mist-side-play {
+  border-color:transparent !important; color:#fff !important;
+  background:linear-gradient(135deg,#7a5bd0,#5a3fb0) !important;
+  box-shadow:0 6px 18px rgba(104,70,180,.45) !important;
+}
+.titlebar > .top-route-nav .mist-side-dock .mist-side-play:hover { background:linear-gradient(135deg,#8a6bdc,#6646c0) !important; }
+.titlebar > .top-route-nav .mist-side-dock .mist-dock-tooltip { left:calc(100% + 8px) !important; top:50% !important; bottom:auto !important; transform:translateY(-50%) !important; }
+.titlebar > .top-route-nav .mist-side-divider { width:34px !important; height:1px !important; margin:2px 0 !important; background:#303034 !important; flex:0 0 auto !important; }
+
+/* --- Installed instances popover (arrow icon -> list on the right of the sidebar) --- */
+#mist-instance-list {
+  position:fixed !important; z-index:10030 !important; width:min(320px,calc(100vw - 24px)) !important; max-height:min(480px,70vh) !important;
+  box-sizing:border-box !important; overflow:hidden auto !important; padding:10px !important; border:1px solid #45454d !important;
+  border-radius:13px !important; color:#f1f1f4 !important; background:#202023 !important; box-shadow:0 18px 50px rgba(0,0,0,.55) !important;
+}
+#mist-instance-list[hidden] { display:none !important; }
+.mist-instance-list-head { display:flex !important; align-items:center !important; justify-content:space-between !important; gap:10px !important; padding:2px 3px 9px !important; border-bottom:1px solid #36363c !important; }
+.mist-instance-list-head strong { font-size:13px !important; }
+.mist-instance-list-close { width:28px !important; height:28px !important; border:1px solid #3b3b42 !important; border-radius:7px !important; color:#d8d8de !important; background:#29292d !important; cursor:pointer !important; }
+.mist-instance-list-body { display:grid !important; gap:5px !important; padding-top:8px !important; }
+.mist-instance-list-row { display:flex !important; width:100% !important; align-items:center !important; gap:10px !important; padding:7px 8px !important; border:1px solid transparent !important; border-radius:9px !important; color:#ededf1 !important; background:#27272b !important; text-align:left !important; cursor:pointer !important; }
+.mist-instance-list-row:hover { border-color:#66508c !important; background:#302a38 !important; }
+.mist-instance-list-art { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:36px !important; height:36px !important; flex:0 0 36px !important; border-radius:8px !important; background:#1c1c20 !important; overflow:hidden !important; }
+.mist-instance-list-art img { width:36px !important; height:36px !important; object-fit:cover !important; image-rendering:pixelated !important; }
+.mist-instance-list-art.is-fallback { color:#c6b2ef !important; font-size:16px !important; font-weight:700 !important; }
+.mist-instance-list-copy { display:flex !important; min-width:0 !important; flex-direction:column !important; gap:2px !important; }
+.mist-instance-list-copy strong { overflow:hidden !important; font-size:13px !important; font-weight:650 !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-instance-list-copy small { overflow:hidden !important; color:#9c9ca6 !important; font-size:11px !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-instance-list-empty { margin:4px 3px !important; color:#a5a5af !important; font-size:12px !important; }
+
+/* --- Install-target popup (pack detail -> choose instance) --- */
+#mist-install-popup {
+  position:fixed !important; z-index:10025 !important; width:min(380px,calc(100vw - 24px)) !important; max-height:min(440px,72vh) !important;
+  box-sizing:border-box !important; overflow:hidden auto !important; padding:10px !important; border:1px solid #45454d !important;
+  border-radius:13px !important; color:#f1f1f4 !important; background:#202023 !important; box-shadow:0 18px 50px rgba(0,0,0,.55) !important;
+}
+#mist-install-popup[hidden] { display:none !important; }
+.mist-install-popup-head { display:flex !important; align-items:center !important; justify-content:space-between !important; gap:10px !important; padding:2px 3px 9px !important; border-bottom:1px solid #36363c !important; }
+.mist-install-popup-head strong { font-size:13px !important; }
+.mist-install-popup-close { width:28px !important; height:28px !important; border:1px solid #3b3b42 !important; border-radius:7px !important; color:#d8d8de !important; background:#29292d !important; cursor:pointer !important; }
+.mist-install-popup-list { display:grid !important; gap:6px !important; padding-top:8px !important; }
+
+/* --- Recently played instances (home) --- */
+#mist-recently-played {
+  position:fixed !important; z-index:40 !important; top:312px !important; left:104px !important; right:320px !important;
+  height:132px !important; min-height:132px !important; box-sizing:border-box !important; padding:10px 12px !important;
+  border:1px solid #30303a !important; border-radius:14px !important; background:linear-gradient(180deg,#1d1d23,#18181c) !important;
+  box-shadow:0 8px 22px rgba(0,0,0,.22) !important; overflow:hidden !important;
+}
+#mist-recently-played[hidden] { display:none !important; }
+.mist-rp-heading { display:flex !important; align-items:center !important; justify-content:space-between !important; gap:10px !important; margin-bottom:8px !important; }
+.mist-rp-heading > div { display:flex !important; flex-direction:column !important; gap:1px !important; }
+.mist-rp-heading strong { font-size:13px !important; font-weight:700 !important; color:#f1f1f4 !important; }
+.mist-rp-heading small { font-size:10.5px !important; color:#9c9ca6 !important; }
+.mist-rp-grid { display:flex !important; gap:10px !important; overflow-x:auto !important; overflow-y:hidden !important; padding-bottom:2px !important; }
+.mist-rp-grid::-webkit-scrollbar { height:6px !important; }
+.mist-rp-grid::-webkit-scrollbar-thumb { background:#33333b !important; border-radius:3px !important; }
+.mist-rp-card {
+  position:relative !important; display:flex !important; min-width:200px !important; max-width:230px !important; flex:1 0 200px !important;
+  align-items:center !important; gap:10px !important; padding:8px !important; border:1px solid #30303a !important; border-radius:11px !important;
+  color:#e8e8eb !important; background:#202024 !important; text-align:left !important; cursor:pointer !important; transition:border-color 150ms ease, background-color 150ms ease !important;
+}
+.mist-rp-card:hover { border-color:#6a4bb6 !important; background:#26202f !important; }
+.mist-rp-art { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:44px !important; height:44px !important; flex:0 0 44px !important; border-radius:10px !important; background:#1a1a1e !important; overflow:hidden !important; }
+.mist-rp-art img { width:44px !important; height:44px !important; object-fit:cover !important; image-rendering:pixelated !important; }
+.mist-rp-art.is-fallback { color:#c6b2ef !important; font-size:20px !important; font-weight:700 !important; }
+.mist-rp-copy { display:flex !important; min-width:0 !important; flex:1 1 auto !important; flex-direction:column !important; gap:2px !important; }
+.mist-rp-copy strong { overflow:hidden !important; font-size:12.5px !important; font-weight:650 !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-rp-copy small { overflow:hidden !important; color:#9c9ca6 !important; font-size:10.5px !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-rp-play { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:32px !important; height:32px !important; flex:0 0 32px !important; border-radius:50% !important; color:#fff !important; background:linear-gradient(135deg,#7a5bd0,#5a3fb0) !important; }
+.mist-rp-play svg { width:15px !important; height:15px !important; }
+.mist-rp-play svg path { fill:currentColor !important; stroke:none !important; }
+
+/* Shift the playtime + server cards down to make room for recently-played. */
+.home-screen .home-hero-left-stack > .home-hero-playtime-card { top:452px !important; }
+.home-screen .home-server-dock { top:452px !important; }
+
+/* --- Data packs browser overlay --- */
+#mist-datapacks-browser {
+  position:fixed !important; inset:54px 0 0 0 !important; z-index:10035 !important; display:flex !important;
+  background:rgba(8,8,11,.62) !important; backdrop-filter:blur(4px) !important;
+}
+#mist-datapacks-browser[hidden] { display:none !important; }
+.mist-dp-shell {
+  position:relative !important; display:flex !important; flex-direction:column !important;
+  width:min(1120px,calc(100vw - 120px)) !important; height:calc(100% - 44px) !important; margin:22px auto !important;
+  border:1px solid #3a3a44 !important; border-radius:16px !important; background:#141418 !important;
+  box-shadow:0 30px 90px rgba(0,0,0,.65) !important; overflow:hidden !important;
+}
+.mist-dp-head { display:flex !important; align-items:center !important; gap:14px !important; padding:13px 16px !important; border-bottom:1px solid #26262c !important; background:linear-gradient(180deg,#1d1d23,#18181d) !important; }
+.mist-dp-head .mist-dp-back, .mist-dp-head .mist-dp-close {
+  display:inline-flex !important; align-items:center !important; justify-content:center !important; width:36px !important; height:36px !important; flex:0 0 36px !important;
+  border:1px solid #34343c !important; border-radius:9px !important; color:#cfcfd6 !important; background:#202024 !important; cursor:pointer !important;
+}
+.mist-dp-head .mist-dp-back svg { width:18px !important; height:18px !important; }
+.mist-dp-head .mist-dp-close { font-size:20px !important; line-height:1 !important; }
+.mist-dp-head .mist-dp-back:hover, .mist-dp-head .mist-dp-close:hover { border-color:#6a4bb6 !important; color:#fff !important; }
+.mist-dp-title { display:flex !important; align-items:center !important; gap:11px !important; flex:1 1 auto !important; min-width:0 !important; }
+.mist-dp-title-icon { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:40px !important; height:40px !important; flex:0 0 40px !important; border-radius:10px !important; color:#d8caff !important; background:#292235 !important; }
+.mist-dp-title-icon svg { width:22px !important; height:22px !important; }
+.mist-dp-title > div { display:flex !important; flex-direction:column !important; gap:1px !important; }
+.mist-dp-title strong { font-size:16px !important; font-weight:750 !important; color:#f4f4f7 !important; }
+.mist-dp-title small { font-size:11px !important; color:#9c9ca6 !important; }
+.mist-dp-search { display:flex !important; align-items:center !important; gap:8px !important; width:min(340px,34vw) !important; height:38px !important; padding:0 12px !important; border:1px solid #34343c !important; border-radius:10px !important; background:#1b1b1f !important; }
+.mist-dp-search svg { width:16px !important; height:16px !important; color:#9b9ba5 !important; }
+.mist-dp-search input { width:100% !important; min-width:0 !important; border:0 !important; outline:0 !important; color:#eee !important; background:transparent !important; font-size:12.5px !important; }
+.mist-dp-body { position:relative !important; flex:1 1 auto !important; min-height:0 !important; }
+.mist-dp-grid { position:absolute !important; inset:0 !important; display:grid !important; grid-template-columns:repeat(auto-fill,minmax(196px,1fr)) !important; gap:12px !important; padding:16px !important; overflow-y:auto !important; align-content:start !important; }
+.mist-dp-body.is-detail .mist-dp-grid { display:none !important; }
+.mist-dp-card {
+  display:flex !important; flex-direction:column !important; gap:8px !important; padding:10px !important; border:1px solid #2c2c34 !important;
+  border-radius:12px !important; color:#e8e8eb !important; background:#1c1c21 !important; text-align:left !important; cursor:pointer !important;
+  transition:border-color 150ms ease, background-color 150ms ease, transform 150ms ease !important;
+}
+.mist-dp-card:hover { border-color:#6a4bb6 !important; background:#232029 !important; transform:translateY(-2px) !important; }
+.mist-dp-card-icon { display:flex !important; align-items:center !important; justify-content:center !important; width:100% !important; height:96px !important; border-radius:9px !important; background:#131316 !important; overflow:hidden !important; }
+.mist-dp-card-icon img { width:100% !important; height:100% !important; object-fit:cover !important; }
+.mist-dp-fallback { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:100% !important; height:100% !important; color:#c6b2ef !important; font-size:34px !important; font-weight:750 !important; }
+.mist-dp-card-copy { display:flex !important; min-width:0 !important; flex-direction:column !important; gap:2px !important; }
+.mist-dp-card-copy strong { overflow:hidden !important; font-size:13px !important; font-weight:650 !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-dp-card-copy small { overflow:hidden !important; color:#9c9ca6 !important; font-size:11px !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-dp-card-foot { overflow:hidden !important; color:#8b8b95 !important; font-size:10.5px !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-dp-state { display:flex !important; flex-direction:column !important; align-items:flex-start !important; gap:8px !important; grid-column:1/-1 !important; padding:22px !important; color:#9c9ca5 !important; font-size:13px !important; }
+.mist-dp-retry { min-height:30px !important; padding:0 14px !important; border:1px solid #51416f !important; border-radius:8px !important; color:#d8caff !important; background:#292235 !important; cursor:pointer !important; font-size:12px !important; }
+
+/* Data packs detail */
+.mist-dp-detail { position:absolute !important; inset:0 !important; display:flex !important; flex-direction:column !important; background:#141418 !important; }
+.mist-dp-detail[hidden] { display:none !important; }
+.mist-dp-detail-head { display:flex !important; align-items:center !important; gap:12px !important; padding:14px 16px !important; border-bottom:1px solid #26262c !important; }
+.mist-dp-detail-back { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:36px !important; height:36px !important; flex:0 0 36px !important; border:1px solid #34343c !important; border-radius:9px !important; color:#cfcfd6 !important; background:#202024 !important; cursor:pointer !important; }
+.mist-dp-detail-back svg { width:18px !important; height:18px !important; }
+.mist-dp-detail-icon { display:flex !important; align-items:center !important; justify-content:center !important; width:46px !important; height:46px !important; flex:0 0 46px !important; border-radius:10px !important; background:#131316 !important; overflow:hidden !important; }
+.mist-dp-detail-icon img { width:100% !important; height:100% !important; object-fit:cover !important; }
+.mist-dp-detail-icon .mist-dp-fallback { font-size:20px !important; }
+.mist-dp-detail-title { display:flex !important; min-width:0 !important; flex:1 1 auto !important; flex-direction:column !important; gap:2px !important; }
+.mist-dp-detail-title h2 { margin:0 !important; overflow:hidden !important; font-size:17px !important; font-weight:750 !important; color:#f4f4f7 !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-dp-detail-title span { color:#9c9ca6 !important; font-size:11.5px !important; }
+.mist-dp-detail-install { display:inline-flex !important; align-items:center !important; gap:8px !important; height:40px !important; padding:0 18px !important; border:1px solid #7250bd !important; border-radius:10px !important; color:#fff !important; background:#6846b4 !important; font-weight:650 !important; font-size:13.5px !important; cursor:pointer !important; }
+.mist-dp-detail-install:disabled { opacity:.45 !important; cursor:not-allowed !important; }
+.mist-dp-detail-install svg { width:17px !important; height:17px !important; }
+.mist-dp-detail-scroll { flex:1 1 auto !important; min-height:0 !important; padding:16px !important; overflow-y:auto !important; }
+.mist-dp-detail-desc { margin:0 0 16px !important; color:#b9b9c1 !important; font-size:13px !important; line-height:1.55 !important; }
+.mist-dp-detail-scroll h3 { margin:0 0 10px !important; font-size:13px !important; font-weight:700 !important; color:#e6e6ea !important; text-transform:uppercase !important; letter-spacing:.04em !important; }
+.mist-dp-versions { display:grid !important; gap:6px !important; }
+.mist-dp-version { display:flex !important; align-items:center !important; justify-content:space-between !important; gap:12px !important; padding:10px 12px !important; border:1px solid #2c2c34 !important; border-radius:10px !important; color:#e8e8eb !important; background:#1c1c21 !important; text-align:left !important; cursor:pointer !important; }
+.mist-dp-version:hover { border-color:#6a4bb6 !important; background:#232029 !important; }
+.mist-dp-version-name { overflow:hidden !important; font-size:13px !important; font-weight:650 !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-dp-version-games { flex:0 0 auto !important; color:#9c9ca6 !important; font-size:11px !important; }
+
+/* Data packs install popup (installation -> world) */
+#mist-dp-install-popup {
+  position:fixed !important; z-index:10045 !important; left:50% !important; top:50% !important; transform:translate(-50%,-50%) !important;
+  width:min(400px,calc(100vw - 24px)) !important; max-height:min(520px,80vh) !important; box-sizing:border-box !important;
+  overflow:hidden auto !important; padding:12px !important; border:1px solid #45454d !important; border-radius:14px !important;
+  color:#f1f1f4 !important; background:#202023 !important; box-shadow:0 24px 70px rgba(0,0,0,.6) !important;
+}
+#mist-dp-install-popup[hidden] { display:none !important; }
+.mist-dp-popup-head { display:flex !important; align-items:center !important; justify-content:space-between !important; gap:10px !important; padding:2px 3px 10px !important; border-bottom:1px solid #36363c !important; }
+.mist-dp-popup-head strong { font-size:14px !important; }
+.mist-dp-popup-close { width:28px !important; height:28px !important; border:1px solid #3b3b42 !important; border-radius:7px !important; color:#d8d8de !important; background:#29292d !important; cursor:pointer !important; }
+.mist-dp-popup-list { display:grid !important; gap:6px !important; padding-top:10px !important; }
+.mist-dp-popup-install, .mist-dp-popup-world { display:flex !important; align-items:center !important; gap:10px !important; width:100% !important; padding:9px 11px !important; border:1px solid #30303a !important; border-radius:10px !important; color:#ededf1 !important; background:#27272b !important; text-align:left !important; cursor:pointer !important; }
+.mist-dp-popup-install:hover, .mist-dp-popup-world:hover { border-color:#66508c !important; background:#302a38 !important; }
+.mist-dp-popup-copy { display:flex !important; min-width:0 !important; flex:1 1 auto !important; flex-direction:column !important; gap:2px !important; }
+.mist-dp-popup-copy strong { overflow:hidden !important; font-size:13px !important; font-weight:650 !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-dp-popup-copy small { overflow:hidden !important; color:#9c9ca6 !important; font-size:11px !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+.mist-dp-popup-arrow { color:#8b8b95 !important; }
+.mist-dp-popup-arrow svg { width:17px !important; height:17px !important; }
+.mist-dp-popup-world-icon { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:36px !important; height:36px !important; flex:0 0 36px !important; border-radius:8px !important; background:#1c1c20 !important; overflow:hidden !important; }
+.mist-dp-popup-world-icon img { width:36px !important; height:36px !important; object-fit:cover !important; image-rendering:pixelated !important; }
+.mist-dp-popup-world-icon svg { width:19px !important; height:19px !important; color:#9b9ba5 !important; }
+
+/* Data packs install toast */
+#mist-dp-toast {
+  position:fixed !important; z-index:10050 !important; left:50% !important; bottom:24px !important; transform:translateX(-50%) translateY(12px) !important;
+  max-width:min(520px,calc(100vw - 40px)) !important; padding:11px 18px !important; border:1px solid #3a3a44 !important; border-radius:11px !important;
+  color:#f1f1f4 !important; background:#1e1e23 !important; box-shadow:0 14px 40px rgba(0,0,0,.5) !important; font-size:13px !important;
+  opacity:0 !important; pointer-events:none !important; transition:opacity 180ms ease, transform 180ms ease !important;
+}
+#mist-dp-toast.is-visible { opacity:1 !important; transform:translateX(-50%) translateY(0) !important; }
+
+/* Mod review "Search YouTube" fallback */
+.mist-review-youtube { display:block !important; min-height:28px !important; margin-top:8px !important; padding:0 12px !important; border:1px solid #51416f !important; border-radius:8px !important; color:#d8caff !important; background:#292235 !important; cursor:pointer !important; font-size:11px !important; }
+
+/* ===== ROUND5 PD ===== */
+/* ===== ROUND5 PD ===== */
+/* ---------- host modal: full-bleed page, no duplicate header/footer ---------- */
+.overlay:has(.mist-pd) { inset:54px 0 0 92px !important; padding:10px 12px 12px 0 !important; background:transparent !important; }
+.overlay:has(.mist-pd) .modal { background:#121216 !important; border:1px solid #24242b !important; border-radius:14px !important; overflow:hidden !important; display:flex !important; flex-direction:column !important; }
+.overlay:has(.mist-pd) .modal-header,
+.overlay:has(.mist-pd) .modal-footer { display:none !important; }
+.overlay:has(.mist-pd) .modal-body { padding:0 !important; flex:1 1 auto !important; overflow-y:auto !important; overflow-x:hidden !important; scrollbar-gutter:stable; }
+
+:is(.mist-pd,#mist-pd-x) {
+  --pd-side:clamp(270px,28%,340px); --pd-accent:#7c5cff;
+  display:flow-root !important; position:relative !important; padding:0 26px 40px !important; margin:0 !important;
+  color:#d6d6dc !important; grid-template-columns:none !important; gap:0 !important;
+}
+:is(.mist-pd,#mist-pd-x) [hidden] { display:none !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-detail-head,.mist-project-badges,.install-box,.mist-pack-version-source,.mist-version-changelog-source,.project-detail-tags,.mist-project-info,.changelog,.mist-version-data,.mist-gallery-data,.mist-project-data,.field) { display:none !important; }
+:is(.mist-pd,#mist-pd-x) > * { grid-column:auto !important; grid-row:auto !important; }
+
+/* ---------- layout: left content + floating right sidebar ---------- */
+:is(.mist-pd,#mist-pd-x) > :is(.mist-pd-about-head,.project-body,.mist-pd-body,.mist-pd-readmore,.mist-pd-features,.mist-pd-reqs,.mist-pd-reviews) { margin-right:calc(var(--pd-side) + 24px) !important; }
+:is(.mist-pd,#mist-pd-x) > .mist-pd-side { float:right !important; width:var(--pd-side) !important; margin:0 0 24px 24px !important; display:flex !important; flex-direction:column !important; gap:16px !important; position:relative !important; }
+:is(.mist-pd,#mist-pd-x):is(.mist-gallery-view,.mist-versions-view,.mist-changelog-view) > :is(.mist-pd-side,.mist-pd-about-head,.project-body,.mist-pd-body,.mist-pd-readmore,.mist-pd-features,.mist-pd-reqs,.mist-pd-reviews) { display:none !important; }
+:is(.mist-pd,#mist-pd-x):not(.mist-gallery-view) > .gallery,
+:is(.mist-pd,#mist-pd-x):not(.mist-versions-view) > .mist-version-browser,
+:is(.mist-pd,#mist-pd-x):not(.mist-changelog-view) > .mist-project-changelog { display:none !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.gallery,.mist-version-browser,.mist-project-changelog) { margin:0 !important; width:auto !important; }
+:is(.mist-pd,#mist-pd-x).mist-gallery-view > .gallery { display:grid !important; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)) !important; gap:14px !important; }
+:is(.mist-pd,#mist-pd-x) > .gallery img { width:100% !important; aspect-ratio:16/10 !important; object-fit:cover !important; border-radius:10px !important; border:1px solid #26262e !important; }
+
+/* ---------- hero ---------- */
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero { position:relative; isolation:isolate; overflow:hidden; margin:0 -26px; padding:14px 26px 26px; min-height:300px; display:flex; flex-direction:column; justify-content:space-between; gap:22px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-bg { position:absolute; inset:0; z-index:-2; background:#1b1b22 center/cover no-repeat; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-bg.is-icon { inset:-60px; filter:blur(48px) saturate(1.5); opacity:.55; background-size:60% auto; background-position:20% 40%; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-shade { position:absolute; inset:0; z-index:-1; background:linear-gradient(180deg,rgba(18,18,22,.25) 0%,rgba(18,18,22,.7) 55%,#121216 100%),linear-gradient(90deg,rgba(18,18,22,.8) 0%,rgba(18,18,22,.2) 70%); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-top { display:flex; align-items:center; gap:12px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-top > .mist-pd-iconbtn:last-child { margin-left:auto; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-iconbtn { width:38px; height:38px; display:inline-grid; place-items:center; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(14,14,18,.55); color:#e8e8ee; cursor:pointer; backdrop-filter:blur(8px); transition:background .15s,border-color .15s; flex:none; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-iconbtn:hover { background:rgba(40,40,50,.8); border-color:rgba(255,255,255,.25); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-crumbs { display:flex; align-items:center; gap:6px; font-size:13px; color:#a9a9b4; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-crumbs strong { color:#f2f2f6; font-weight:600; max-width:40ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-main { display:grid; grid-template-columns:128px minmax(0,1fr); gap:24px; align-items:end; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-icon { width:128px; height:128px; border-radius:22px; overflow:hidden; background:#22222a; border:1px solid rgba(255,255,255,.14); box-shadow:0 18px 40px rgba(0,0,0,.45); display:grid; place-items:center; font:700 48px/1 inherit; color:#fff; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-icon img { width:100%; height:100%; object-fit:cover; display:block; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-copy { min-width:0; display:flex; flex-direction:column; gap:8px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-chips { display:flex; flex-wrap:wrap; gap:6px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:11.5px; font-weight:600; letter-spacing:.02em; background:rgba(255,255,255,.1); color:#e6e6ee; border:1px solid rgba(255,255,255,.12); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-chip:first-child { background:color-mix(in srgb,var(--pd-accent) 30%,transparent); border-color:color-mix(in srgb,var(--pd-accent) 55%,transparent); color:#fff; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero h1 { margin:0; font-size:30px; line-height:1.15; font-weight:800; color:#fff; letter-spacing:-.01em; text-shadow:0 2px 14px rgba(0,0,0,.45); overflow-wrap:anywhere; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-by { margin:0; font-size:13.5px; color:#b9b9c4; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-by strong { color:#fff; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-stats { display:flex; flex-wrap:wrap; gap:6px 18px; font-size:13px; color:#c4c4ce; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-stats > * { display:inline-flex; align-items:center; gap:6px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-stats svg { opacity:.75; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-tagline { margin:2px 0 0; max-width:780px; font-size:14px; line-height:1.55; color:#d2d2da; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-tagline:empty { display:none; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-actions { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:8px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-version { position:relative; display:flex; align-items:center; gap:8px; height:42px; padding:0 4px 0 12px; border-radius:11px; background:rgba(14,14,18,.7); border:1px solid rgba(255,255,255,.14); backdrop-filter:blur(8px); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-version span { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#9a9aa6; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-version select { height:34px; min-width:170px; max-width:260px; padding:0 28px 0 8px; border:0; border-radius:8px; background:transparent; color:#f2f2f6; font:600 13px/1 inherit; cursor:pointer; color-scheme:dark; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-version select:focus-visible { outline:2px solid var(--pd-accent); }
+:is(.mist-pd,#mist-pd-x) :is(.mist-pd-install,.mist-pd-mini-install) { display:inline-flex; align-items:center; gap:8px; height:42px; padding:0 22px; border:0; border-radius:11px; background:linear-gradient(180deg,#36d17a,#22a85c); color:#06200f; font:800 14px/1 inherit; cursor:pointer; box-shadow:0 8px 22px rgba(34,168,92,.35); transition:transform .12s,filter .12s; }
+:is(.mist-pd,#mist-pd-x) :is(.mist-pd-install,.mist-pd-mini-install):hover { filter:brightness(1.08); transform:translateY(-1px); }
+:is(.mist-pd,#mist-pd-x) :is(.mist-pd-install,.mist-pd-mini-install):disabled { filter:grayscale(.8); opacity:.6; cursor:not-allowed; transform:none; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-fav { display:inline-flex; align-items:center; gap:8px; height:42px; padding:0 16px; border-radius:11px; border:1px solid rgba(255,255,255,.16); background:rgba(14,14,18,.6); color:#ececf2; font:600 13.5px/1 inherit; cursor:pointer; backdrop-filter:blur(8px); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-fav:hover { border-color:rgba(255,255,255,.3); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-fav.is-on { color:#ff6b8a; border-color:rgba(255,107,138,.5); background:rgba(255,107,138,.12); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-fav.is-on svg { fill:currentColor; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-actions .mist-pd-iconbtn { width:42px; height:42px; border-radius:11px; }
+
+/* ---------- tabs (sticky) + minibar ---------- */
+:is(.mist-pd,#mist-pd-x) > .mist-project-tabs { position:sticky !important; top:0 !important; z-index:30 !important; display:flex !important; align-items:center !important; gap:4px !important; height:54px !important; margin:0 -26px 22px !important; padding:0 26px !important; background:rgba(18,18,22,.92) !important; backdrop-filter:blur(14px) !important; border-bottom:1px solid #24242b !important; overflow:visible !important; }
+:is(.mist-pd,#mist-pd-x) > .mist-project-tabs > button { display:inline-flex !important; align-items:center !important; gap:7px !important; height:54px !important; padding:0 14px !important; margin:0 !important; border:0 !important; border-radius:0 !important; background:transparent !important; color:#a3a3ae !important; font:600 13.5px/1 inherit !important; cursor:pointer !important; position:relative !important; box-shadow:none !important; }
+:is(.mist-pd,#mist-pd-x) > .mist-project-tabs > button:hover { color:#f0f0f4 !important; }
+:is(.mist-pd,#mist-pd-x) > .mist-project-tabs > button:is(.is-active,.active,[aria-selected="true"],[aria-pressed="true"]) { color:#fff !important; }
+:is(.mist-pd,#mist-pd-x) > .mist-project-tabs > button:is(.is-active,.active,[aria-selected="true"],[aria-pressed="true"])::after { content:''; position:absolute; left:12px; right:12px; bottom:0; height:3px; border-radius:3px 3px 0 0; background:var(--pd-accent); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-minibar { margin-left:auto; display:flex; align-items:center; gap:10px; opacity:0; transform:translateY(6px); pointer-events:none; transition:opacity .18s,transform .18s; }
+:is(.mist-pd,#mist-pd-x) > .mist-project-tabs.is-stuck .mist-pd-minibar { opacity:1; transform:none; pointer-events:auto; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-mini-icon { width:30px; height:30px; border-radius:8px; overflow:hidden; background:#24242c; display:grid; place-items:center; font-weight:700; color:#fff; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-mini-icon img { width:100%; height:100%; object-fit:cover; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-minibar strong { max-width:24ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff; font-size:13.5px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-mini-install { height:34px; padding:0 14px; font-size:13px; box-shadow:none; }
+
+/* ---------- cards ---------- */
+:is(.mist-pd,#mist-pd-x) .mist-pd-card { background:#17171c; border:1px solid #26262e; border-radius:14px; padding:16px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-card h3 { display:flex; align-items:center; gap:8px; margin:0 0 12px; font-size:14px; font-weight:700; color:#f2f2f6; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-card h3 svg { color:var(--pd-accent); }
+:is(.mist-pd,#mist-pd-x) :is(.mist-pd-features,.mist-pd-reqs,.mist-pd-reviews) { margin-top:18px !important; }
+:is(.mist-pd,#mist-pd-x) :is(.mist-pd-features,.mist-pd-reqs,.mist-pd-reviews) h2,
+:is(.mist-pd,#mist-pd-x) .mist-pd-about-head h2 { display:flex; align-items:center; gap:9px; margin:0 0 14px; font-size:18px; font-weight:800; color:#fff; }
+:is(.mist-pd,#mist-pd-x) :is(.mist-pd-features,.mist-pd-reqs,.mist-pd-reviews) h2 svg { color:var(--pd-accent); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-about-head { margin-bottom:4px; }
+
+/* ---------- about body ---------- */
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) { position:relative !important; max-height:none !important; overflow:visible !important; font-size:14.5px !important; line-height:1.72 !important; color:#c9c9d2 !important; overflow-wrap:anywhere !important; background:transparent !important; border:0 !important; padding:0 !important; }
+:is(.mist-pd,#mist-pd-x).mist-pd-clamp:not(.mist-pd-expanded) > :is(.project-body,.mist-pd-body) { max-height:760px !important; overflow:hidden !important; -webkit-mask-image:linear-gradient(180deg,#000 75%,transparent); mask-image:linear-gradient(180deg,#000 75%,transparent); }
+:is(.mist-pd,#mist-pd-x):not(.mist-pd-clamp) > .mist-pd-readmore { display:none !important; }
+:is(.mist-pd,#mist-pd-x) > .mist-pd-readmore { display:block; margin-top:8px; margin-left:auto; margin-right:calc(var(--pd-side) + 24px); padding:9px 18px; border-radius:10px; border:1px solid #2e2e38; background:#1b1b22; color:#e8e8ee; font:600 13px/1 inherit; cursor:pointer; }
+:is(.mist-pd,#mist-pd-x) > .mist-pd-readmore:hover { border-color:var(--pd-accent); }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) :is(h1,h2,h3,h4) { color:#fff !important; line-height:1.3 !important; margin:1.3em 0 .5em !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) h1 { font-size:22px !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) h2 { font-size:19px !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) h3 { font-size:16px !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) > :first-child { margin-top:0 !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) img { max-width:100% !important; height:auto !important; border-radius:10px !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) a { color:#9d86ff !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) :is(ul,ol) { padding-left:1.4em !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) :is(code,pre) { background:#1c1c23 !important; border-radius:6px !important; padding:.1em .4em !important; font-size:.92em !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) pre { padding:12px !important; overflow-x:auto !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) blockquote { margin:1em 0 !important; padding:8px 14px !important; border-left:3px solid var(--pd-accent) !important; background:#18181e !important; border-radius:0 8px 8px 0 !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) iframe { max-width:100% !important; border-radius:10px !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) table { border-collapse:collapse !important; max-width:100% !important; display:block !important; overflow-x:auto !important; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) :is(td,th) { border:1px solid #2a2a33 !important; padding:6px 10px !important; }
+
+/* ---------- features / requirements ---------- */
+:is(.mist-pd,#mist-pd-x) .mist-pd-feature-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-feature { display:flex; gap:12px; align-items:flex-start; padding:12px; border-radius:11px; background:#1c1c23; border:1px solid #282830; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-feature-icon { flex:none; width:34px; height:34px; border-radius:9px; display:grid; place-items:center; color:var(--pd-accent); background:color-mix(in srgb,var(--pd-accent) 16%,transparent); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-feature strong { display:block; color:#f2f2f6; font-size:13.5px; line-height:1.35; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-feature small { display:block; margin-top:3px; color:#9e9eaa; font-size:12.5px; line-height:1.45; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-feature small:empty { display:none; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-req-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-req { display:flex; gap:12px; align-items:center; padding:12px; border-radius:11px; background:#1c1c23; border:1px solid #282830; min-width:0; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-req-icon { flex:none; width:38px; height:38px; border-radius:10px; display:grid; place-items:center; background:#25252e; color:#d8d8e2; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-req > div, :is(.mist-pd,#mist-pd-x) .mist-pd-req > span:last-child { min-width:0; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-req small { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:#8d8d99; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-req strong { display:block; margin-top:2px; color:#f2f2f6; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-req.is-muted { opacity:.7; }
+
+/* ---------- reviews ---------- */
+:is(.mist-pd,#mist-pd-x) .mist-pd-reviews > header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-reviews > header h2 { margin:0; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-reviews h2 svg { color:#ff4e45; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-link-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:9px; border:1px solid #2e2e38; background:transparent; color:#d0d0da; font:600 12.5px/1 inherit; cursor:pointer; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-link-btn:hover { color:#fff; border-color:#4a4a58; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-player { margin-bottom:14px; border-radius:12px; overflow:hidden; background:#000; border:1px solid #2a2a33; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-player-frame { position:relative; aspect-ratio:16/9; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-player-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-player-bar { display:flex; align-items:center; gap:10px; padding:10px 12px; background:#16161b; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-player-bar strong { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#f2f2f6; font-size:13.5px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-player-bar button { padding:7px 12px; border-radius:8px; border:1px solid #2e2e38; background:#1f1f27; color:#e2e2ea; font:600 12.5px/1 inherit; cursor:pointer; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-review-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-review { display:flex; flex-direction:column; gap:6px; padding:0; border:0; background:transparent; color:inherit; text-align:left; cursor:pointer; min-width:0; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-thumb { position:relative; display:block; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#1f1f27; border:1px solid #2a2a33; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-thumb img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .25s; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-review:hover .mist-pd-thumb img { transform:scale(1.05); }
+:is(.mist-pd,#mist-pd-x) .mist-pd-play { position:absolute; inset:0; margin:auto; width:48px; height:48px; border-radius:50%; display:grid; place-items:center; background:rgba(0,0,0,.6); color:#fff; opacity:.85; transition:opacity .15s,background .15s; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-review:hover .mist-pd-play { background:#ff0033; opacity:1; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-thumb em { position:absolute; right:6px; bottom:6px; padding:2px 6px; border-radius:5px; background:rgba(0,0,0,.8); color:#fff; font:600 11px/1.3 inherit; font-style:normal; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-review strong { color:#f0f0f4; font-size:13px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-review small { color:#8f8f9b; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-review.is-active .mist-pd-thumb { outline:2px solid #ff0033; outline-offset:1px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-empty { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; gap:10px; padding:26px 14px; text-align:center; color:#9a9aa6; font-size:13.5px; border:1px dashed #2e2e38; border-radius:12px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-ghost-btn { padding:8px 14px; border-radius:9px; border:1px solid #34343f; background:#1d1d24; color:#e6e6ee; font:600 12.5px/1 inherit; cursor:pointer; }
+
+/* ---------- sidebar ---------- */
+:is(.mist-pd,#mist-pd-x) .mist-pd-author { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-avatar { width:40px; height:40px; border-radius:50%; overflow:hidden; background:#26262e; display:grid; place-items:center; font-weight:700; color:#fff; flex:none; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-avatar img { width:100%; height:100%; object-fit:cover; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-author-copy { display:flex; flex-direction:column; min-width:0; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-author-copy small { color:#8d8d99; font-size:11.5px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-author-copy strong { color:#f2f2f6; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-author a, :is(.mist-pd,#mist-pd-x) .mist-pd-author button { color:inherit; background:none; border:0; padding:0; cursor:pointer; font:inherit; text-align:left; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-cats { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-cats > * { padding:3px 9px; border-radius:999px; background:#22222a; border:1px solid #2c2c35; color:#c8c8d2; font-size:11.5px; text-transform:capitalize; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts { display:grid; grid-template-columns:auto minmax(0,1fr); gap:8px 12px; margin:0; font-size:13px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts dt { color:#8d8d99; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts dd { margin:0; color:#ececf2; text-align:right; overflow-wrap:anywhere; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-links { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-links:empty { display:none; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-links button { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:9px; border:1px solid #2c2c35; background:#1d1d24; color:#d8d8e2; font:600 12px/1 inherit; cursor:pointer; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-links button:hover { border-color:var(--pd-accent); color:#fff; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-share-url { display:flex; gap:6px; margin-bottom:10px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-share-url input { flex:1; min-width:0; height:36px; padding:0 10px; border-radius:9px; border:1px solid #2c2c35; background:#111116; color:#bdbdc8; font:12.5px/1 inherit; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-share-url button { width:36px; height:36px; display:grid; place-items:center; border-radius:9px; border:1px solid #2c2c35; background:#1d1d24; color:#e2e2ea; cursor:pointer; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-share-row { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-share-row button { display:flex; flex-direction:column; align-items:center; gap:5px; padding:10px 4px; border-radius:10px; border:1px solid #2a2a33; background:#1c1c23; color:#d4d4de; font:600 11.5px/1 inherit; cursor:pointer; transition:border-color .15s,background .15s; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-share-row button:hover { background:#23232c; border-color:#3c3c48; color:#fff; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-share-row [data-share="discord"] svg { color:#5865f2; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related > header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related > header h3 { margin:0; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-small-btn { width:30px; height:30px; display:grid; place-items:center; border-radius:8px; border:1px solid #2c2c35; background:#1d1d24; color:#cfcfd9; cursor:pointer; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-small-btn:hover { color:#fff; border-color:#44444f; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-list { display:flex; flex-direction:column; gap:4px; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-item { display:flex; align-items:center; gap:10px; width:100%; padding:8px; border-radius:10px; border:1px solid transparent; background:transparent; color:inherit; text-align:left; cursor:pointer; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-item:hover { background:#1e1e26; border-color:#2c2c35; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-icon { flex:none; width:44px; height:44px; border-radius:10px; overflow:hidden; background:#24242c; display:grid; place-items:center; font-weight:700; color:#fff; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-icon img { width:100%; height:100%; object-fit:cover; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-copy { display:flex; flex-direction:column; gap:2px; min-width:0; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-copy strong { color:#f0f0f4; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-copy small { color:#8f8f9b; font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-all { width:100%; margin-top:10px; padding:9px; border-radius:9px; border:1px solid #2c2c35; background:#1b1b22; color:#d8d8e2; font:600 12.5px/1 inherit; cursor:pointer; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-all:hover { border-color:var(--pd-accent); color:#fff; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-muted { color:#8d8d99; font-size:12.5px; }
+
+/* ---------- skeleton ---------- */
+:is(.mist-pd,#mist-pd-x) :is(.mist-pd-skel,.mist-pd-review-skel,.mist-pd-related-skel) { border-radius:10px; background:linear-gradient(90deg,#1c1c23 0%,#26262f 50%,#1c1c23 100%); background-size:200% 100%; animation:mistPdShimmer 1.3s linear infinite; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-review-skel { aspect-ratio:16/11; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-related-skel { height:56px; }
+@keyframes mistPdShimmer { from { background-position:200% 0; } to { background-position:-200% 0; } }
+
+/* ---------- standalone viewer (mods / shaders / packs / data packs) ---------- */
+#mist-pd-overlay { position:fixed; inset:54px 0 0 92px; z-index:10040; padding:10px 12px 12px 0; animation:mistPdIn .18s ease-out; }
+#mist-pd-overlay .mist-pd-scroll { height:100%; overflow-y:auto; overflow-x:hidden; background:#121216; border:1px solid #24242b; border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.55); scrollbar-gutter:stable; }
+@keyframes mistPdIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+#mist-pd-overlay .mist-content-state { color:#9a9aa6; }
+
+/* ---------- toast tones ---------- */
+#mist-dp-toast.is-success, #mist-dp-toast.is-ok { border-color:rgba(54,209,122,.45) !important; }
+#mist-dp-toast.is-error { border-color:rgba(255,90,90,.55) !important; }
+#mist-dp-toast.is-warn { border-color:rgba(255,190,70,.5) !important; }
+#mist-dp-toast { z-index:10080 !important; }
+
+/* ---------- install dialog ---------- */
+#mist-install-dialog { position:fixed; inset:0; z-index:10048; display:grid; place-items:center; padding:24px; }
+#mist-install-dialog .mist-id-backdrop { position:absolute; inset:0; background:rgba(6,6,10,.62); backdrop-filter:blur(6px); opacity:0; transition:opacity .16s; }
+#mist-install-dialog .mist-id-card { position:relative; width:min(560px,100%); max-height:min(680px,calc(100vh - 48px)); display:flex; flex-direction:column; background:#16161b; border:1px solid #2a2a33; border-radius:18px; box-shadow:0 40px 100px rgba(0,0,0,.6); overflow:hidden; opacity:0; transform:translateY(10px) scale(.98); transition:opacity .16s,transform .16s; }
+#mist-install-dialog.is-open .mist-id-backdrop { opacity:1; }
+#mist-install-dialog.is-open .mist-id-card { opacity:1; transform:none; }
+#mist-install-dialog.is-closing .mist-id-backdrop, #mist-install-dialog.is-closing .mist-id-card { opacity:0; }
+#mist-install-dialog .mist-id-head { display:flex; align-items:center; gap:14px; padding:18px 18px 14px; border-bottom:1px solid #24242b; background:linear-gradient(180deg,#1c1c23,#16161b); }
+#mist-install-dialog .mist-id-icon { flex:none; width:52px; height:52px; border-radius:13px; overflow:hidden; background:#26262e; display:grid; place-items:center; font:700 22px/1 inherit; color:#fff; border:1px solid #30303a; }
+#mist-install-dialog .mist-id-icon img { width:100%; height:100%; object-fit:cover; }
+#mist-install-dialog .mist-id-titles { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+#mist-install-dialog .mist-id-kicker { color:#36d17a; font:700 11px/1.2 inherit; text-transform:uppercase; letter-spacing:.09em; }
+#mist-install-dialog .mist-id-title { color:#fff; font-size:17px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#mist-install-dialog .mist-id-version { color:#9a9aa6; font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#mist-install-dialog .mist-id-x { flex:none; width:34px; height:34px; display:grid; place-items:center; border-radius:9px; border:1px solid #2c2c35; background:#1d1d24; color:#cfcfd9; cursor:pointer; align-self:flex-start; }
+#mist-install-dialog .mist-id-x:hover { color:#fff; border-color:#44444f; }
+#mist-install-dialog .mist-id-steps { display:flex; gap:8px; margin:0; padding:12px 18px 0; list-style:none; }
+#mist-install-dialog .mist-id-steps li { display:flex; align-items:center; gap:7px; padding:5px 12px 5px 6px; border-radius:999px; background:#1d1d24; border:1px solid #2a2a33; color:#8d8d99; font-size:12.5px; font-weight:600; }
+#mist-install-dialog .mist-id-steps li b { width:20px; height:20px; display:grid; place-items:center; border-radius:50%; background:#2a2a33; color:#cfcfd9; font-size:11px; }
+#mist-install-dialog .mist-id-steps li.is-active { color:#fff; border-color:#36d17a; }
+#mist-install-dialog .mist-id-steps li.is-active b, #mist-install-dialog .mist-id-steps li.is-done b { background:#36d17a; color:#06200f; }
+#mist-install-dialog .mist-id-tools { display:flex; align-items:center; gap:12px; padding:12px 18px 8px; }
+#mist-install-dialog .mist-id-search { flex:1; display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; border-radius:10px; background:#111116; border:1px solid #2a2a33; color:#8d8d99; }
+#mist-install-dialog .mist-id-search:focus-within { border-color:#36d17a; }
+#mist-install-dialog .mist-id-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; color:#f0f0f4; font:13.5px/1 inherit; }
+#mist-install-dialog .mist-id-count { flex:none; color:#8d8d99; font-size:12px; }
+#mist-install-dialog .mist-id-list { flex:1 1 auto; min-height:140px; overflow-y:auto; padding:4px 10px 10px; outline:0; display:flex; flex-direction:column; gap:4px; }
+#mist-install-dialog .mist-id-list[aria-busy="true"] { opacity:.55; pointer-events:none; }
+#mist-install-dialog .mist-id-row { display:flex; align-items:center; gap:12px; width:100%; padding:10px; border-radius:12px; border:1px solid transparent; background:transparent; color:inherit; text-align:left; cursor:pointer; transition:background .12s,border-color .12s; }
+#mist-install-dialog .mist-id-row:hover { background:#1d1d24; }
+#mist-install-dialog .mist-id-row.is-selected { background:rgba(54,209,122,.08); border-color:rgba(54,209,122,.55); }
+#mist-install-dialog .mist-id-row.is-bad { cursor:not-allowed; opacity:.5; }
+#mist-install-dialog .mist-id-row.is-bad:hover { background:transparent; }
+#mist-install-dialog .mist-id-art { flex:none; width:42px; height:42px; border-radius:10px; overflow:hidden; background:#26262e; display:grid; place-items:center; color:#d8d8e2; font-weight:700; }
+#mist-install-dialog .mist-id-art img { width:100%; height:100%; object-fit:cover; image-rendering:pixelated; }
+#mist-install-dialog .mist-id-copy { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+#mist-install-dialog .mist-id-copy strong { color:#f2f2f6; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#mist-install-dialog .mist-id-copy small { color:#8f8f9b; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#mist-install-dialog .mist-id-copy em { color:#e0b04a; font-size:11.5px; font-style:normal; }
+#mist-install-dialog .mist-id-row.is-bad .mist-id-copy em { color:#ff7a7a; }
+#mist-install-dialog .mist-id-badge { flex:none; display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:999px; font-size:11px; font-weight:700; }
+#mist-install-dialog .is-ok .mist-id-badge { background:rgba(54,209,122,.12); color:#4fdc8c; }
+#mist-install-dialog .is-alt .mist-id-badge { background:rgba(124,92,255,.15); color:#a996ff; }
+#mist-install-dialog .is-warn .mist-id-badge { background:rgba(224,176,74,.14); color:#e9bd5c; }
+#mist-install-dialog .is-bad .mist-id-badge { background:rgba(255,90,90,.12); color:#ff7a7a; }
+#mist-install-dialog .mist-id-radio { flex:none; width:18px; height:18px; border-radius:50%; border:2px solid #44444f; transition:border-color .12s,box-shadow .12s; }
+#mist-install-dialog .mist-id-row.is-selected .mist-id-radio { border-color:#36d17a; box-shadow:inset 0 0 0 3px #16161b,inset 0 0 0 9px #36d17a; }
+#mist-install-dialog .mist-id-state { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:34px 16px; text-align:center; color:#9a9aa6; font-size:13.5px; }
+#mist-install-dialog .mist-id-state p { margin:0; }
+#mist-install-dialog .mist-id-state-btn { padding:9px 16px; border-radius:10px; border:0; background:#36d17a; color:#06200f; font:700 13px/1 inherit; cursor:pointer; }
+#mist-install-dialog .mist-id-foot { display:flex; flex-direction:column; gap:10px; padding:12px 18px 16px; border-top:1px solid #24242b; background:#141418; }
+#mist-install-dialog .mist-id-deps { display:flex; align-items:center; gap:8px; color:#c8c8d2; font-size:13px; cursor:pointer; }
+#mist-install-dialog .mist-id-deps input { accent-color:#36d17a; width:16px; height:16px; }
+#mist-install-dialog .mist-id-note { margin:0; min-height:0; font-size:12.5px; color:#9a9aa6; }
+#mist-install-dialog .mist-id-note:empty { display:none; }
+#mist-install-dialog .mist-id-note.is-alt { color:#a996ff; }
+#mist-install-dialog .mist-id-note.is-warn { color:#e9bd5c; }
+#mist-install-dialog .mist-id-note.is-bad { color:#ff7a7a; }
+#mist-install-dialog .mist-id-actions { display:flex; align-items:center; gap:8px; }
+#mist-install-dialog .mist-id-back { margin-right:auto; }
+#mist-install-dialog :is(.mist-id-back,.mist-id-cancel) { height:40px; padding:0 16px; border-radius:10px; border:1px solid #2e2e38; background:#1d1d24; color:#e2e2ea; font:600 13px/1 inherit; cursor:pointer; }
+#mist-install-dialog .mist-id-cancel { margin-left:auto; }
+#mist-install-dialog .mist-id-back:not([hidden]) + .mist-id-cancel { margin-left:0; }
+#mist-install-dialog :is(.mist-id-back,.mist-id-cancel):hover { border-color:#46464f; color:#fff; }
+#mist-install-dialog .mist-id-confirm { display:inline-flex; align-items:center; gap:8px; height:40px; max-width:300px; padding:0 18px; border:0; border-radius:10px; background:linear-gradient(180deg,#36d17a,#22a85c); color:#06200f; font:800 13.5px/1 inherit; cursor:pointer; }
+#mist-install-dialog .mist-id-confirm span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#mist-install-dialog .mist-id-confirm:disabled { background:#2a2a33; color:#7d7d89; cursor:not-allowed; }
+#mist-install-dialog .mist-id-spin { width:15px; height:15px; border-radius:50%; border:2px solid rgba(6,32,15,.3); border-top-color:#06200f; animation:mistIdSpin .7s linear infinite; }
+@keyframes mistIdSpin { to { transform:rotate(360deg); } }
+#mist-install-dialog .mist-id-done { display:flex; flex-direction:column; align-items:center; gap:8px; padding:24px 16px 12px; text-align:center; }
+#mist-install-dialog .mist-id-done-mark { width:56px; height:56px; border-radius:50%; display:grid; place-items:center; background:rgba(54,209,122,.14); color:#4fdc8c; }
+#mist-install-dialog .mist-id-done-mark.is-warn { background:rgba(224,176,74,.14); color:#e9bd5c; }
+#mist-install-dialog .mist-id-done strong { color:#fff; font-size:16px; }
+#mist-install-dialog .mist-id-done p { margin:0; color:#a3a3ae; font-size:13px; }
+#mist-install-dialog .mist-id-files { width:100%; margin:8px 0 0; padding:8px 12px; list-style:none; border-radius:10px; background:#111116; border:1px solid #24242b; text-align:left; font-size:12px; color:#b8b8c3; max-height:150px; overflow-y:auto; }
+#mist-install-dialog .mist-id-files li { padding:3px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#mist-install-dialog .mist-id-files.is-skipped { color:#e0b04a; }
+#mist-install-dialog .mist-id-files .is-more { color:#7d7d89; }
+
+/* ---------- modpack install dialog (native React dialog, enhanced) ---------- */
+.overlay.modpack-install-dialog .modal:has(.mist-mp-targets) .install-target-field { display:none !important; }
+.overlay.modpack-install-dialog .mist-mp-head { display:flex; align-items:center; gap:14px; padding:4px 0 14px; margin-bottom:14px; border-bottom:1px solid #26262e; }
+.overlay.modpack-install-dialog .mist-mp-icon { flex:none; width:56px; height:56px; border-radius:14px; overflow:hidden; background:#26262e; display:grid; place-items:center; font:700 22px/1 inherit; color:#fff; border:1px solid #30303a; }
+.overlay.modpack-install-dialog .mist-mp-icon img { width:100%; height:100%; object-fit:cover; }
+.overlay.modpack-install-dialog .mist-mp-copy { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.overlay.modpack-install-dialog .mist-mp-head .mist-mp-copy small { color:#36d17a; font:700 11px/1.2 inherit; text-transform:uppercase; letter-spacing:.09em; }
+.overlay.modpack-install-dialog .mist-mp-head .mist-mp-copy strong { color:#fff; font-size:17px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.overlay.modpack-install-dialog .mist-mp-head .mist-mp-copy span { color:#9a9aa6; font-size:12.5px; }
+.overlay.modpack-install-dialog .mist-mp-label { margin:0 0 8px; color:#a3a3ae; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; }
+.overlay.modpack-install-dialog .mist-mp-targets { display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; margin-bottom:12px; padding-right:2px; }
+.overlay.modpack-install-dialog .mist-mp-target { display:flex; align-items:center; gap:12px; width:100%; padding:10px; border-radius:12px; border:1px solid #2a2a33; background:#1a1a20; color:inherit; text-align:left; cursor:pointer; transition:border-color .12s,background .12s; }
+.overlay.modpack-install-dialog .mist-mp-target:hover { background:#1f1f27; border-color:#3a3a45; }
+.overlay.modpack-install-dialog .mist-mp-target.is-selected { border-color:rgba(54,209,122,.6); background:rgba(54,209,122,.07); }
+.overlay.modpack-install-dialog .mist-mp-art { flex:none; width:42px; height:42px; border-radius:10px; overflow:hidden; background:#26262e; display:grid; place-items:center; color:#d8d8e2; font-weight:700; }
+.overlay.modpack-install-dialog .mist-mp-art.is-new { background:rgba(54,209,122,.14); color:#4fdc8c; border:1px dashed rgba(54,209,122,.5); }
+.overlay.modpack-install-dialog .mist-mp-art img { width:100%; height:100%; object-fit:cover; image-rendering:pixelated; }
+.overlay.modpack-install-dialog .mist-mp-target .mist-mp-copy strong { color:#f2f2f6; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.overlay.modpack-install-dialog .mist-mp-target .mist-mp-copy small { color:#8f8f9b; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.overlay.modpack-install-dialog .mist-mp-badge { flex:none; padding:4px 9px; border-radius:999px; font-size:11px; font-weight:700; }
+.overlay.modpack-install-dialog .mist-mp-badge.is-good { background:rgba(54,209,122,.12); color:#4fdc8c; }
+.overlay.modpack-install-dialog .mist-mp-badge.is-warn { background:rgba(224,176,74,.14); color:#e9bd5c; }
+.overlay.modpack-install-dialog .mist-mp-radio { flex:none; width:18px; height:18px; border-radius:50%; border:2px solid #44444f; }
+.overlay.modpack-install-dialog .mist-mp-target.is-selected .mist-mp-radio { border-color:#36d17a; box-shadow:inset 0 0 0 3px #1a1a20,inset 0 0 0 9px #36d17a; }
+
+/* ---------- responsive ---------- */
+@media (max-width:1080px) {
+  :is(.mist-pd,#mist-pd-x) { --pd-side:270px; }
+  :is(.mist-pd,#mist-pd-x) .mist-pd-hero-main { grid-template-columns:96px minmax(0,1fr); }
+  :is(.mist-pd,#mist-pd-x) .mist-pd-hero-icon { width:96px; height:96px; border-radius:18px; }
+  :is(.mist-pd,#mist-pd-x) .mist-pd-hero h1 { font-size:25px; }
+}
+@media (max-width:860px) {
+  .overlay:has(.mist-pd), #mist-pd-overlay { inset:54px 0 0 68px !important; }
+  :is(.mist-pd,#mist-pd-x) > .mist-pd-side { float:none !important; width:auto !important; margin:0 0 20px !important; }
+  :is(.mist-pd,#mist-pd-x) > :is(.mist-pd-about-head,.project-body,.mist-pd-body,.mist-pd-readmore,.mist-pd-features,.mist-pd-reqs,.mist-pd-reviews) { margin-right:0 !important; }
+  :is(.mist-pd,#mist-pd-x) .mist-pd-minibar strong { display:none; }
+}
+
+/* ---------- fixes: facts rows, body images ---------- */
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts { display:flex !important; flex-direction:column !important; gap:9px !important; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts > div:not(.mist-pd-cats) { display:flex; justify-content:space-between; align-items:baseline; gap:14px; padding-bottom:9px; border-bottom:1px solid #222229; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts > div:last-child { border-bottom:0; padding-bottom:0; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts dt { flex:none; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts dd { min-width:0; text-align:right; }
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts > .mist-pd-cats { margin:0 0 4px; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) img { width:auto !important; max-width:100% !important; height:auto !important; vertical-align:middle; }
+:is(.mist-pd,#mist-pd-x) > :is(.project-body,.mist-pd-body) a img { border-radius:4px !important; }
+#mist-install-dialog [hidden] { display:none !important; }
+#mist-install-dialog .mist-id-search input { border:0 !important; outline:none !important; box-shadow:none !important; background:transparent !important; padding:0 !important; height:auto !important; border-radius:0 !important; }
+
+
+/* ===== ROUND6 ===== */
+/* info facts: always horizontal rows */
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts{display:flex!important;flex-direction:column!important;gap:0!important;grid-template-columns:none!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts > div:not(.mist-pd-cats){display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;width:100%!important;min-width:0!important;padding:9px 2px!important;margin:0!important;border-bottom:1px solid rgba(255,255,255,.06)!important;grid-template-columns:none!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts > div:last-child{border-bottom:0!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts :is(dt,dd){writing-mode:horizontal-tb!important;display:block!important;width:auto!important;min-width:0!important;max-width:none!important;margin:0!important;padding:0!important;white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important;line-height:1.3!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts dt{flex:0 0 auto!important;color:#9a9aa6!important;font-size:12.5px!important;font-weight:500!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts dd{flex:1 1 auto!important;text-align:right!important;overflow:hidden!important;text-overflow:ellipsis!important;color:#ececf1!important;font-size:13px!important;font-weight:650!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-facts > .mist-pd-cats{display:flex!important;flex-wrap:wrap!important;gap:6px!important;padding:2px 0 10px!important;border-bottom:1px solid rgba(255,255,255,.06)!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-side{min-width:260px!important}
+/* sticky tabs flush to top */
+.modal-body:has(> .mist-pd), .modal-body:has(> * > .mist-pd){padding-top:0!important}
+:is(.mist-pd,#mist-pd-x) > .mist-project-tabs{top:0!important;margin-top:0!important;z-index:60!important;background:linear-gradient(180deg,#141418 0%,#141418 82%,rgba(20,20,24,.94) 100%)!important;backdrop-filter:blur(14px)!important;box-shadow:0 1px 0 rgba(255,255,255,.06),0 10px 24px rgba(0,0,0,.35)!important}
+:is(.mist-pd,#mist-pd-x) > .mist-project-tabs::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:40px;background:#141418;pointer-events:none}
+:is(.mist-pd,#mist-pd-x) .mist-pd-minibar{top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;right:26px!important;align-items:center!important;height:38px!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero{margin-top:18px!important}
+/* install dialog: datapack step labels */
+#mist-install-dialog .mist-id-steps li small{display:block;font-size:10.5px;font-weight:500;opacity:.6;margin-top:1px}
+#mist-install-dialog .mist-id-count{white-space:nowrap}
+
+/* ---------- HOME: real grid layout ---------- */
+:is(html,#mist-hx) .home-screen{padding:14px 22px 30px 14px!important;height:auto!important;min-height:100%!important;box-sizing:border-box!important}
+:is(html,#mist-hx) .home-screen > .mist-browse-instances,:is(html,#mist-hx) #mist-home-mod-review{display:none!important}
+:is(html,#mist-hx) .home-screen .home-grid{display:grid!important;grid-template-columns:minmax(270px,320px) minmax(0,1fr) minmax(270px,310px)!important;grid-template-rows:auto auto auto 340px!important;grid-template-areas:"hero hero news" "feat feat news" "recent recent change" "play server change"!important;gap:16px!important;padding:0!important;margin:0 auto!important;max-width:1720px!important;position:relative!important;width:100%!important;height:auto!important}
+:is(html,#mist-hx) .home-screen :is(.home-main,.home-main > .hero,.home-hero-left-stack,.home-discover-layout,.home-right-rail){display:contents!important}
+:is(html,#mist-hx) .home-screen :is(.hero-main,.hero-art){display:none!important}
+:is(html,#mist-hx) .home-screen :is(.home-featured-sidebar,.home-hero-playtime-card,.home-server-dock,.home-changelog-card,.home-news-sidebar,#mist-recently-played,#mist-home-hero){position:relative!important;inset:auto!important;width:auto!important;min-width:0!important;max-width:none!important;margin:0!important;transform:none!important;translate:none!important;z-index:auto!important;box-sizing:border-box!important;border-radius:16px!important;border:1px solid rgba(255,255,255,.07)!important;background:linear-gradient(180deg,rgba(34,33,42,.92),rgba(22,22,27,.96))!important;box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05)!important}
+:is(html,#mist-hx) .home-screen .home-featured-sidebar{grid-area:feat!important;height:auto!important;min-height:0!important;padding:14px 14px 12px!important}
+:is(html,#mist-hx) .home-screen #mist-recently-played{grid-area:recent!important;height:auto!important;min-height:0!important;padding:14px 16px!important}
+:is(html,#mist-hx) .home-screen #mist-recently-played[hidden]{display:none!important}
+:is(html,#mist-hx) .home-screen .home-hero-playtime-card{grid-area:play!important;height:auto!important;min-height:0!important}
+:is(html,#mist-hx) .home-screen .home-server-dock{grid-area:server!important;height:auto!important;min-height:0!important;overflow:hidden!important}
+:is(html,#mist-hx) .home-screen .home-news-sidebar{grid-area:news!important;height:auto!important;min-height:0!important;contain:size!important;overflow:auto!important}
+:is(html,#mist-hx) .home-screen .home-changelog-card{grid-area:change!important;height:auto!important;min-height:0!important;contain:size!important;overflow:auto!important}
+:is(html,#mist-hx) .home-screen :is(.home-featured-sidebar,.home-hero-playtime-card,.home-server-dock,.home-changelog-card,.home-news-sidebar,#mist-recently-played):hover{border-color:color-mix(in srgb,var(--accent,#a882ff) 30%,rgba(255,255,255,.08))!important}
+/* hero */
+#mist-home-hero{grid-area:hero!important;display:flex!important;align-items:center!important;gap:22px!important;padding:22px 24px!important;min-height:150px!important;overflow:hidden!important;isolation:isolate}
+:is(html,#mist-hx) .home-screen #mist-home-hero{background:radial-gradient(90% 160% at 0% 0%,color-mix(in srgb,var(--accent,#a882ff) 42%,transparent),transparent 60%),radial-gradient(60% 120% at 100% 100%,color-mix(in srgb,var(--accent,#a882ff) 22%,transparent),transparent 70%),linear-gradient(135deg,#221f30,#16161c 65%)!important;border-color:color-mix(in srgb,var(--accent,#a882ff) 34%,rgba(255,255,255,.08))!important}
+#mist-home-hero .mist-hh-glow{position:absolute;inset:-40% -10% auto auto;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent,#a882ff) 30%,transparent),transparent 65%);filter:blur(10px);z-index:-1;animation:mistHhFloat 9s ease-in-out infinite alternate;pointer-events:none}
+@keyframes mistHhFloat{to{transform:translate(-60px,40px) scale(1.15)}}
+#mist-home-hero .mist-hh-art{flex:0 0 86px;width:86px;height:86px;border-radius:20px;overflow:hidden;display:grid;place-items:center;background:rgba(255,255,255,.06);box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.1)}
+#mist-home-hero .mist-hh-art > *{width:100%!important;height:100%!important;display:grid;place-items:center;font-size:34px;font-weight:800}
+#mist-home-hero .mist-hh-art img{width:100%;height:100%;object-fit:cover}
+#mist-home-hero .mist-hh-copy{flex:1 1 auto;min-width:0}
+#mist-home-hero .mist-hh-kicker{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--accent,#a882ff) 70%,#fff);margin-bottom:4px}
+#mist-home-hero h1{margin:0 0 4px!important;font-size:26px!important;line-height:1.15!important;font-weight:800!important;color:#fff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mist-home-hero .mist-hh-meta{margin:0 0 12px!important;color:#b8b8c4;font-size:13px}
+#mist-home-hero .mist-hh-stats{display:flex;gap:8px;flex-wrap:wrap}
+#mist-home-hero .mist-hh-stats span{display:inline-flex;align-items:baseline;gap:6px;padding:6px 11px;border-radius:999px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08);font-size:11.5px;color:#a3a3b0}
+#mist-home-hero .mist-hh-stats b{color:#fff;font-size:13px;font-weight:750}
+#mist-home-hero .mist-hh-actions{display:flex;flex-direction:column;align-items:stretch;gap:10px;flex:0 0 auto;min-width:220px;max-width:320px}
+#mist-home-hero .mist-hh-play{display:flex;align-items:center;justify-content:center;gap:10px;height:50px;padding:0 22px;border:0;border-radius:14px;cursor:pointer;font-size:15px;font-weight:800;color:var(--accent-contrast,#fff);background:linear-gradient(135deg,var(--accent,#a882ff),color-mix(in srgb,var(--accent,#a882ff) 65%,#000));box-shadow:0 10px 26px color-mix(in srgb,var(--accent,#a882ff) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.3);transition:transform .15s ease,filter .15s ease}
+#mist-home-hero .mist-hh-play span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mist-home-hero .mist-hh-play:hover{transform:translateY(-2px);filter:brightness(1.08)}
+#mist-home-hero .mist-hh-quick{display:flex;gap:6px}
+#mist-home-hero .mist-hh-quick button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 10px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#dcdce4;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+#mist-home-hero .mist-hh-quick button:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18)}
+@media (max-width:1180px){
+  :is(html,#mist-hx) .home-screen .home-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:none!important;grid-auto-rows:auto!important;grid-template-areas:"hero hero" "feat feat" "recent recent" "play server" "news change"!important}
+  :is(html,#mist-hx) .home-screen :is(.home-hero-playtime-card,.home-server-dock){height:340px!important}
+  :is(html,#mist-hx) .home-screen :is(.home-news-sidebar,.home-changelog-card){contain:none!important;height:360px!important}
+  #mist-home-hero{flex-wrap:wrap}
+}
+/* instance list selected state */
+#mist-instance-list .mist-instance-list-row.is-active{border-color:color-mix(in srgb,var(--accent,#a882ff) 55%,transparent)!important;background:color-mix(in srgb,var(--accent,#a882ff) 14%,#1d1d23)!important}
+#mist-instance-list .mist-instance-list-tag{margin-left:auto;font-style:normal;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;color:var(--accent-contrast,#fff);background:var(--accent,#a882ff)}
+
+/* ---------- Settings / Accounts / Versions polish ---------- */
+.settings-layout{gap:20px!important}
+.settings-nav{padding:10px!important;border-radius:16px!important;border:1px solid rgba(255,255,255,.07)!important;background:linear-gradient(180deg,#1d1c24,#16161b)!important;box-shadow:0 12px 30px rgba(0,0,0,.25)!important}
+.settings-nav-item{border-radius:10px!important;transition:background .15s ease,color .15s ease,transform .15s ease!important;position:relative!important}
+.settings-nav-item:hover{background:rgba(255,255,255,.06)!important;transform:translateX(2px)}
+.settings-nav-item:is([aria-current="page"],[aria-selected="true"],[aria-pressed="true"],.active,.is-active){background:color-mix(in srgb,var(--accent,#a882ff) 18%,transparent)!important;color:#fff!important;box-shadow:inset 3px 0 0 var(--accent,#a882ff)!important}
+.settings-content .panel,.screen .panel{border-radius:16px!important;border:1px solid rgba(255,255,255,.07)!important;background:linear-gradient(180deg,rgba(32,31,40,.9),rgba(21,21,26,.95))!important;box-shadow:0 12px 30px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04)!important}
+.screen .danger-panel{border-color:rgba(255,92,92,.28)!important;background:linear-gradient(180deg,rgba(60,24,28,.55),rgba(24,18,20,.95))!important}
+.screen .field input:not([type=checkbox]):not([type=radio]),.screen .field select,.screen .field textarea{border-radius:10px!important;transition:border-color .15s ease,box-shadow .15s ease!important}
+.screen .field :is(input,select,textarea):focus{border-color:var(--accent,#a882ff)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#a882ff) 22%,transparent)!important;outline:0!important}
+.screen .segmented{border-radius:12px!important;padding:3px!important;background:rgba(0,0,0,.25)!important;border:1px solid rgba(255,255,255,.07)!important}
+.account-grid{gap:14px!important}
+.account-grid > *{border-radius:16px!important;border:1px solid rgba(255,255,255,.08)!important;background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--accent,#a882ff) 16%,transparent),transparent 60%),linear-gradient(180deg,#201f28,#17171c)!important;box-shadow:0 12px 28px rgba(0,0,0,.28)!important;transition:transform .18s ease,border-color .18s ease!important}
+.account-grid > *:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent,#a882ff) 40%,transparent)!important}
+.account-card-head img,.account-card-head canvas{border-radius:12px!important;box-shadow:0 6px 16px rgba(0,0,0,.4)!important}
+.account-empty-icon{filter:drop-shadow(0 8px 20px color-mix(in srgb,var(--accent,#a882ff) 40%,transparent))}
+.version-table{border-radius:16px!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.07)!important;background:linear-gradient(180deg,#1c1b23,#16161b)!important;box-shadow:0 12px 30px rgba(0,0,0,.25)!important}
+.version-row{transition:background .14s ease!important;border-bottom:1px solid rgba(255,255,255,.05)!important}
+.version-row:not(.version-head):hover{background:color-mix(in srgb,var(--accent,#a882ff) 9%,transparent)!important}
+.version-row.version-head{background:#1a1a20!important;text-transform:uppercase!important;font-size:11px!important;letter-spacing:.08em!important;color:#8d8d99!important}
+.version-rune{border-radius:10px!important;background:color-mix(in srgb,var(--accent,#a882ff) 18%,#22222a)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent,#a882ff) 35%,transparent)!important}
+.version-id{font-weight:750!important}
+.version-detail{border-radius:16px!important;border:1px solid rgba(255,255,255,.07)!important;background:linear-gradient(180deg,#1e1d26,#16161b)!important}
+.skin-card{transition:transform .18s ease,box-shadow .18s ease!important}
+.skin-card:hover{transform:translateY(-3px)!important;box-shadow:0 14px 30px rgba(0,0,0,.4)!important}
+.skins-hero{border-radius:18px!important;background:radial-gradient(90% 140% at 0% 0%,color-mix(in srgb,var(--accent,#a882ff) 26%,transparent),transparent 60%),linear-gradient(135deg,#1f1d2a,#16161b)!important;border:1px solid rgba(255,255,255,.07)!important}
+.installation-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease!important}
+.installation-card:not(.add-card):hover{transform:translateY(-3px)!important;box-shadow:0 16px 32px rgba(0,0,0,.4)!important;border-color:color-mix(in srgb,var(--accent,#a882ff) 40%,transparent)!important}
+
+
+/* ===== ROUND7 ===== */
+/* home grid fixes */
+:is(html,#mist-hx) .home-screen{min-height:calc(100vh - 54px)!important;background:transparent!important}
+:is(html,#mist-hx) .home-screen :is(.home-featured-sidebar,.home-hero-playtime-card,.home-server-dock,.home-changelog-card,.home-news-sidebar,#mist-recently-played,#mist-home-hero){align-self:stretch!important;max-height:none!important}
+:is(html,#mist-hx) .home-screen :is(.home-news-sidebar,.home-changelog-card){display:flex!important;flex-direction:column!important}
+:is(html,#mist-hx) .home-screen .home-server-dock{display:flex!important;flex-direction:column!important;position:relative!important}
+:is(html,#mist-hx) .home-screen .home-hero-playtime-card{display:flex!important;flex-direction:column!important}
+:is(html,#mist-hx) .home-screen .home-hero-playtime-card > :last-child{flex:1 1 auto}
+.mist-srvlib-open{position:absolute;top:12px;right:52px;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:9px;border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 16%,transparent);color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;z-index:2}
+.mist-srvlib-open svg{width:14px;height:14px}
+.mist-srvlib-open:hover{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+#mist-home-hero .mist-hh-quick{flex-wrap:wrap}
+#mist-home-hero .mist-hh-quick button svg{width:14px;height:14px}
+/* remove standalone instance select chips on browse screens */
+.screen .installation-select:not(.modal .installation-select){display:none!important}
+/* pack hero: never clip actions */
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero{height:auto!important;min-height:300px!important;max-height:none!important;padding-bottom:28px!important;overflow:hidden!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-hero-main{position:relative!important;inset:auto!important;margin-top:auto!important}
+:is(.mist-pd,#mist-pd-x) .mist-pd-actions{flex-wrap:wrap!important;row-gap:10px!important;overflow:visible!important}
+#mist-pd-overlay .mist-pd{padding-left:max(26px,2vw)!important;padding-right:max(26px,2vw)!important;box-sizing:border-box!important}
+#mist-pd-overlay .mist-pd > .mist-project-tabs{margin-left:calc(-1 * max(26px,2vw))!important;margin-right:calc(-1 * max(26px,2vw))!important;padding-left:max(26px,2vw)!important;padding-right:max(26px,2vw)!important}
+/* no flash of the old project UI */
+@keyframes mistRevealLate{to{visibility:visible}}
+.modal-body > .project-detail:not(.mist-pd),.modal-body > * > .project-detail:not(.mist-pd){visibility:hidden!important;animation:mistRevealLate 0s 3.5s forwards!important}
+.modal-body:has(> .project-detail:not(.mist-pd))::before,.modal-body:has(> * > .project-detail:not(.mist-pd))::before{content:"";position:fixed;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:3px solid rgba(255,255,255,.08);border-top-color:var(--accent);animation:mistSpin .8s linear infinite;z-index:5}
+.overlay:has(.project-detail:not(.mist-pd)) .modal-header,.overlay:has(.project-detail:not(.mist-pd)) .modal-footer{visibility:hidden!important}
+@keyframes mistSpin{to{transform:rotate(360deg)}}
+
+/* titlebar tools */
+.mist-titlebar-tools{display:flex;align-items:center;gap:6px;margin-right:8px;-webkit-app-region:no-drag}
+.mist-titlebar-tools .mist-contact-button{position:relative}
+.mist-titlebar-tools .mist-tool-theme{color:var(--accent)!important}
+.mist-titlebar-tools svg{width:17px;height:17px}
+
+/* popovers */
+.mist-r7-pop{position:fixed;z-index:10060;width:340px;max-height:min(560px,calc(100vh - 90px));display:flex;flex-direction:column;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(180deg,rgba(30,29,38,.98),rgba(19,19,24,.98));box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.3);backdrop-filter:blur(18px);animation:mistPopIn .18s ease-out;overflow:hidden}
+.mist-r7-pop[hidden]{display:none!important}
+@keyframes mistPopIn{from{opacity:0;transform:translateY(-6px) scale(.98)}}
+.mist-r7-pop > header{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.mist-r7-pop > header strong{font-size:14px;color:#fff}
+.mist-r7-x{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#cfcfd8;cursor:pointer;padding:0}
+.mist-r7-x:hover{background:rgba(255,255,255,.1);color:#fff}
+.mist-r7-x svg{width:14px;height:14px}
+.mist-r7-body{padding:12px 14px 14px;overflow:auto}
+.mist-r7-empty{text-align:center;padding:22px 8px;color:#a5a5b2}
+.mist-r7-empty span{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:16px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);margin-bottom:10px}
+.mist-r7-empty span svg{width:24px;height:24px}
+.mist-r7-empty strong{display:block;color:#fff;margin-bottom:4px}
+.mist-r7-empty p{margin:0;font-size:12.5px;line-height:1.5}
+.mist-fav-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.mist-fav-filters button{height:26px;padding:0 10px;border-radius:999px;border:1px solid rgba(255,255,255,.09);background:transparent;color:#c4c4cf;font-size:11.5px;text-transform:capitalize;cursor:pointer}
+.mist-fav-filters button.is-on{background:var(--accent);border-color:transparent;color:var(--accent-contrast)}
+.mist-fav-filters b{margin-left:3px}
+.mist-fav-list{display:grid;gap:6px}
+.mist-fav-row{display:flex;align-items:center;gap:6px;border-radius:12px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);transition:border-color .15s,background .15s}
+.mist-fav-row:hover{border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.mist-fav-open{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
+.mist-fav-open img,.mist-fav-ph{width:38px;height:38px;border-radius:10px;object-fit:cover;flex:0 0 38px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 20%,#222);font-weight:800;color:#fff}
+.mist-fav-open span{min-width:0}
+.mist-fav-open strong{display:block;color:#fff;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mist-fav-open small{color:#9393a0;font-size:11px;text-transform:capitalize}
+.mist-fav-del{width:28px;height:28px;margin-right:6px;border-radius:8px;border:0;background:transparent;color:#8b8b97;cursor:pointer;display:grid;place-items:center}
+.mist-fav-del:hover{background:rgba(255,92,92,.15);color:#ff7a7a}
+.mist-fav-del svg{width:13px;height:13px}
+/* theme studio */
+#mist-theme-panel h4{margin:14px 0 8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8e8e9b}
+.mist-ts-preview{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:radial-gradient(120% 140% at 0 0,color-mix(in srgb,var(--accent) 35%,transparent),transparent 60%),var(--bg-soft,#111);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.mist-ts-dot{width:34px;height:34px;border-radius:10px;background:var(--accent-gradient,var(--accent));box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 50%,transparent)}
+.mist-ts-preview div{flex:1}.mist-ts-preview strong{display:block;color:#fff;font-size:13px}.mist-ts-preview small{color:#a0a0ad;font-size:11px}
+.mist-ts-preview button{height:30px;padding:0 14px;border:0;border-radius:9px;background:var(--accent);color:var(--accent-contrast);font-weight:800}
+.mist-ts-swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.mist-ts-swatches button,.mist-ts-custom{height:34px;border-radius:10px;border:2px solid transparent;background:var(--sw);cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);transition:transform .12s}
+.mist-ts-swatches button:hover{transform:scale(1.07)}
+.mist-ts-swatches button.is-on{border-color:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--sw) 40%,transparent)}
+.mist-ts-custom{position:relative;display:grid;place-items:center;background:conic-gradient(#ff5c5c,#f7c948,#4ade80,#3fd7d0,#5b8cff,#a882ff,#ff5c5c);overflow:hidden}
+.mist-ts-custom input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.mist-ts-custom span{font-weight:900;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none}
+.mist-ts-surfaces{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mist-ts-surfaces button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:var(--sbd);color:#d0d0da;font-size:11px;font-weight:600;cursor:pointer}
+.mist-ts-surfaces button i{width:100%;height:18px;border-radius:6px;background:linear-gradient(90deg,var(--sbg),color-mix(in srgb,var(--sbg) 70%,var(--accent)))}
+.mist-ts-surfaces button.is-on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.mist-ts-seg{display:flex;padding:3px;border-radius:11px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.07)}
+.mist-ts-seg button{flex:1;height:28px;border:0;border-radius:8px;background:transparent;color:#bdbdc8;font-size:12px;font-weight:600;cursor:pointer}
+.mist-ts-seg button.is-on{background:var(--accent);color:var(--accent-contrast)}
+.mist-ts-range{width:100%;accent-color:var(--accent)}
+.mist-ts-reset{width:100%;margin-top:14px;height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#c9c9d3;cursor:pointer}
+.mist-ts-reset:hover{background:rgba(255,255,255,.06)}
+:root[data-mist-surface] .titlebar{background-color:color-mix(in srgb,var(--bg) 70%,transparent)}
+
+/* guide */
+#mist-guide{position:fixed;inset:0;z-index:10090;background:rgba(5,5,9,.62);backdrop-filter:blur(3px);animation:mistFade .25s ease}
+#mist-guide.has-spot{background:transparent;backdrop-filter:none}
+#mist-guide.is-leaving{opacity:0;transition:opacity .25s}
+@keyframes mistFade{from{opacity:0}}
+.mist-guide-spot{position:fixed;display:none;border-radius:16px;box-shadow:0 0 0 9999px rgba(5,5,9,.68),0 0 0 2px var(--accent),0 0 30px color-mix(in srgb,var(--accent) 60%,transparent);transition:all .35s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+#mist-guide.has-spot .mist-guide-spot{display:block}
+.mist-guide-card{position:fixed;width:360px;box-sizing:border-box;padding:24px 24px 20px;border-radius:20px;border:1px solid color-mix(in srgb,var(--accent) 35%,rgba(255,255,255,.08));background:radial-gradient(120% 80% at 0 0,color-mix(in srgb,var(--accent) 26%,transparent),transparent 60%),linear-gradient(180deg,#1f1e28,#15151a);box-shadow:0 30px 80px rgba(0,0,0,.6);color:#d6d6de;transition:left .35s cubic-bezier(.2,.8,.2,1),top .35s cubic-bezier(.2,.8,.2,1)}
+.mist-guide-card.is-pop{animation:mistGuidePop .35s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes mistGuidePop{from{opacity:0;scale:.94}}
+.mist-guide-skip{position:absolute;top:14px;right:14px;border:0;background:transparent;color:#8f8f9c;font-size:12px;cursor:pointer}
+.mist-guide-skip:hover{color:#fff}
+.mist-guide-art{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:26px;color:var(--accent-contrast);background:var(--accent-gradient,var(--accent));box-shadow:0 10px 26px color-mix(in srgb,var(--accent) 45%,transparent);margin-bottom:14px}
+.mist-guide-step{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--accent) 75%,#fff);font-weight:700}
+.mist-guide-card h2{margin:6px 0 8px;font-size:20px;color:#fff;line-height:1.2}
+.mist-guide-card p{margin:0 0 16px;font-size:13.5px;line-height:1.55;color:#b6b6c2}
+.mist-guide-dots{display:flex;gap:6px;margin-bottom:16px}
+.mist-guide-dots i{width:7px;height:7px;border-radius:99px;background:rgba(255,255,255,.18);transition:all .25s}
+.mist-guide-dots i.is-on{width:22px;background:var(--accent)}
+.mist-guide-nav{display:flex;justify-content:flex-end;gap:8px}
+.mist-guide-nav button{height:38px;padding:0 18px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#e2e2ea;font-weight:700;cursor:pointer}
+.mist-guide-nav .mist-guide-next{border:0;background:var(--accent);color:var(--accent-contrast);box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 40%,transparent)}
+.mist-guide-nav button[hidden]{display:none}
+
+/* splash */
+#mist-splash{position:fixed;inset:0;z-index:10100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(60% 50% at 50% 45%,color-mix(in srgb,var(--accent,#9fb8c8) 22%,transparent),transparent 70%),#08080c;transition:opacity .5s ease,transform .5s ease}
+#mist-splash.is-leaving{opacity:0;transform:scale(1.04);pointer-events:none}
+.mist-splash-core{position:relative;width:132px;height:132px;display:grid;place-items:center}
+.mist-splash-core img{width:74px;height:74px;border-radius:20px;animation:mistBreath 1.8s ease-in-out infinite;filter:drop-shadow(0 10px 30px color-mix(in srgb,var(--accent,#9fb8c8) 60%,transparent))}
+.mist-splash-ring{position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent,#9fb8c8);border-right-color:color-mix(in srgb,var(--accent,#9fb8c8) 40%,transparent);animation:mistSpin 1.1s linear infinite}
+.mist-splash-ring.r2{inset:14px;border-top-color:transparent;border-bottom-color:color-mix(in srgb,var(--accent,#9fb8c8) 70%,#fff);animation-duration:1.7s;animation-direction:reverse}
+@keyframes mistBreath{50%{transform:scale(1.07)}}
+#mist-splash strong{font-size:22px;letter-spacing:.04em;color:#fff}
+.mist-splash-bar{width:220px;height:4px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden}
+.mist-splash-bar i{display:block;width:40%;height:100%;border-radius:9px;background:var(--accent-gradient,var(--accent,#9fb8c8));animation:mistIndet 1.1s ease-in-out infinite}
+@keyframes mistIndet{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
+#mist-splash small{color:#8d8d9a;font-size:12px;min-height:16px}
+
+/* download HUD */
+#mist-dl-hud{position:fixed;right:20px;bottom:20px;z-index:10050;width:330px;border-radius:16px;border:1px solid color-mix(in srgb,var(--accent) 35%,rgba(255,255,255,.08));background:linear-gradient(180deg,rgba(30,29,38,.97),rgba(18,18,23,.97));box-shadow:0 20px 50px rgba(0,0,0,.5);backdrop-filter:blur(16px);animation:mistHudIn .3s cubic-bezier(.2,.9,.3,1.2);overflow:hidden}
+#mist-dl-hud[hidden]{display:none!important}
+@keyframes mistHudIn{from{opacity:0;transform:translateY(20px)}}
+#mist-dl-hud header{display:flex;align-items:center;gap:12px;padding:12px 12px 10px 14px}
+#mist-dl-hud header div{flex:1;min-width:0}
+#mist-dl-hud header strong{display:block;color:#fff;font-size:13.5px}
+#mist-dl-hud header small{display:block;color:#9a9aa7;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mist-dl-cube{position:relative;width:30px;height:30px;flex:0 0 30px;transform-style:preserve-3d;animation:mistCube 2.4s linear infinite}
+.mist-dl-cube i{position:absolute;inset:6px;border-radius:4px;background:var(--accent);opacity:.9}
+.mist-dl-cube i:nth-child(2){transform:rotate(45deg) scale(.7);opacity:.55}
+.mist-dl-cube i:nth-child(3){transform:scale(.35);background:#fff;opacity:.9}
+@keyframes mistCube{0%{transform:rotate(0)}50%{transform:rotate(180deg) scale(.85)}100%{transform:rotate(360deg)}}
+#mist-dl-hud.is-done .mist-dl-cube{animation:none}
+.mist-dl-list{padding:0 14px 14px;display:grid;gap:10px}
+.mist-dl-top{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:#e4e4ec;margin-bottom:6px}
+.mist-dl-top span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mist-dl-top b{color:var(--accent);font-variant-numeric:tabular-nums}
+.mist-dl-bar{height:7px;border-radius:9px;background:rgba(255,255,255,.07);overflow:hidden}
+.mist-dl-bar i{display:block;height:100%;border-radius:9px;background:repeating-linear-gradient(45deg,var(--accent) 0 10px,color-mix(in srgb,var(--accent) 75%,#fff) 10px 20px);background-size:28px 28px;animation:mistStripes .7s linear infinite;transition:width .4s ease}
+.mist-dl-bar.is-indet i{animation:mistStripes .7s linear infinite,mistIndet 1.2s ease-in-out infinite}
+@keyframes mistStripes{to{background-position:28px 0}}
+.mist-dl-row small{display:block;margin-top:5px;font-size:11px;color:#8c8c99}
+.mist-dl-check{display:grid;place-items:center;width:54px;height:54px;margin:4px auto 6px;border-radius:50%;background:color-mix(in srgb,#4ade80 20%,transparent);color:#4ade80;animation:mistGuidePop .4s cubic-bezier(.2,.9,.3,1.4)}
+.mist-dl-check svg{width:28px;height:28px;stroke-dasharray:30;stroke-dashoffset:30;animation:mistDraw .5s .15s ease forwards}
+@keyframes mistDraw{to{stroke-dashoffset:0}}
+
+/* launch overlay */
+#mist-launch{position:fixed;inset:0;z-index:10080;display:grid;place-items:center;background:radial-gradient(60% 60% at 50% 45%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%),rgba(6,6,10,.82);backdrop-filter:blur(8px);animation:mistFade .3s ease}
+#mist-launch[hidden]{display:none!important}
+.mist-launch-card{position:relative;width:min(440px,90vw);padding:30px 30px 24px;text-align:center;border-radius:24px;border:1px solid color-mix(in srgb,var(--accent) 35%,rgba(255,255,255,.08));background:linear-gradient(180deg,rgba(32,31,42,.96),rgba(17,17,22,.96));box-shadow:0 40px 100px rgba(0,0,0,.6)}
+.mist-launch-close{position:absolute;top:14px;right:14px;width:32px;height:32px;display:grid;place-items:center;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#d4d4dc;cursor:pointer}
+.mist-launch-close:hover{background:rgba(255,255,255,.12);color:#fff}
+.mist-launch-close svg{width:15px;height:15px}
+.mist-launch-scene{position:relative;width:150px;height:150px;margin:0 auto 18px;display:grid;place-items:center;perspective:500px}
+.mist-launch-block{position:relative;width:58px;height:58px;transform-style:preserve-3d;animation:mistBlock 3s linear infinite}
+.mist-launch-block i{position:absolute;inset:0;border-radius:6px;border:2px solid rgba(255,255,255,.25)}
+.mist-launch-block .f1{background:linear-gradient(135deg,#6ccf4a,#3d8f2a);transform:translateZ(29px)}
+.mist-launch-block .f2{background:linear-gradient(135deg,#8a5a34,#5d3a1f);transform:rotateY(90deg) translateZ(29px)}
+.mist-launch-block .f3{background:linear-gradient(135deg,#7bd85a,#4aa233);transform:rotateX(90deg) translateZ(29px)}
+@keyframes mistBlock{0%{transform:rotateX(-22deg) rotateY(0) translateY(0)}50%{transform:rotateX(-22deg) rotateY(180deg) translateY(-8px)}100%{transform:rotateX(-22deg) rotateY(360deg) translateY(0)}}
+.mist-launch-orbit{position:absolute;inset:6px;border-radius:50%;border:2px dashed color-mix(in srgb,var(--accent) 50%,transparent);animation:mistSpin 6s linear infinite}
+.mist-launch-pulse{position:absolute;inset:30px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 35%,transparent),transparent 70%);animation:mistBreath 1.6s ease-in-out infinite}
+#mist-launch[data-state=running] .mist-launch-pulse{animation:mistRing 1.6s ease-out infinite;border:2px solid #4ade80;background:none}
+@keyframes mistRing{from{transform:scale(.6);opacity:1}to{transform:scale(1.5);opacity:0}}
+.mist-launch-kicker{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+#mist-launch[data-state=running] .mist-launch-kicker{color:#4ade80}
+.mist-launch-card h2{margin:6px 0 6px;font-size:24px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mist-launch-card p{margin:0 0 16px;color:#a9a9b6;font-size:13px;min-height:18px}
+.mist-launch-bar{height:5px;border-radius:9px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:18px}
+.mist-launch-bar i{display:block;width:40%;height:100%;border-radius:9px;background:var(--accent-gradient,var(--accent));animation:mistIndet 1.3s ease-in-out infinite}
+#mist-launch[data-state=running] .mist-launch-bar i{width:100%;animation:none;background:linear-gradient(90deg,#4ade80,#3fd7d0)}
+.mist-launch-actions{display:flex;gap:8px;justify-content:center}
+.mist-launch-actions button{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 18px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#e2e2ea;font-weight:700;cursor:pointer}
+.mist-launch-actions button svg{width:13px;height:13px}
+.mist-launch-actions .mist-launch-stop{border-color:rgba(255,92,92,.35);background:rgba(255,92,92,.12);color:#ff8a8a}
+.mist-launch-actions button[hidden]{display:none}
+#mist-play-pill{position:fixed;left:110px;bottom:18px;z-index:10050;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 14px;border-radius:999px;border:1px solid rgba(74,222,128,.35);background:linear-gradient(180deg,rgba(26,34,30,.96),rgba(16,20,18,.96));box-shadow:0 14px 34px rgba(0,0,0,.45);animation:mistHudIn .3s ease}
+#mist-play-pill[hidden]{display:none!important}
+.mist-pill-dot{width:9px;height:9px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 0 rgba(74,222,128,.6);animation:mistDot 1.6s infinite}
+@keyframes mistDot{70%{box-shadow:0 0 0 8px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+.mist-pill-open{display:flex;flex-direction:column;align-items:flex-start;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 4px;line-height:1.2}
+.mist-pill-open strong{font-size:12.5px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mist-pill-open small{font-size:11px;color:#8fd8a6;font-variant-numeric:tabular-nums}
+.mist-pill-stop,.mist-pill-x{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;border:0;background:rgba(255,255,255,.07);color:#ddd;cursor:pointer}
+.mist-pill-stop{color:#ff8a8a}
+.mist-pill-stop svg,.mist-pill-x svg{width:12px;height:12px}
+
+/* server library */
+#mist-srvlib{position:fixed;inset:0;z-index:10070;display:grid;place-items:center}
+.mist-srvlib-backdrop{position:absolute;inset:0;background:rgba(5,5,9,.7);backdrop-filter:blur(6px);animation:mistFade .2s}
+.mist-srvlib-card{position:relative;width:min(1120px,calc(100vw - 80px));height:min(760px,calc(100vh - 80px));display:flex;flex-direction:column;border-radius:22px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(180deg,#1c1b24,#131317);box-shadow:0 40px 100px rgba(0,0,0,.6);overflow:hidden;animation:mistGuidePop .3s cubic-bezier(.2,.9,.3,1.1)}
+.mist-srvlib-card > header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;background:radial-gradient(80% 140% at 0 0,color-mix(in srgb,var(--accent) 24%,transparent),transparent 60%)}
+.mist-srvlib-title{display:flex;align-items:center;gap:12px}
+.mist-srvlib-title > span{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--accent-gradient,var(--accent));color:var(--accent-contrast)}
+.mist-srvlib-title svg{width:22px;height:22px}
+.mist-srvlib-title h2{margin:0;font-size:19px;color:#fff}
+.mist-srvlib-title small{color:#9a9aa7;font-size:12px}
+.mist-srvlib-tools{display:flex;flex-direction:column;gap:10px;padding:4px 20px 14px;border-bottom:1px solid rgba(255,255,255,.06)}
+.mist-srvlib-search input{width:100%;box-sizing:border-box;height:40px;padding:0 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.3);color:#fff;font-size:13.5px;outline:0}
+.mist-srvlib-search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.mist-srvlib-cats{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.mist-srvlib-cats button{flex:0 0 auto;height:28px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.09);background:transparent;color:#c4c4cf;font-size:12px;font-weight:600;cursor:pointer}
+.mist-srvlib-cats button.is-on{background:var(--accent);border-color:transparent;color:var(--accent-contrast)}
+.mist-srvlib-grid{flex:1;overflow:auto;padding:16px 20px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-content:start}
+.mist-srvlib-empty{grid-column:1/-1;text-align:center;color:#9a9aa7;padding:40px}
+.mist-sv-card{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:15px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(180deg,#201f29,#18181d);transition:transform .16s,border-color .16s,box-shadow .16s}
+.mist-sv-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 40%,transparent);box-shadow:0 14px 30px rgba(0,0,0,.35)}
+.mist-sv-head{display:flex;align-items:center;gap:10px}
+.mist-sv-head > div{flex:1;min-width:0}
+.mist-sv-head strong{display:block;color:#fff;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mist-sv-head code{font-size:11px;color:#9a9aa7}
+.mist-sv-icon{width:42px;height:42px;flex:0 0 42px;border-radius:10px;overflow:hidden;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 18%,#222);color:#fff;font-weight:800;image-rendering:pixelated}
+.mist-sv-icon img{width:100%;height:100%}
+.mist-sv-status{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.06);color:#a0a0ad;white-space:nowrap}
+.mist-sv-card.is-online .mist-sv-status{background:rgba(74,222,128,.14);color:#4ade80}
+.mist-sv-card.is-offline .mist-sv-status{background:rgba(255,92,92,.12);color:#ff8a8a}
+.mist-sv-card p{margin:0;font-size:12.5px;line-height:1.45;color:#b0b0bc;flex:1}
+.mist-sv-foot{display:flex;align-items:center;gap:6px}
+.mist-sv-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:color-mix(in srgb,var(--accent) 70%,#fff)}
+.mist-sv-ver{flex:1;font-size:11px;color:#7f7f8c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mist-sv-copy{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;border:1px solid rgba(255,255,255,.09);background:transparent;color:#cfcfd8;cursor:pointer}
+.mist-sv-copy svg{width:14px;height:14px}
+.mist-sv-play{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:9px;border:0;background:var(--accent);color:var(--accent-contrast);font-weight:800;font-size:12px;cursor:pointer}
+.mist-sv-play svg{width:12px;height:12px}
+.mist-sv-play:hover,.mist-sv-copy:hover{filter:brightness(1.1)}
+
+/* r7 qa fixes */
+:is(html,#mist-hx) #mist-home-hero .mist-hh-play{background:linear-gradient(135deg,var(--accent,#9fb8c8),color-mix(in srgb,var(--accent,#9fb8c8) 55%,#7c6cff))!important;color:var(--accent-contrast,#0b1015)!important;border:0!important;box-shadow:0 10px 28px -10px color-mix(in srgb,var(--accent,#9fb8c8) 70%,transparent)!important}
+:is(html,#mist-hx) #mist-home-hero .mist-hh-play:hover{filter:brightness(1.08);transform:translateY(-1px)}
+:is(html,#mist-hx) #mist-home-hero .mist-hh-quick{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+:is(html,#mist-hx) #mist-home-hero .mist-hh-quick>button{width:100%!important;grid-column:auto!important}
+:is(html,#mist-hx) .home-screen section.hero::before,:is(html,#mist-hx) .home-screen section.hero::after{display:none!important;content:none!important}
+:is(.mist-pd,#mist-pd-x) > .mist-project-tabs::before{display:none!important}
+.main :is(.mist-pd,#mist-pd-x) > .mist-project-tabs{top:-22px!important}
+
+/* ===== R8 home polish ===== */
+:is(html,#mist-hx) .home-screen .home-grid{grid-template-areas:"hero hero news" "feat feat news" "recent recent spot" "play server change"!important;grid-template-rows:auto auto auto 360px!important;gap:16px!important}
+:is(html,#mist-hx) .home-screen #mist-home-spot{grid-area:spot!important}
+@media (max-width:1180px){:is(html,#mist-hx) .home-screen .home-grid{grid-template-areas:"hero hero" "feat feat" "recent recent" "spot spot" "play server" "news change"!important;grid-template-rows:none!important}}
+
+/* shared elevated card surface */
+:is(html,#mist-hx) .home-screen :is(.home-featured-sidebar,#mist-recently-played,.home-hero-playtime-card,.home-server-dock,.home-news-sidebar,.home-changelog-card,#mist-home-spot){
+  background:
+    linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent,#9fb8c8) 38%,transparent),transparent) top/100% 1px no-repeat,
+    radial-gradient(120% 80% at 0% 0%,color-mix(in srgb,var(--accent,#9fb8c8) 7%,transparent),transparent 60%),
+    linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01)),
+    color-mix(in srgb,var(--mist-panel,#121319) 82%,transparent)!important;
+  border:1px solid rgba(255,255,255,.075)!important;border-radius:var(--mist-radius,18px)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 22px 44px -26px rgba(0,0,0,.85),0 2px 6px rgba(0,0,0,.25)!important;
+  backdrop-filter:blur(16px) saturate(1.2);transition:border-color .2s,box-shadow .2s,transform .2s}
+:is(html,#mist-hx) .home-screen :is(.home-featured-sidebar,#mist-recently-played,.home-hero-playtime-card,.home-server-dock,.home-news-sidebar,.home-changelog-card,#mist-home-spot):hover{border-color:color-mix(in srgb,var(--accent,#9fb8c8) 22%,rgba(255,255,255,.08))!important}
+
+/* hero ambience */
+#mist-home-hero{background:
+  radial-gradient(520px 220px at 12% -10%,color-mix(in srgb,var(--accent,#9fb8c8) 26%,transparent),transparent 70%),
+  radial-gradient(460px 240px at 92% 130%,rgba(124,108,255,.22),transparent 70%),
+  linear-gradient(135deg,color-mix(in srgb,var(--mist-panel,#1c1d27) 90%,white),var(--mist-panel,#121319) 60%,var(--bg-soft,#15131d))!important;
+  border:1px solid rgba(255,255,255,.08)!important;border-radius:calc(var(--mist-radius,18px) + 4px)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 30px 60px -30px rgba(0,0,0,.9)!important;position:relative}
+#mist-home-hero > :not(.mist-hh-cubes):not(.mist-hh-glow){position:relative;z-index:1}
+.mist-hh-cubes{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden;border-radius:inherit}
+.mist-hh-cubes i{position:absolute;width:calc(10px + var(--i) * 2px);aspect-ratio:1;left:calc(30% + var(--i) * 7.5%);bottom:-24px;border-radius:3px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent,#9fb8c8) 55%,transparent),rgba(124,108,255,.25));opacity:.0;transform:rotate(45deg);
+  animation:mistCubeRise calc(9s + var(--i) * 1.3s) linear infinite;animation-delay:calc(var(--i) * -1.7s)}
+@keyframes mistCubeRise{0%{transform:translateY(0) rotate(45deg);opacity:0}15%{opacity:.35}80%{opacity:.18}100%{transform:translateY(-230px) rotate(225deg);opacity:0}}
+#mist-home-hero .mist-hh-art{width:96px!important;height:96px!important;border-radius:22px!important;padding:0!important;overflow:hidden;flex:0 0 auto;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08),0 16px 34px -12px color-mix(in srgb,var(--accent,#9fb8c8) 45%,rgba(0,0,0,.8))!important}
+#mist-home-hero .mist-hh-art > *{width:100%!important;height:100%!important;border-radius:inherit!important}
+#mist-home-hero .mist-hh-art .mist-gen-svg{animation:mistBob 4.5s ease-in-out infinite}
+@keyframes mistBob{0%,100%{transform:translateY(2px)}50%{transform:translateY(-3px)}}
+#mist-home-hero h1{background:linear-gradient(90deg,#fff,color-mix(in srgb,var(--accent,#9fb8c8) 70%,#fff));-webkit-background-clip:text;background-clip:text;color:transparent!important}
+#mist-home-hero .mist-hh-stats > span{background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:999px!important}
+
+/* generated instance icons */
+.mist-gen-icon{display:grid!important;place-items:center!important;overflow:hidden;color:transparent!important;font-size:0!important;
+  background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--ig,#5fb04a) 42%,transparent),transparent 68%),linear-gradient(145deg,hsl(var(--ih,200) 28% 21%),hsl(calc(var(--ih,200) + 40) 26% 11%))!important}
+.mist-gen-icon > .mist-gen-svg{width:84%!important;height:84%!important;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45));transition:transform .25s}
+:is(button,a):hover > .mist-gen-icon > .mist-gen-svg,.mist-gen-icon:hover > .mist-gen-svg{transform:translateY(-2px) scale(1.05)}
+
+/* recently played tiles */
+:is(html,#mist-hx) .home-screen #mist-recently-played{display:flex!important;flex-direction:column!important;gap:12px!important;padding:16px 18px!important}
+:is(html,#mist-hx) .home-screen #mist-recently-played .mist-rp-grid{display:flex!important;flex-wrap:wrap!important;gap:12px!important;grid-template-columns:none!important}
+:is(html,#mist-hx) .home-screen #mist-recently-played :is(.mist-rp-card,.mist-rp-new){flex:1 1 220px!important;max-width:none!important;min-width:0!important;min-height:76px!important;display:flex!important;align-items:center!important;gap:12px!important;padding:12px 14px!important;
+  border-radius:14px!important;border:1px solid rgba(255,255,255,.08)!important;background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.015))!important;text-align:left;cursor:pointer;transition:transform .18s,border-color .18s,background .18s,box-shadow .18s!important}
+:is(html,#mist-hx) .home-screen #mist-recently-played :is(.mist-rp-card,.mist-rp-new):hover{transform:translateY(-2px)!important;border-color:color-mix(in srgb,var(--accent,#9fb8c8) 40%,transparent)!important;box-shadow:0 14px 26px -16px color-mix(in srgb,var(--accent,#9fb8c8) 60%,#000)!important}
+:is(html,#mist-hx) .home-screen #mist-recently-played .mist-rp-art{width:50px!important;height:50px!important;flex:0 0 50px!important;border-radius:12px!important;overflow:hidden}
+:is(html,#mist-hx) .home-screen #mist-recently-played .mist-rp-copy{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}
+:is(html,#mist-hx) .home-screen #mist-recently-played .mist-rp-copy strong{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:is(html,#mist-hx) .home-screen #mist-recently-played .mist-rp-copy small{opacity:.62;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:is(html,#mist-hx) .home-screen #mist-recently-played .mist-rp-play{width:36px!important;height:36px!important;flex:0 0 36px;border-radius:50%!important;display:grid!important;place-items:center!important;
+  background:linear-gradient(135deg,var(--accent,#9fb8c8),color-mix(in srgb,var(--accent,#9fb8c8) 50%,#7c6cff))!important;color:var(--accent-contrast,#0b1015)!important;box-shadow:0 8px 18px -8px color-mix(in srgb,var(--accent,#9fb8c8) 80%,#000)}
+:is(html,#mist-hx) .home-screen #mist-recently-played .mist-rp-new{border-style:dashed!important;background:rgba(255,255,255,.02)!important;color:inherit}
+.mist-rp-new-plus{width:50px;height:50px;flex:0 0 50px;border-radius:12px;display:grid;place-items:center;font-size:26px;font-weight:300;color:var(--accent,#9fb8c8);background:color-mix(in srgb,var(--accent,#9fb8c8) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent,#9fb8c8) 25%,transparent)}
+
+/* server spotlight */
+#mist-home-spot{display:flex!important;flex-direction:column;gap:12px;padding:16px 18px!important;min-width:0;overflow:hidden;position:relative}
+#mist-home-spot header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mist-spot-kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.mist-spot-kicker svg{width:15px;height:15px;color:var(--accent,#9fb8c8)}
+.mist-spot-nav{display:inline-flex;align-items:center;gap:4px}
+.mist-spot-nav small{font-size:11px;opacity:.5;margin-right:4px;font-variant-numeric:tabular-nums}
+.mist-spot-nav button{width:26px;height:26px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:inherit;font-size:17px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.mist-spot-nav button:hover{background:rgba(255,255,255,.1)}
+.mist-spot-body{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.mist-spot-body.is-in{animation:mistSpotIn .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes mistSpotIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.mist-spot-icon{width:52px;height:52px;flex:0 0 52px;border-radius:13px;display:grid;place-items:center;font-weight:800;font-size:22px;overflow:hidden;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent,#9fb8c8) 40%,#1b1c25),#1b1c25);box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.mist-spot-icon img{width:100%;height:100%;image-rendering:pixelated;object-fit:cover}
+.mist-spot-copy{min-width:0;display:flex;flex-direction:column;gap:2px}
+.mist-spot-name{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mist-spot-addr{font-size:11.5px;opacity:.6;font-family:ui-monospace,Consolas,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mist-spot-desc{margin:4px 0 0;font-size:12px;opacity:.72;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#mist-home-spot footer{display:flex;align-items:center;gap:6px;margin-top:auto;flex-wrap:wrap}
+.mist-spot-status,.mist-spot-tag{font-size:11px;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.06);white-space:nowrap}
+.mist-spot-status::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:#888;vertical-align:1px}
+.mist-spot-status.is-online::before{background:#4ade80;box-shadow:0 0 8px #4ade80;animation:mistPulse 1.8s ease-in-out infinite}
+.mist-spot-status.is-offline::before{background:#f87171}
+@keyframes mistPulse{50%{opacity:.45}}
+.mist-spot-gap{flex:1}
+#mist-home-spot footer button{height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:inherit;font-size:12px;font-weight:600;padding:0 10px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+#mist-home-spot footer button svg{width:14px;height:14px}
+#mist-home-spot footer button:hover{background:rgba(255,255,255,.11)}
+#mist-home-spot footer .mist-spot-join{background:linear-gradient(135deg,var(--accent,#9fb8c8),color-mix(in srgb,var(--accent,#9fb8c8) 50%,#7c6cff));color:var(--accent-contrast,#0b1015);border:0}
+
+/* news fills its column */
+:is(html,#mist-hx) .home-screen .home-news-sidebar{display:flex!important;flex-direction:column!important}
+:is(html,#mist-hx) .home-screen .home-news-sidebar-list{flex:1 1 auto!important;display:flex!important;flex-direction:column!important;gap:10px!important;min-height:0;max-height:none!important;height:auto!important}
+:is(html,#mist-hx) .home-screen .home-news-sidebar-item{flex:1 1 0!important;min-height:66px!important;max-height:104px!important;display:flex!important;align-items:center!important;gap:12px!important;border-radius:14px!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.012))!important;border:1px solid rgba(255,255,255,.07)!important;transition:transform .18s,border-color .18s!important}
+:is(html,#mist-hx) .home-screen .home-news-sidebar-item:hover{transform:translateX(3px);border-color:color-mix(in srgb,var(--accent,#9fb8c8) 35%,transparent)!important}
+:is(html,#mist-hx) .home-screen .home-news-sidebar-image{width:96px!important;height:auto!important;align-self:stretch!important;max-height:84px;margin:8px 0 8px 8px!important;border-radius:10px!important;object-fit:cover!important;flex:0 0 96px!important}
+
+/* playtime chart */
+:is(html,#mist-hx) .home-screen .playtime-line{stroke:var(--accent,#9fb8c8)!important;stroke-width:2.6!important;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--accent,#9fb8c8) 70%,transparent))}
+:is(html,#mist-hx) .home-screen .playtime-point{fill:var(--accent,#9fb8c8)!important;stroke:#121319!important;stroke-width:2!important}
+:is(html,#mist-hx) .home-screen .playtime-axis{stroke:rgba(255,255,255,.1)!important}
+:is(html,#mist-hx) .home-screen .playtime-chart{background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 25%);border-radius:10px}
+:is(html,#mist-hx) .home-screen .playtime-summary strong,:is(html,#mist-hx) .home-screen .playtime-summary b{color:#fff}
+
+/* changelog */
+:is(html,#mist-hx) .home-screen .home-changelog-card li::marker{color:var(--accent,#9fb8c8)}
+:is(html,#mist-hx) .home-screen .home-changelog-card li{margin-bottom:6px;line-height:1.45}
+.main:has(> .home-screen)::before,.main:has(.home-screen)::before{display:none!important;content:none!important}
+:is(html,#mist-hx) .home-screen #mist-recently-played .mist-rp-grid{flex:1 1 auto!important;align-content:stretch!important}
+:is(html,#mist-hx) .home-screen #mist-recently-played :is(.mist-rp-card,.mist-rp-new){align-self:stretch!important}
+:is(html,#mist-hx) .home-screen #mist-recently-played .mist-rp-copy strong{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25}
+.mist-spot-tag{display:none!important}
+#mist-home-spot footer{flex-wrap:nowrap}
+#mist-home-spot footer .mist-spot-all{width:30px;padding:0!important;justify-content:center}
+.mist-spot-addr::after{content:attr(data-cat);margin-left:6px;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.07);font-family:inherit;font-size:10.5px}
+:is(html,#mist-theme-x) .main{background:radial-gradient(80% 110% at 0 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%),radial-gradient(80% 110% at 100% 0,color-mix(in srgb,var(--accent-secondary) 12%,transparent),transparent 70%),var(--bg)!important}
+:is(html,#mist-theme-x) :is(.titlebar,.bottom-navigation,.mist-side-dock,.settings-nav,.settings-panel,.settings-section,.account-card,.project-card,.installation-card,.modal,.world-chat-room,.world-chat-channels,.version-table){background-color:var(--mist-panel)!important;background-image:linear-gradient(145deg,rgba(255,255,255,.045),transparent)!important;border-radius:var(--mist-radius,16px)!important}
+:is(html,#mist-theme-x) .titlebar{border-radius:0!important}
+:is(html,#mist-theme-x) :is(.btn-primary,.mist-side-play,.mist-pd-install){background:var(--accent-gradient)!important;color:var(--accent-contrast)!important}
+:is(html,#mist-pin-x) .modal-body:has(.mist-pd){padding-top:0!important}
+:is(html,#mist-pin-x) .mist-pd .mist-pd-minibar{position:static!important;top:auto!important;right:auto!important;bottom:auto!important;transform:none!important;align-self:center!important}
+body:has(#mist-launch) .game-start-overlay{display:none!important}
+@media(prefers-reduced-motion:reduce){.mist-hh-cubes{display:none}.mist-gen-svg,.mist-spot-body,.mist-spot-status::before{animation:none!important}.mist-rp-card,.mist-rp-new{transition:none!important}}
+
+.mist-r9-modal :is(.mist-r9-btn,.mist-r9-close,.mist-r9-segment){border:1px solid #ffffff20;border-radius:9px;padding:8px 12px;background:#ffffff08;color:inherit;cursor:pointer;font:inherit;font-size:12px}.mist-r9-modal .mist-r9-primary,.mist-r9-modal .mist-r9-segment.is-active{background:var(--accent-gradient);color:var(--accent-contrast);border-color:transparent}.mist-r9-segmented{display:flex;gap:5px;margin:12px 0}.mist-r9-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mist-r9-instance{display:flex;gap:10px;align-items:center;margin:14px 0}.mist-r9-instance-art{width:36px;height:36px;flex:0 0 36px;border-radius:8px}.mist-r9-badge{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}.mist-r9-row{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:13px 0;border-bottom:1px solid #ffffff0e}.mist-r9-check{display:flex;align-items:center;gap:10px;font-size:13px}.mist-r9-row-status{grid-column:1/-1;margin:0!important;font-size:11px!important;opacity:.7}.mist-r9-notice{padding:12px;background:#ffffff05;border:1px solid #ffffff12;border-radius:10px}.mist-r9-modal [hidden]{display:none!important}.mist-r9-bundle-card{display:flex;flex-direction:column}.mist-r9-bundle-card>.mist-r9-muted{flex:1}.mist-r9-bundles button:disabled{opacity:.45;cursor:not-allowed}
+/* Round 9 */
+:is(html,#mist-r9-fix) .mist-pd-hero-top>.mist-pd-iconbtn{display:grid!important;place-items:center!important;width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;flex:0 0 34px!important;line-height:1!important;border-radius:10px!important;background:rgba(255,255,255,.065)!important;border:1px solid rgba(255,255,255,.09)!important;box-shadow:none!important;transform:none!important}
+:is(html,#mist-r9-fix) .mist-pd-hero-top>.mist-pd-iconbtn svg{display:block!important;width:18px!important;height:18px!important;margin:0!important;transform:none!important}
+:is(html,#mist-r9-fix) .mist-pd-hero-top>.mist-pd-iconbtn:focus:not(:focus-visible){outline:none!important}
+:is(html,#mist-r9-fix) .mist-pd-hero-top>.mist-pd-iconbtn:focus-visible{outline:2px solid var(--accent)!important;outline-offset:3px!important}
+:is(html,#mist-r9-fix) .home-screen{min-height:0!important;padding-bottom:20px!important}
+:is(html,#mist-r9-fix) .main:has(.home-screen){padding-bottom:0!important}
+:is(html,#mist-r9-fix) .home-screen .home-grid{grid-template-rows:auto auto auto minmax(240px,280px)!important;align-content:start!important;row-gap:14px!important}
+:is(html,#mist-r9-fix) .home-screen .home-hero-playtime-card{padding:18px!important;display:flex!important;flex-direction:column!important;gap:10px!important;justify-content:flex-start!important;overflow:hidden!important}
+:is(html,#mist-r9-fix) .home-screen .playtime-chart{flex:1 1 auto!important;min-height:85px!important;max-height:140px!important;width:100%!important}
+:is(html,#mist-r9-fix) .home-screen :is(.home-changelog-card,.home-server-dock){padding:16px!important}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;gap:26px!important;align-items:center!important;padding:26px 30px!important;min-height:246px!important;overflow:hidden!important;position:relative!important;border-radius:20px!important;border:1px solid rgba(255,255,255,.1)!important;background:linear-gradient(96deg, rgba(7,9,17,.9) 0%, rgba(7,9,17,.68) 24%, rgba(7,9,17,.12) 44%, rgba(7,9,17,.28) 66%, rgba(7,9,17,.85) 100%),linear-gradient(180deg, transparent 45%, rgba(7,9,17,.62) 100%),url("./mist-hero-bg.jpg") center / cover no-repeat!important;box-shadow:0 34px 74px -34px rgba(0,0,0,.78),inset 0 1px 0 rgba(255,255,255,.1)!important}
+.home-screen #mist-home-hero .mist-hh-cubes,.home-screen #mist-home-hero .mist-hh-glow{display:none!important}
+#mist-home-hero .mist-hh-copy{min-width:0}
+#mist-home-hero .mist-hh-kicker{font-size:10px!important;letter-spacing:.18em!important;text-transform:uppercase!important;color:var(--accent)!important}
+#mist-home-hero h1{font-size:clamp(23px,2.3vw,35px)!important;line-height:1.14!important;letter-spacing:-.04em!important;overflow-wrap:anywhere}
+#mist-home-hero .mist-hh-meta{font-size:12px!important;line-height:1.7!important;opacity:.65}
+#mist-home-hero .mist-hh-stats{gap:6px!important;flex-wrap:wrap!important}
+#mist-home-hero .mist-hh-stats>span{font-size:10px!important;padding:5px 8px!important}
+#mist-home-hero .mist-hh-play{min-width:0!important;width:100%!important;min-height:49px!important;height:auto!important;padding:12px!important;border-radius:13px!important;box-shadow:0 10px 25px -12px var(--accent)!important}
+#mist-home-hero .mist-hh-play span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mist-home-hero .mist-hh-quick{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:4px!important}
+#mist-home-hero .mist-hh-quick button{padding:7px!important;font-size:10px!important}
+.mist-r9-hero-bottom{grid-column:1/-1;display:flex;gap:10px;align-items:center;padding:15px 24px;margin:0 -24px;background:linear-gradient(90deg,rgba(255,255,255,.045),rgba(255,255,255,.015));border-top:1px solid rgba(255,255,255,.07)}
+.mist-r9-hero-bottom>div{margin-right:auto;display:flex;flex-direction:column;gap:5px}
+.mist-r9-hero-bottom strong{font-size:12px;font-weight:500;opacity:.82}
+.mist-r9-eyebrow{font-size:9px;font-weight:750;letter-spacing:.16em;color:var(--accent,#b6ccd7);line-height:1.6}
+.mist-r9-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 13px;color:inherit;background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.025));font:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:background .16s,transform .16s;white-space:normal}
+.mist-r9-button:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 15%,transparent);border-color:color-mix(in srgb,var(--accent) 40%,transparent);transform:translateY(-1px)}
+.mist-r9-button:disabled{opacity:.5;cursor:wait}
+.mist-r9-button.is-primary{background:var(--accent-gradient,linear-gradient(135deg,#a9c6d3,#9c9dcc));color:var(--accent-contrast,#14171d);border-color:transparent;box-shadow:0 8px 16px -12px var(--accent)}
+.mist-r9-button:focus-visible,.mist-r9-modal :is(input,select,textarea):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.mist-r9-bundles-nav{font-size:10px;padding:8px 5px;width:100%;margin-top:5px}
+.mist-tool-report{width:30px!important;height:30px!important;padding:0!important;border-radius:50%!important;font-weight:800!important}
+.mist-r9-modal{color:#eceef4;background:radial-gradient(ellipse at 100% 0,color-mix(in srgb,var(--accent,#9fb8c8) 10%,transparent),transparent 50%),var(--mist-panel,#171920);border:1px solid rgba(255,255,255,.14);border-radius:20px;width:min(780px,calc(100vw - 48px));max-height:calc(100vh - 60px);padding:0;box-shadow:0 40px 140px #000b;overflow:auto;color-scheme:dark}
+.mist-r9-modal::backdrop{background:#060810b8;backdrop-filter:blur(7px)}
+.mist-r9-modal>header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;gap:16px;border-bottom:1px solid #ffffff0e;position:sticky;top:0;background:var(--mist-panel,#171920);z-index:3}
+.mist-r9-modal h2{font-size:20px;letter-spacing:-.035em;margin:0}.mist-r9-modal h3{margin:5px 0;font-size:16px}
+.mist-r9-modal>main{padding:20px 24px}.mist-r9-modal>footer{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 24px;border-top:1px solid #ffffff0e;background:#ffffff03}
+.mist-r9-modal p{line-height:1.65;font-size:13px}.mist-r9-muted{color:#a7adbb;font-size:12px;line-height:1.6;margin:6px 0 14px}
+.mist-r9-form{display:grid;grid-template-columns:1fr 1fr;gap:15px}.mist-r9-form>:is(p,textarea,.mist-r9-presets),.mist-r9-form>.mist-r9-field:has(textarea),.mist-r9-form>.mist-r9-field:has(input[type=text]){grid-column:1/-1}
+.mist-r9-field{display:flex;flex-direction:column;gap:8px;font-size:12px;color:#c9cdd7;min-width:0}.mist-r9-field:has(input[type=checkbox]){flex-direction:row;align-items:center;justify-content:space-between}
+.mist-r9-modal :is(input:not([type=checkbox]),textarea,select),.mist-r9-settings>input{box-sizing:border-box;background:#080b134f;color:inherit;border:1px solid #ffffff1c;border-radius:10px;padding:11px 12px;font:inherit;font-size:13px;width:100%;min-width:0}
+.mist-r9-modal textarea{resize:vertical;min-height:75px}.mist-r9-modal input[type=checkbox],.mist-r9-toggle input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0}
+.mist-r9-presets,.mist-r9-actions,.mist-r9-search-results{display:flex;gap:8px;flex-wrap:wrap}.mist-r9-status{margin:0 auto 0 0;font-size:12px;line-height:1.5;color:var(--accent);overflow-wrap:anywhere}
+.mist-r9-panel{padding:24px;border:1px solid #ffffff12;border-radius:18px;background:radial-gradient(ellipse at 100% 0,color-mix(in srgb,var(--accent) 12%,transparent),transparent 60%),linear-gradient(140deg,#ffffff06,transparent),var(--mist-panel);box-shadow:inset 0 1px #ffffff07,0 18px 35px -28px #000;margin-bottom:20px}
+.mist-r9-panel h2{font-size:26px;letter-spacing:-.04em;margin:8px 0}.mist-r9-panel .mist-r9-actions{margin:16px 0}.mist-r9-settings>input{margin:5px 0 12px}
+.mist-r9-toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.mist-r9-toggle{display:flex;align-items:center;gap:18px;justify-content:space-between;padding:14px 16px;border:1px solid #ffffff0d;border-radius:12px;background:#ffffff03}.mist-r9-toggle span{display:flex;flex-direction:column;gap:5px}.mist-r9-toggle strong{font-size:12px}.mist-r9-toggle small{font-size:11px;opacity:.55;line-height:1.4}
+:is(html,#mist-r9-fix) .settings-layout{grid-template-columns:175px minmax(0,1fr)!important;gap:22px!important}.settings-nav{position:sticky;top:16px;align-self:start;padding:12px!important}.settings-nav-item{padding:12px 14px!important;border-radius:10px!important;font-size:12px!important}
+:is(html,#mist-r9-fix) :is(.settings-content>.panel,.accounts-screen>.panel,.detail-main>.panel){border:1px solid #ffffff12!important;border-radius:16px!important;background:linear-gradient(135deg,#ffffff05,transparent),var(--mist-panel)!important;padding:22px!important;box-shadow:0 14px 30px -26px #000!important}
+.settings-content>.panel{scroll-margin-top:18px}.mist-r9-highlight{outline:2px solid var(--accent);outline-offset:3px}.settings-content h2{font-size:18px!important;letter-spacing:-.025em}
+:is(html,#mist-r9-fix) .account-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important;gap:16px!important}.account-card{padding:22px!important;border:1px solid #ffffff14!important;box-shadow:0 18px 32px -26px #000!important;position:relative;overflow:hidden}.account-card.is-current{border-color:color-mix(in srgb,var(--accent) 45%,transparent)!important;background-image:radial-gradient(ellipse at top right,color-mix(in srgb,var(--accent) 15%,transparent),transparent 65%)!important}.account-card.is-current::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent-gradient)}.account-card-head{gap:14px!important}.account-card-actions{gap:8px!important;padding-top:15px!important}.account-card-meta{line-height:1.8!important;opacity:.65}
+.mist-r9-instance-tools{padding:16px 20px;margin-top:18px}.mist-r9-instance-tools .mist-r9-actions{margin:10px 0}.mist-r9-instance-tools p{margin-bottom:0}.detail-topbar{gap:10px!important;flex-wrap:wrap}.detail-header{border:1px solid #ffffff12;padding:24px!important;border-radius:18px;background:radial-gradient(ellipse at 100% 0,color-mix(in srgb,var(--accent) 15%,transparent),transparent 70%),var(--mist-panel)}
+.mist-r9-modal .mist-bundle-grid,.mist-r9-modal .mist-r9-bundle-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mist-r9-modal article,.mist-r9-modal .mist-bundle-card{border:1px solid #ffffff16;border-radius:14px;padding:16px;background:linear-gradient(145deg,#ffffff06,#ffffff01)}
+.mist-r9-modal .mist-r9-tier,.mist-r9-modal .mist-bundle-tiers{display:flex;gap:8px;margin:12px 0}.mist-r9-modal .is-selected{border-color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 12%,transparent)!important}.mist-r9-modal progress{accent-color:var(--accent);width:100%;height:8px}
+#mist-install-dialog.is-busy :is(.mist-id-x,.mist-id-cancel){pointer-events:auto!important;opacity:1!important;cursor:pointer!important}
+@media(max-width:1180px){:is(html,#mist-r9-fix) .home-screen .home-grid{grid-template-rows:none!important;grid-auto-rows:auto!important}.mist-r9-hero-bottom{flex-wrap:wrap}.mist-r9-hero-bottom>div{flex:1 1 220px}}
+@media(max-width:850px){:is(html,#mist-r9-fix) .home-screen #mist-home-hero{grid-template-columns:70px 1fr!important}.mist-hh-actions{grid-column:1/-1}#mist-home-hero .mist-hh-art{width:64px!important;height:64px!important}.mist-r9-toggle-grid,.mist-r9-form{grid-template-columns:1fr}.mist-r9-modal{width:calc(100vw - 24px)}:is(html,#mist-r9-fix) .settings-layout{grid-template-columns:1fr!important}.settings-nav{position:static;display:flex;flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.mist-r9-button{transition:none}}
+
+.mist-r9-webhook{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)}.mist-r9-webhook-row{display:flex;gap:10px;margin:10px 0;align-items:center}.mist-r9-webhook-row input{flex:1;min-width:0}
+.mist-route-footer .mist-r9-bundles-nav{width:42px!important;height:42px!important;margin:0!important;padding:9px!important;border-radius:12px!important;display:grid!important;place-items:center!important;background:transparent!important;border:1px solid transparent!important;color:#a9aab6!important;position:relative}.mist-route-footer .mist-r9-bundles-nav svg{width:23px!important;height:23px!important}.mist-route-footer .mist-r9-bundles-nav:hover,.mist-route-footer .mist-r9-bundles-nav.is-active{color:var(--accent)!important;border-color:color-mix(in srgb,var(--accent) 35%,transparent)!important;background:color-mix(in srgb,var(--accent) 10%,transparent)!important}.mist-bundle-route .main>:not(#mist-bundle-screen){display:none!important}.mist-bundle-route #mist-shared-news-rail,.mist-bundle-route #mist-home-main-news{display:none!important}.mist-bundle-route .main{padding:0 0 0 100px!important;box-sizing:border-box!important}.mist-bundle-screen{padding:24px 30px 32px;max-width:1700px;margin:auto;min-width:0;color:var(--text,#e9edf4)}.mist-bundle-library-hero{display:flex;align-items:center;justify-content:space-between;gap:30px;padding:32px 36px;border:1px solid #ffffff16;border-radius:20px;background:radial-gradient(ellipse at 85% 20%,#7c69db26,transparent 50%),radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),var(--mist-panel);box-shadow:inset 0 1px #ffffff08,0 20px 45px -30px #000;position:relative;overflow:hidden}.mist-bundle-library-hero h1{font-size:clamp(30px,3.5vw,48px);letter-spacing:-.055em;margin:8px 0 12px;line-height:1.1}.mist-bundle-library-hero p{font-size:13px;color:#a6adbb;max-width:620px;line-height:1.7;margin:0}.mist-bundle-library-stats{font-size:11px;letter-spacing:.02em;margin-top:22px;color:var(--accent)}.mist-bundle-orbit{width:145px;height:145px;flex:0 0 145px;display:grid;place-items:center;border-radius:35px;transform:rotate(-10deg);color:var(--accent);background:linear-gradient(135deg,#ffffff15,#ffffff02);border:1px solid #ffffff19;box-shadow:0 25px 50px -25px #000,inset 0 1px #ffffff22}.mist-bundle-toolbar{display:flex;gap:10px;margin:24px 0 14px;align-items:center}.mist-bundle-toolbar>input{flex:1;min-width:100px}.mist-bundle-screen :is(input,select){background:var(--mist-panel,#161820);border:1px solid #ffffff1c;border-radius:10px;padding:11px 13px;color:inherit;font:inherit;font-size:12px;color-scheme:dark}.mist-bundle-categories{display:flex;gap:7px;flex-wrap:wrap}.mist-bundle-categories .mist-r9-button{font-size:11px;padding:7px 13px;border-radius:999px}.mist-bundle-screen .is-active{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}.mist-bundle-result-count{font-size:11px;color:#939cab;margin:18px 0 14px}.mist-bundle-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}.mist-bundle-card{border:1px solid #ffffff12;border-radius:16px;overflow:hidden;padding:0;color:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;background:linear-gradient(145deg,#ffffff04,transparent),var(--mist-panel,#16181f);box-shadow:0 16px 26px -24px #000;transition:transform .15s,border-color .15s}.mist-bundle-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}.mist-bundle-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.mist-bundle-art{height:133px;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 30% 0%,hsl(var(--bundle-hue) 60% 55%/.4),transparent 80%),linear-gradient(135deg,hsl(var(--bundle-hue) 30% 22%),#151722);border-bottom:1px solid #ffffff0c;flex-shrink:0;color:hsl(var(--bundle-hue) 70% 78%)}.mist-bundle-art::before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff04 1px,transparent 1px),linear-gradient(90deg,#ffffff04 1px,transparent 1px);background-size:25px 25px;mask-image:linear-gradient(#000,transparent)}.mist-bundle-art>img{width:66px;height:66px;border-radius:15px;object-fit:cover;box-shadow:0 12px 20px #0004;border:1px solid #ffffff28;z-index:1;transform:rotate(-7deg)}.mist-bundle-art>img:nth-child(2){transform:translateY(-6px) rotate(4deg);z-index:2}.mist-bundle-art>img:nth-child(3){transform:rotate(10deg)}.mist-bundle-art>svg{filter:drop-shadow(0 8px 10px #0007);z-index:1}.mist-bundle-art-label{position:absolute;bottom:10px;left:14px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#ffffffb0}.mist-bundle-card-copy{padding:16px;display:flex;flex-direction:column;flex:1;gap:8px}.mist-bundle-card h3{font-size:16px;line-height:1.35;letter-spacing:-.025em;margin:0;color:#eceff4}.mist-bundle-card p{font-size:11px;line-height:1.65;opacity:.57;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.mist-bundle-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:14px;font-size:10px;color:var(--accent)}.mist-bundle-card-foot span:first-child{color:#999fab}.mist-bundle-more{display:flex;justify-content:center;margin-top:25px}.mist-bundle-empty{grid-column:1/-1;padding:60px;text-align:center;opacity:.65}.mist-bundle-back{margin-bottom:16px}.mist-bundle-detail-hero{display:flex;gap:28px;align-items:center;padding:30px;border-radius:20px;border:1px solid #ffffff15;background:radial-gradient(ellipse at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 65%),var(--mist-panel);box-shadow:0 24px 45px -32px #000}.mist-bundle-art.is-large{width:170px;height:170px;flex:0 0 170px;border:1px solid #ffffff19;border-radius:25px;gap:0}.mist-bundle-art.is-large img{width:70px;height:70px;margin:0 -8px}.mist-bundle-art.is-large>svg{width:80px;height:80px}.mist-bundle-detail-copy{min-width:0}.mist-bundle-detail-copy h1{font-size:clamp(24px,2.5vw,36px);line-height:1.18;letter-spacing:-.045em;margin:9px 0 12px}.mist-bundle-detail-copy>p{font-size:12px;color:#9ca5b5;line-height:1.65;max-width:900px}.mist-bundle-chips{display:flex;gap:7px;flex-wrap:wrap}.mist-bundle-chip{font-size:10px;padding:5px 9px;border:1px solid #ffffff10;border-radius:7px;white-space:nowrap;color:#aeb9ca;background:#ffffff04}.mist-bundle-detail-copy .mist-r9-actions{margin-top:18px}.mist-bundle-tabs{display:flex;gap:10px;position:sticky;top:0;padding:15px 0;margin:8px 0 12px;background:var(--bg,#11131b);z-index:6;border-bottom:1px solid #ffffff10}.mist-bundle-tabs button{border-radius:8px}.mist-bundle-detail-grid{display:grid;grid-template-columns:minmax(0,1fr) 265px;gap:22px;align-items:start}.mist-bundle-overview{min-width:0}.mist-bundle-overview h2{font-size:20px;letter-spacing:-.03em;margin:18px 0}.mist-bundle-overview>p,.mist-bundle-overview li{font-size:13px;line-height:1.85;color:#a5adbb}.mist-bundle-overview li{margin:15px 0}.mist-bundle-feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 28px}.mist-bundle-feature-grid article{padding:15px;border-radius:12px;background:#ffffff03;border:1px solid #ffffff0d}.mist-bundle-feature-grid h3{font-size:12px;margin:0 0 8px;color:var(--accent)}.mist-bundle-feature-grid p{font-size:11px;line-height:1.7;opacity:.6;margin:0}.mist-bundle-facts{padding:20px;border:1px solid #ffffff10;border-radius:14px;background:var(--mist-panel);position:sticky;top:80px}.mist-bundle-facts h3{font-size:13px;margin:0 0 15px}.mist-bundle-facts>div{display:flex;justify-content:space-between;gap:12px;font-size:11px;padding:11px 0;border-bottom:1px solid #ffffff0c}.mist-bundle-facts>div span{opacity:.5}.mist-bundle-facts>div strong{text-align:right;font-weight:500}.mist-bundle-facts p{font-size:11px;margin-top:16px}.mist-bundle-content-row{display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:8px;border-radius:12px;border:1px solid #ffffff0e;background:#ffffff03}.mist-bundle-content-icon{width:42px;height:42px;flex:0 0 42px;border-radius:10px;background:#ffffff06;display:grid;place-items:center;overflow:hidden;color:var(--accent)}.mist-bundle-content-icon img{width:100%;height:100%;object-fit:cover}.mist-bundle-content-row>div{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}.mist-bundle-content-row strong{font-size:12px}.mist-bundle-content-row small{font-size:10px;line-height:1.5;opacity:.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.mist-bundle-content-row button{font-size:10px;padding:7px 9px}.mist-bundle-notice{border:1px solid #ffffff15;border-radius:12px;padding:18px;background:#ffffff04}.mist-bundle-screen [hidden]{display:none!important}@media(min-width:1550px){.mist-bundle-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:1050px){.mist-bundle-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mist-bundle-detail-grid{grid-template-columns:1fr}.mist-bundle-facts{position:static}.mist-bundle-feature-grid{grid-template-columns:1fr}.mist-bundle-toolbar{flex-wrap:wrap}.mist-bundle-toolbar>input{flex-basis:100%}}@media(max-width:650px){.mist-bundle-grid{grid-template-columns:1fr}.mist-bundle-screen{padding:16px}.mist-bundle-orbit{display:none}.mist-bundle-detail-hero{flex-direction:column;align-items:flex-start}.mist-bundle-content-row{flex-wrap:wrap}.mist-bundle-library-hero{padding:24px}}@media(prefers-reduced-motion:reduce){.mist-bundle-card{transition:none}}
+
+/* ================= hero profile pic + icon alignment ================= */
+#mist-home-hero .mist-hh-art > svg { width:100%!important; height:100%!important; display:block; }
+#mist-home-hero .mist-hh-art { background-repeat:no-repeat!important; background-size:800% 800%!important; background-position:14.28% 14.28%!important; image-rendering:pixelated; }
+#mist-home-hero .mist-hh-quick button { align-items:center!important; justify-content:center!important; line-height:1!important; }
+#mist-home-hero .mist-hh-quick button svg { display:block!important; flex:0 0 auto!important; }
+#mist-home-hero .mist-hh-play { align-items:center!important; justify-content:center!important; line-height:1!important; }
+#mist-home-hero .mist-hh-play svg { display:block!important; flex:0 0 auto!important; }
+
+/* ================= world chat polish ================= */
+.screen.world-chat-screen { gap: 14px !important; }
+
+.world-chat-heading {
+  position: relative;
+  padding: 20px 22px !important;
+  border: 1px solid var(--mist-stroke) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(560px 210px at 92% -35%, color-mix(in srgb, var(--mist-accent) 32%, transparent), transparent 72%),
+    linear-gradient(135deg, color-mix(in srgb, var(--mist-panel-raised) 92%, transparent), var(--mist-panel)) !important;
+  box-shadow: 0 24px 60px -44px #000;
+  overflow: hidden;
+}
+.world-chat-heading::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 42px 42px; opacity: .35;
+  mask-image: radial-gradient(420px 160px at 85% 10%, #000, transparent 75%);
+  -webkit-mask-image: radial-gradient(420px 160px at 85% 10%, #000, transparent 75%);
+}
+.world-chat-heading > * { position: relative; z-index: 1; }
+.world-chat-heading h1 { margin: 6px 0 4px !important; font-size: clamp(1.65rem, 3vw, 2.15rem) !important; }
+.world-chat-eyebrow { color: color-mix(in srgb, var(--mist-accent) 62%, #fff) !important; }
+.world-chat-eyebrow svg { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--mist-accent) 70%, transparent)); }
+
+.world-chat-current-user {
+  min-width: 236px !important;
+  padding: 10px 14px !important;
+  border: 1px solid var(--mist-stroke-strong) !important;
+  border-radius: 15px !important;
+  background: color-mix(in srgb, var(--mist-panel-raised) 88%, transparent) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 10px 26px -18px #000;
+}
+.world-chat-current-user .avatar {
+  border-radius: 11px !important;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mist-accent) 58%, transparent), 0 6px 16px -8px color-mix(in srgb, var(--mist-accent) 70%, transparent);
+}
+
+.world-chat-layout {
+  border: 1px solid var(--mist-stroke) !important;
+  border-radius: 20px !important;
+  background: var(--mist-panel) !important;
+  box-shadow: 0 34px 90px -56px #000 !important;
+  overflow: hidden;
+}
+.world-chat-channels {
+  gap: 5px !important;
+  padding: 16px 12px !important;
+  border-right: 1px solid var(--mist-stroke) !important;
+  border-radius: 0 !important;
+  background: color-mix(in srgb, var(--mist-bg) 55%, var(--mist-panel)) !important;
+}
+.world-chat-channel { border-radius: 12px !important; transition: background .16s ease, border-color .16s ease, transform .16s ease; }
+.world-chat-channel:hover { transform: translateX(2px); background: color-mix(in srgb, var(--mist-panel-hover) 80%, transparent) !important; }
+.world-chat-channel.is-active {
+  border-color: color-mix(in srgb, var(--mist-accent) 42%, transparent) !important;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--mist-accent) 22%, transparent), transparent 78%) !important;
+  box-shadow: inset 2px 0 0 var(--mist-accent);
+}
+.world-chat-channel.is-active strong { letter-spacing: -.01em; }
+.world-chat-rules {
+  border-radius: 13px !important;
+  border-color: color-mix(in srgb, #69bc90 24%, transparent) !important;
+  background: linear-gradient(150deg, rgba(66,142,100,.14), rgba(66,142,100,.04)) !important;
+}
+
+.world-chat-room { padding: 16px 18px !important; border-radius: 0 !important; background: transparent !important; }
+.world-chat-room-head {
+  position: sticky; top: 0; z-index: 3;
+  padding: 10px 4px 12px !important;
+  background: linear-gradient(var(--mist-panel) 78%, transparent);
+  border-bottom: 1px solid var(--mist-stroke) !important;
+}
+.world-chat-room-head h2 { letter-spacing: -.02em; }
+
+.world-chat-messages { padding: 14px 2px 18px !important; }
+.world-chat-messages::-webkit-scrollbar { width: 9px; }
+.world-chat-messages::-webkit-scrollbar-track { background: transparent; }
+.world-chat-messages::-webkit-scrollbar-thumb {
+  border: 3px solid transparent; border-radius: 99px;
+  background: color-mix(in srgb, var(--mist-muted) 45%, transparent) padding-box;
+}
+.world-chat-messages::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--mist-accent) 55%, transparent) padding-box; }
+
+.world-chat-message { padding: 10px 10px !important; border-radius: 13px !important; transition: background .14s ease; }
+.world-chat-message > .avatar { border-radius: 10px !important; image-rendering: pixelated; flex: 0 0 auto; }
+.world-chat-message-main > header strong { font-weight: 800; letter-spacing: -.01em; }
+
+.world-chat-composer {
+  gap: 8px !important;
+  padding: 12px 13px 10px !important;
+  border: 1px solid var(--mist-stroke-strong) !important;
+  border-radius: 15px !important;
+  background: color-mix(in srgb, var(--mist-panel-raised) 92%, transparent) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.world-chat-composer:focus-within {
+  border-color: color-mix(in srgb, var(--mist-accent) 55%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mist-accent) 18%, transparent), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.world-chat-composer textarea { font-size: .8rem !important; }
+.world-chat-composer-footer .button.is-primary, .world-chat-composer-footer .button[data-variant="primary"] {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--mist-accent) 92%, #fff), color-mix(in srgb, var(--mist-accent) 78%, #000)) !important;
+  border-color: transparent !important;
+}
+
+@media (max-width: 860px) {
+  .world-chat-heading { padding: 16px !important; }
+  .world-chat-room { padding: 12px !important; }
+  .world-chat-channels { padding: 12px 10px !important; }
+}
+
+/* CSS-only Steve face fallback (survives React re-renders) */
+#mist-home-hero .mist-hh-art:empty {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><rect width='8' height='8' fill='%23b5835a'/><rect width='8' height='2' fill='%233a2a1a'/><rect x='0' y='2' width='1' height='2' fill='%233a2a1a'/><rect x='7' y='2' width='1' height='2' fill='%233a2a1a'/><rect x='1' y='3' width='2' height='1' fill='%23f4f4f4'/><rect x='5' y='3' width='2' height='1' fill='%23f4f4f4'/><rect x='2' y='3' width='1' height='1' fill='%233b2e8c'/><rect x='5' y='3' width='1' height='1' fill='%233b2e8c'/><rect x='3' y='4' width='2' height='1' fill='%239a6a48'/><rect x='2' y='5' width='4' height='1' fill='%236d4630'/><rect x='3' y='6' width='2' height='1' fill='%236d4630'/></svg>") !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  image-rendering: pixelated;
+}
+
+/* ================= top bar refresh (command tray) ================= */
+.mist-titlebar-brand { left: 14px !important; gap: 10px !important; }
+.mist-titlebar-brand img { width: 32px !important; height: 32px !important; filter: drop-shadow(0 2px 10px color-mix(in srgb, var(--mist-accent, #8b5cf6) 45%, transparent)) !important; }
+.mist-titlebar-brand strong { font-size: 13px !important; letter-spacing: .015em !important; }
+.mist-titlebar-brand small {
+  font-size: 9px !important; font-weight: 800 !important; letter-spacing: .09em !important;
+  color: #b9a4ff !important; background: rgba(139, 92, 246, .14) !important;
+  border: 1px solid rgba(139, 92, 246, .32) !important; border-radius: 999px !important;
+  padding: 1px 7px !important; width: max-content !important;
+}
+
+/* utilities: one seamless tray */
+.mist-titlebar-tools {
+  display: flex !important; align-items: center !important; gap: 2px !important;
+  margin: 0 8px 0 6px !important; padding: 3px 4px !important;
+  border: 1px solid #2a2a32 !important; border-radius: 13px !important;
+  background: linear-gradient(180deg, #1d1d22, #16161b) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05) !important;
+}
+.mist-titlebar-tools .mist-contact-button {
+  width: 32px !important; height: 32px !important; padding: 0 !important;
+  border: 1px solid transparent !important; border-radius: 9px !important;
+  background: transparent !important; color: #b9b9c3 !important;
+}
+.mist-titlebar-tools .mist-contact-button:hover {
+  color: #fff !important; background: rgba(139, 92, 246, .2) !important;
+  border-color: rgba(139, 92, 246, .3) !important; transform: none !important;
+}
+.mist-titlebar-tools .mist-contact-button svg { width: 16px !important; height: 16px !important; }
+.mist-titlebar-tools .mist-tool-theme { color: var(--mist-accent, #8b5cf6) !important; }
+.mist-titlebar-tools .mist-tool-fav svg { fill: currentColor; fill-opacity: .15; }
+
+/* profile + bell: unified chip treatment */
+.titlebar-profile-button { border-radius: 11px !important; }
+.titlebar-profile-button:hover { border-color: #3a3a44 !important; background: rgba(255, 255, 255, .05) !important; }
+.titlebar-utility-button.notification-button {
+  position: relative !important; border-radius: 10px !important; color: #b9b9c3 !important;
+  background: transparent !important; border: 1px solid transparent !important;
+  transition: color .15s ease, background .15s ease, border-color .15s ease !important;
+}
+.titlebar-utility-button.notification-button:hover {
+  color: #fff !important; background: rgba(255, 255, 255, .06) !important;
+  border-color: #37373f !important;
+}
+.notification-dot { position: absolute !important; top: 7px !important; right: 8px !important; width: 7px !important; height: 7px !important; border-radius: 50% !important; background: #c94f4f !important; box-shadow: 0 0 0 2px #17171c !important; }
+
+/* window controls: flatter, close = danger */
+.window-controls { margin-left: 2px !important; gap: 0 !important; }
+.window-control { color: #90909e !important; border-radius: 0 !important; }
+.window-control:hover { background: rgba(255, 255, 255, .05) !important; color: #f1f1f4 !important; }
+.window-control.window-close:hover { background: #b3352f !important; color: #fff !important; }
+
+/* ================= solo Browse tab (packs pages) ================= */
+.tabs.is-solo {
+  display: inline-flex !important; padding: 4px !important;
+  border: 1px solid #2b2b33 !important; border-radius: 14px !important;
+  background: linear-gradient(180deg, #1c1c21, #17171c) !important;
+  width: max-content !important; gap: 0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04) !important;
+}
+.tabs.is-solo .tab {
+  display: inline-flex !important; align-items: center !important; gap: 8px !important;
+  height: 38px !important; padding: 0 20px !important; border-radius: 10px !important;
+  border: 1px solid transparent !important; color: #fff !important;
+  font-size: .8rem !important; font-weight: 700 !important; letter-spacing: .01em !important;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent, #8b5cf6) 52%, #6d5df0), color-mix(in srgb, var(--accent, #8b5cf6) 62%, #2b1e63)) !important;
+  box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--accent, #8b5cf6) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .18) !important;
+}
+.tabs.is-solo .tab .tab-icon { color: rgba(255, 255, 255, .92) !important; }
+.tabs { align-items: stretch; }
+.tab .tab-icon { margin-right: 2px; }
+
+/* ================= first-run guide (premium tour) ================= */
+#mist-guide::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 0;
+  background: rgba(5, 5, 10, .62);
+  backdrop-filter: blur(3.5px);
+  -webkit-backdrop-filter: blur(3.5px);
+}
+#mist-guide .mist-guide-card {
+  z-index: 1;
+  width: 384px !important;
+  max-width: calc(100vw - 32px);
+  padding: 20px 22px 14px !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255, 255, 255, .11) !important;
+  background:
+    radial-gradient(620px 260px at 50% -55%, color-mix(in srgb, var(--accent) 36%, transparent), transparent 72%),
+    linear-gradient(180deg, #211f29, #131318) !important;
+  box-shadow: 0 44px 100px -18px rgba(0, 0, 0, .75), inset 0 1px 0 rgba(255, 255, 255, .09), 0 0 0 1px rgba(0, 0, 0, .45) !important;
+}
+#mist-guide .mist-guide-spot {
+  z-index: 1;
+  border-radius: 16px !important;
+  box-shadow: 0 0 0 9999px rgba(4, 4, 9, .68), 0 0 0 2px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 42px color-mix(in srgb, var(--accent) 65%, transparent) !important;
+}
+.mist-guide-art {
+  width: 64px !important; height: 64px !important; border-radius: 18px !important;
+  display: grid !important; place-items: center !important; color: #fff !important;
+  background: linear-gradient(152deg, color-mix(in srgb, var(--accent) 78%, #fff), color-mix(in srgb, var(--accent) 68%, #1c0f38)) !important;
+  box-shadow: 0 16px 34px -10px color-mix(in srgb, var(--accent) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .45) !important;
+  margin-bottom: 15px !important;
+}
+.mist-guide-art svg { width: 30px !important; height: 30px !important; }
+.mist-guide-step {
+  font-size: 9.5px !important; letter-spacing: .17em !important;
+  color: #b9a4ff !important; font-weight: 800 !important; text-transform: uppercase;
+}
+.mist-guide-card h2 { margin: 7px 0 8px !important; font-size: 23px !important; font-weight: 800 !important; letter-spacing: -.025em !important; }
+.mist-guide-card p { margin: 0 0 18px !important; font-size: 13px !important; line-height: 1.62 !important; color: #a6a6b4 !important; }
+.mist-guide-dots { gap: 7px !important; margin-bottom: 18px !important; }
+.mist-guide-dots i { width: 8px !important; height: 8px !important; background: rgba(255, 255, 255, .16) !important; }
+.mist-guide-dots i.is-on { width: 28px !important; background: linear-gradient(90deg, var(--accent), #b9a4ff) !important; box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 80%, transparent) !important; }
+.mist-guide-nav {
+  display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important;
+  padding-top: 12px !important; border-top: 1px solid rgba(255, 255, 255, .07) !important;
+}
+.mist-guide-back {
+  height: 42px !important; min-width: 96px !important; padding: 0 14px !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  border-radius: 12px !important; border: 1px solid rgba(255, 255, 255, .1) !important;
+  background: transparent !important; color: #8f8f9d !important; font-weight: 700 !important; cursor: pointer !important;
+}
+.mist-guide-back:hover { color: #fff !important; background: rgba(255, 255, 255, .06) !important; }
+.mist-guide-next {
+  height: 42px !important; padding: 0 20px !important;
+  display: inline-flex !important; align-items: center !important; gap: 9px !important;
+  border: 0 !important; border-radius: 12px !important; cursor: pointer !important;
+  font-weight: 800 !important; letter-spacing: .01em !important; color: #fff !important;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 82%, #fff), color-mix(in srgb, var(--accent) 62%, #241040)) !important;
+  box-shadow: 0 12px 30px -10px color-mix(in srgb, var(--accent) 78%, transparent), inset 0 1px 0 rgba(255, 255, 255, .38) !important;
+}
+.mist-guide-next:hover { filter: brightness(1.1) !important; transform: translateY(-1px) !important; }
+.mist-guide-next:active { transform: scale(.98) !important; }
+.mist-guide-next svg { width: 17px !important; height: 17px !important; }
+.mist-guide-skip {
+  top: 13px !important; right: 15px !important;
+  font-size: 11px !important; font-weight: 600 !important; color: #84848f !important;
+  padding: 6px 8px !important; border-radius: 8px !important;
+}
+.mist-guide-skip:hover { color: #fff !important; background: rgba(255, 255, 255, .06) !important; }
+.mist-guide-hint {
+  margin-top: 10px !important; font-size: 10px !important; letter-spacing: .04em !important;
+  color: #6d6d78 !important; text-align: center !important;
+}
+
+#mist-guide.has-spot::before { opacity: 0; }
+
+#mist-guide .mist-guide-card { padding-bottom: 16px !important; }
+.mist-guide-hint { margin-top: 12px !important; }
+
+/* ================= home hero: user banner backdrop ================= */
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero{
+  display:grid!important;
+  grid-template-columns:128px minmax(0,1fr) auto!important;
+  gap:24px!important;
+  align-items:center!important;
+  padding:24px 30px!important;
+  min-height:246px!important;
+  position:relative!important;
+  overflow:hidden!important;
+  border-radius:20px!important;
+  border:1px solid rgba(255,255,255,.1)!important;
+  background:
+    linear-gradient(96deg, rgba(7,9,18,.92) 0%, rgba(7,9,18,.55) 26%, rgba(7,9,18,.04) 46%, rgba(7,9,18,.38) 70%, rgba(7,9,18,.9) 100%),
+    linear-gradient(180deg, transparent 40%, rgba(7,9,18,.66) 100%),
+    url("./mist-hero-only.png") center / cover no-repeat!important;
+  box-shadow:0 34px 74px -34px rgba(0,0,0,.78), inset 0 1px 0 rgba(255,255,255,.1)!important;
+}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-cubes,
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-glow{display:none!important}
+
+/* raised avatar tile */
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-art{
+  width:128px!important; height:128px!important; min-width:128px!important; flex:0 0 auto!important;
+  border-radius:22px!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  box-shadow:0 26px 52px -14px rgba(0,0,0,.82), inset 0 0 0 1px rgba(255,255,255,.07)!important;
+  overflow:hidden!important;
+  backdrop-filter:blur(3px)!important;
+  -webkit-backdrop-filter:blur(3px)!important;
+}
+
+/* type */
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-kicker{
+  color:#aeb6ff!important; letter-spacing:.2em!important; font-size:10.5px!important; font-weight:800!important;
+}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero h1{
+  background:none!important; -webkit-background-clip:border-box!important; background-clip:border-box!important;
+  white-space:nowrap!important; font-size:clamp(33px,3.4vw,46px)!important; font-weight:850!important;
+  letter-spacing:-.032em!important; color:#fff!important; text-shadow:0 5px 34px rgba(0,0,0,.68)!important;
+}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-stats span{
+  background:rgba(8,12,22,.55)!important; border:1px solid rgba(255,255,255,.12)!important;
+  backdrop-filter:blur(6px)!important; -webkit-backdrop-filter:blur(6px)!important;
+  color:#c8d2ee!important; padding:7px 13px!important; font-size:11px!important; border-radius:999px!important;
+}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-stats b{color:#fff!important}
+
+/* actions column */
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-actions{gap:12px!important;min-width:0!important;max-width:none!important}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-play{
+  height:54px!important; border:0!important; border-radius:15px!important;
+  background:linear-gradient(165deg,#b18cff,#7c55e8)!important;
+  color:#150f22!important; font-size:16px!important; font-weight:850!important; letter-spacing:.01em!important;
+  box-shadow:0 16px 40px -12px rgba(150,110,255,.65), inset 0 1px 0 rgba(255,255,255,.5)!important;
+}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-play:hover{filter:brightness(1.07)!important;transform:translateY(-1px)!important}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-quick{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-quick button{
+  height:40px!important; border-radius:13px!important; font-size:12.5px!important; font-weight:700!important;
+  background:rgba(10,14,24,.55)!important; border:1px solid rgba(255,255,255,.15)!important;
+  backdrop-filter:blur(6px)!important; -webkit-backdrop-filter:blur(6px)!important; color:#e9edff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important; white-space:nowrap!important; padding:0 14px!important;
+}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-quick button:hover{background:rgba(140,118,255,.28)!important;border-color:rgba(190,180,255,.45)!important}
+:is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-quick button svg{opacity:.92!important;flex:0 0 auto!important}
+
+@media (max-width:1100px){
+  :is(html,#mist-r9-fix) .home-screen #mist-home-hero{grid-template-columns:128px minmax(0,1fr)!important}
+  :is(html,#mist-r9-fix) .home-screen #mist-home-hero .mist-hh-actions{grid-column:1 / -1!important}
+}

@@ -43,6 +43,8 @@ const events = {
   account: (listener) => on("account", listener),
   deviceCode: (listener) => on("deviceCode", listener),
   logsChanged: (listener) => on("logsChanged", listener),
+  serverState: (listener) => on("serverState", listener),
+  serverLog: (listener) => on("serverLog", listener),
   dataChanged: (listener) => on("dataChanged", listener),
   toast: (listener) => on("toast", listener),
   navigate: (listener) => on("navigate", listener)
@@ -137,6 +139,7 @@ const api = {
     project: (source, projectId) => call("catalog.project", source, projectId),
     versions: (args) => call("catalog.versions", args),
     install: (request) => call("catalog.install", request),
+    cancel: (requestId) => call("catalog.cancel", requestId),
     categories: (source, projectType) => call("catalog.categories", source, projectType)
   },
   mods: {
@@ -202,8 +205,48 @@ const api = {
   news: {
     list: () => call("news.list")
   },
+  videos: {
+    search: (query, limit) => call("videos.search", query, limit)
+  },
   servers: {
     list: (query) => call("servers.list", query)
+  },
+  localServers: {
+    list: () => call("localServers.list"),
+    browse: () => call("localServers.browse"),
+    get: (id) => call("localServers.get", id),
+    create: (input) => call("localServers.create", input),
+    update: (id, patch) => call("localServers.update", id, patch),
+    remove: (id) => call("localServers.remove", id),
+    start: (id) => call("localServers.start", id),
+    stop: (id) => call("localServers.stop", id),
+    send: (id, command) => call("localServers.send", id, command),
+    logs: (id, limit) => call("localServers.logs", id, limit),
+    state: (id) => call("localServers.state", id),
+    files: (id, path) => call("localServers.files", id, path),
+    deleteEntry: (id, path) => call("localServers.deleteEntry", id, path),
+    openFolder: (id) => call("localServers.openFolder", id),
+    plugins: (id) => call("localServers.plugins", id),
+    addPlugin: (id) => call("localServers.addPlugin", id),
+    removePlugin: (id, filename) => call("localServers.removePlugin", id, filename),
+    worlds: (id) => call("localServers.worlds", id),
+    deleteWorld: (id, name) => call("localServers.deleteWorld", id, name),
+    setDefaultWorld: (id, name) => call("localServers.setDefaultWorld", id, name),
+    joinInfo: (id) => call("localServers.joinInfo", id),
+    parseInvite: (code) => call("localServers.parseInvite", code),
+    versions: () => call("localServers.versions"),
+    software: () => call("localServers.software"),
+    softwareVersions: (software) => call("localServers.softwareVersions", software),
+    readFile: (id, path) => call("localServers.readFile", id, path),
+    writeFile: (id, path, content) => call("localServers.writeFile", id, path, content),
+    createFolder: (id, path, name) => call("localServers.createFolder", id, path, name),
+    renameEntry: (id, path, name) => call("localServers.renameEntry", id, path, name),
+    upload: (id, path) => call("localServers.upload", id, path),
+    pluginSearch: (query) => call("localServers.pluginSearch", query),
+    pluginDetails: (id, projectId) => call("localServers.pluginDetails", id, projectId),
+    pluginInstall: (id, projectId, versionId) => call("localServers.pluginInstall", id, projectId, versionId),
+    patchbukkitStatus: (id) => call("localServers.patchbukkitStatus", id),
+    patchbukkitInstall: (id) => call("localServers.patchbukkitInstall", id)
   },
   worldChat: {
     feed: (channel, afterId, beforeId) => call("worldChat.feed", channel, afterId, beforeId),

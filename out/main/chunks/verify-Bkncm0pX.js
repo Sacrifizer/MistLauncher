@@ -14,7 +14,7 @@ require("node:util");
 require("node:zlib");
 require("node:fs/promises");
 async function runVerification() {
-  const versionId = process.env.MIST_VERIFY || process.env.SACRIFY_VERIFY || "26.3";
+  const versionId = process.env.MIST_VERIFY || "26.3";
   const services = new index.Services();
   const report = { versionId, steps: [] };
   const steps = report.steps;
@@ -52,7 +52,7 @@ async function runVerification() {
     steps.push({ step: "vanilla-install", seconds: Math.round((Date.now() - started) / 1e3), status });
     log("vanilla installed", status);
     const resolved = await services.meta.resolve(versionId);
-    if ((process.env.MIST_VERIFY_JAVA ?? process.env.SACRIFY_VERIFY_JAVA) !== "0") {
+    if (process.env.MIST_VERIFY_JAVA !== "0") {
       log("ensuring Java", { major: resolved.javaMajor, component: resolved.javaVersion?.component });
       const java = await services.java.ensure(
         resolved.javaVersion?.component ?? null,
