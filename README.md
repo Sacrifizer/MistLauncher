@@ -1,5 +1,7 @@
 # Mist Launcher
 
+**Website:** [https://mist-launcher.vercel.app/](https://mist-launcher.vercel.app/) · **Download:** [latest release](https://github.com/Sacrifizer/MistLauncher/releases/latest)
+
 A modern, modular Minecraft: Java Edition launcher for Windows, built with Electron.
 
 ## Features
